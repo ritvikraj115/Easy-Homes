@@ -1,25 +1,29 @@
-import logo from './logo.svg';
-import './App.css';
+// client/src/App.jsx
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import SearchResults from './pages/SearchResults';  // make sure this exists
+import Favourites from './pages/Favourites';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Navbar />
+
+      <Routes>
+        {/* Search page: Buy a Plot */}
+        <Route path="/search" element={<SearchResults />} />
+
+        {/* You can stub out the other pages for now */}
+        <Route path="/projects" element={<div>Projects Page</div>} />
+        <Route path="/about" element={<div>About Page</div>} />
+        <Route path="/contact" element={<div>Contact Page</div>} />
+        <Route path="/enquire" element={<div>Enquire Page</div>} />
+        <Route path="/favourites" element={<Favourites />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
 export default App;
+

@@ -1,0 +1,143 @@
+.favourites-page {
+  padding: 32px 24px 100px;
+}
+
+.favourites-page h2 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: var(--primary);
+}
+
+.favourites-empty {
+  padding: 48px 0;
+  text-align: center;
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+.favourites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--gutter);
+}
+
+.fav-card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.fav-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.fav-card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.fav-info {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.fav-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.compare-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.fav-info h3 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 18px;
+  color: #222;
+  margin: 0;
+}
+
+.fav-info p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 8px 0;
+}
+
+.fav-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.view-btn {
+  font-size: 14px;
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.view-btn:hover {
+  text-decoration: underline;
+}
+
+.remove-btn {
+  background: transparent;
+  border: none;
+  color: #c00;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.remove-btn:hover {
+  text-decoration: underline;
+}
+
+/* Sticky compare bar */
+.compare-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.05);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+}
+
+.compare-bar p {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.compare-bar button {
+  padding: 10px 20px;
+  background-color: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.compare-bar button:hover {
+  background-color: var(--primary-dark);
+}
