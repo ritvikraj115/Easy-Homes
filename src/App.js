@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import SearchResults from './pages/SearchResults';  // make sure this exists
 import Favourites from './pages/Favourites';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
         <Route path="/contact" element={<div>Contact Page</div>} />
         <Route path="/enquire" element={<div>Enquire Page</div>} />
         <Route path="/favourites" element={<Favourites />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
       </Routes>
     </BrowserRouter>
   );
