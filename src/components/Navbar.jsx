@@ -1,19 +1,34 @@
 // client/src/components/Navbar.jsx
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../assets/Navbar.css';
 import '../assets/fonts.css';
 import logo from '../assets/logo.png';
+import { useAuthState, useAuthDispatch, logout as logoutAction } from '../context/AuthContext';
 
 const MENU_ITEMS = [
-  { label: 'Featured Projects', to: '/projects' },
-  { label: 'Search Properties', to: '/search' },      // <-- changed to /search
-  { label: 'About',      to: '/about' },
-  { label: 'Contact',    to: '/contact' },
+  { label: 'Featured Projects',  to: '/projects' },
+  { label: 'Search Properties',  to: '/search'   },
+  { label: 'About',              to: '/about'    },
+  { label: 'Contact',            to: '/contact'  },
 ];
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const navigate        = useNavigate();
+  const { isAuthenticated, user } = useAuthState();
+  const dispatch       = useAuthDispatch();
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (err) {
+      console.warn('Logout request failed, clearing client state anyway', err);
+    }
+    // clear global state and localStorage
+    logoutAction(dispatch);
+    navigate('/');  // redirect to home
+  };
 
   return (
     <header className="navbar">
@@ -48,11 +63,24 @@ export default function Navbar() {
 
         {/* CTA */}
         <div className="navbar__cta">
-          <Link to="/login" className="navbar__button">
-            Login/Signup
-          </Link>
+          {isAuthenticated ? (
+            <button
+              onClick={handleLogout}
+              className="navbar__button"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className="navbar__button"
+            >
+              Login/Signup
+            </Link>
+          )}
         </div>
       </div>
     </header>
   );
 }
+
