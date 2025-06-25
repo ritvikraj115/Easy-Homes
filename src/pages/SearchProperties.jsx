@@ -8,16 +8,6 @@ import {mockProperties} from '../data/mockdata';
 
 
 
-// Demo Component
-
-// export default function PropertyCardsDemo() {
-//   return (
-//     <div className="p-8 bg-gray-50 min-h-screen">
-
-//     </div>
-//   )
-// }
-
 export default function SearchResults() {
   const [filters, setFilters] = useState({
     radius: 5,
@@ -54,7 +44,7 @@ export default function SearchResults() {
         </div>
 
         {/* RIGHT (70%): Horizontal Filters + Results */}
-        <div className="overflow-hidden ml-[40%] w-[60%] h-[100vh] overflow-x-hidden overflow-y-scroll scrollbar-hide rightPart">
+        <div className="overflow-hidden ml-[40%] w-[60%] h-[100vh] overflow-x-hidden overflow-y-scroll scrollbar-hide rightPart scroll-smooth">
           <div className="filters-horizontal">
             <FilterPanel filters={filters} onChange={setFilters} horizontal />
           </div>

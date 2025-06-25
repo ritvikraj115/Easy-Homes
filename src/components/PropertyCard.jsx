@@ -1,7 +1,9 @@
 import { useState } from "react"
+import { useNavigate } from 'react-router-dom';
 
 const PropertyCard = ({ property }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const navigate = useNavigate();
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev === property.media.images.length - 1 ? 0 : prev + 1))
@@ -15,8 +17,12 @@ const PropertyCard = ({ property }) => {
     setCurrentImageIndex(index)
   }
 
+  const handleClick = () => {
+    navigate(`/PropertyDetails`);
+  };
   return (
-    <div className="w-full max-w-[435px] my-2 bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-1 ">
+    <div 
+    className="w-full max-w-[435px] my-2 bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-1 ">
       {/* Image Section with Swipe */}
       <div className="relative w-full h-48 overflow-hidden">
         <img
@@ -65,7 +71,9 @@ const PropertyCard = ({ property }) => {
       </div>
 
       {/* Content Section */}
-      <div className="p-3">
+      <div className="p-3 cursor-pointer" 
+          onClick={()=>handleClick()}
+      >
         {/* Property Name */}
         <h3 className="text-lg font-semibold text-gray-900 mb-1 leading-tight">{property.name}</h3>
 
@@ -100,7 +108,9 @@ const PropertyCard = ({ property }) => {
         )}
 
         {/* Action Button */}
-        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white border-none py-2 px-4 rounded-md text-sm font-semibold cursor-pointer transition-colors duration-200">
+        <button
+        onClick={handleClick} 
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white border-none py-2 px-4 rounded-md text-sm font-semibold cursor-pointer transition-colors duration-200">
           View Details
         </button>
       </div>
