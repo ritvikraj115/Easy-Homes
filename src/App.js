@@ -1,8 +1,6 @@
-// client/src/App.jsx
-import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import SearchResults from './pages/SearchResults';  // make sure this exists
+import SearchResults from './pages/SearchProperties';  // make sure this exists
 import Favourites from './pages/Favourites';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -10,6 +8,7 @@ import Otp from './pages/Otp';
 import { AuthProvider } from './context/AuthContext'
 import ForgotPassword from './pages/ForgetPassword';
 import ResetPassword from './pages/ResetPassword';
+import './index.css'
 
 function App() {
   return (
@@ -19,7 +18,7 @@ function App() {
 
         <Routes>
           {/* Search page: Buy a Plot */}
-          <Route path="/search" element={<SearchResults />} />
+          <Route path="/searchProperties" element={<SearchResults />} />
 
           {/* You can stub out the other pages for now */}
           <Route path="/" element={<div>home page</div>} />

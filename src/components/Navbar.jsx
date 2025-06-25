@@ -8,7 +8,7 @@ import { useAuthState, useAuthDispatch, logout as logoutAction } from '../contex
 
 const MENU_ITEMS = [
   { label: 'Featured Projects',  to: '/projects' },
-  { label: 'Search Properties',  to: '/search'   },
+  { label: 'Search Properties',  to: '/searchProperties'   },
   { label: 'About',              to: '/about'    },
   { label: 'Contact',            to: '/contact'  },
 ];

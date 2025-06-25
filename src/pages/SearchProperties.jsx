@@ -35,7 +35,8 @@ export default function SearchResults() {
             />
           </div>
           <div className="map-wrapper">
-            <MapView listings={listings} onBoundsChange={setBounds} />
+            {/* <MapView listings={listings} onBoundsChange={setBounds} /> */}
+             <p className='text-xl bg-pink-400'>Map features will be implemented here </p>
           </div>
         </div>
 
