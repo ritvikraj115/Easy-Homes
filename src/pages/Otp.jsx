@@ -22,7 +22,7 @@ export default function Otp() {
 
   const handleVerify = async (e) => {
     e.preventDefault();
-    const res = await fetch('/api/auth/verify-otp', {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/verify-otp`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ email, otp }),
@@ -46,7 +46,7 @@ export default function Otp() {
     const handleResend = async () => {
         setTimer(60);
         setCanResend(false);
-        await fetch('/api/auth/send-otp', {
+        await fetch(`${process.env.REACT_APP_API_URL}/api/auth/send-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email }),
