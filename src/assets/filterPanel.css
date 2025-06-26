@@ -16,18 +16,12 @@
 /* === Panel Container === */
 .filter-panel {
   display: flex;
+  flex-wrap: wrap;
   width: 100%;
   justify-content: space-evenly;
   align-items: center;
-  overflow-y: hidden;
-  overflow-x: auto;
-  scrollbar-width: none;      
-  -ms-overflow-style: none; 
 }
 
-.filter-panel::-webkit-scrollbar {
-  display: none;               /* Chrome, Safari, Opera */
-}
 /* === Each Dropdown Wrapper === */
 .dropdown {
   position: relative;
@@ -35,8 +29,7 @@
   flex: 0 0 auto;
   width: auto;
   min-width: 120px;       /* optional: ensure they don’t collapse too small */
-  max-width: 100%; 
-    padding-right: 4px;     /* cap at container width */
+  max-width: 100%;        /* cap at container width */
 }
 
 /* === Header Button === */

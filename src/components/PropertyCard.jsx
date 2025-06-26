@@ -1,121 +1,90 @@
-import { useState } from "react"
-import { useNavigate } from 'react-router-dom';
+// client/src/components/PropertyCard.jsx
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../assets/PropertyCard.css";
 
 const PropertyCard = ({ property }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const navigate = useNavigate();
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev === property.media.images.length - 1 ? 0 : prev + 1))
-  }
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev === 0 ? property.media.images.length - 1 : prev - 1))
-  }
-
-  const goToImage = (index) => {
-    setCurrentImageIndex(index)
-  }
-
-  const handleClick = () => {
-    navigate(`/PropertyDetails`);
+    setCurrentImageIndex(i =>
+      i === property.media.images.length - 1 ? 0 : i + 1
+    );
   };
+  const prevImage = () => {
+    setCurrentImageIndex(i =>
+      i === 0 ? property.media.images.length - 1 : i - 1
+    );
+  };
+  const goToImage = i => setCurrentImageIndex(i);
+
+  // ← Pass `property` as location state
+  const handleClick = () =>
+    navigate("/PropertyDetails", { state: { property } });
+
   return (
-    <div 
-    className="w-full max-w-[435px] my-2 bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-1 ">
-      {/* Image Section with Swipe */}
-      <div className="relative w-full h-48 overflow-hidden">
+    <div className="property-card">
+      <div className="pc-image-section">
         <img
           src={property.media.images[currentImageIndex] || "/placeholder.svg"}
           alt={property.name}
-          className="w-full h-full object-cover transition-transform duration-300"
+          className="pc-image"
         />
 
-        {/* Navigation Arrows */}
         {property.media.images.length > 1 && (
           <>
-            <button
-              className="absolute top-1/2 left-2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white border-none w-8 h-8 rounded-full text-sm cursor-pointer flex items-center justify-center transition-colors duration-200 z-10"
-              onClick={prevImage}
-            >
+            <button className="pc-arrow pc-arrow-left" onClick={prevImage}>
               ‹
             </button>
-            <button
-              className="absolute top-1/2 right-2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white border-none w-8 h-8 rounded-full text-sm cursor-pointer flex items-center justify-center transition-colors duration-200 z-10"
-              onClick={nextImage}
-            >
+            <button className="pc-arrow pc-arrow-right" onClick={nextImage}>
               ›
             </button>
+            <div className="pc-dots">
+              {property.media.images.map((_, i) => (
+                <button
+                  key={i}
+                  className={"pc-dot" + (i === currentImageIndex ? " active" : "")}
+                  onClick={() => goToImage(i)}
+                />
+              ))}
+            </div>
           </>
         )}
 
-        {/* Status Badge */}
-        <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium z-10">
-          {property.status}
-        </div>
-
-        {/* Image Dots */}
-        {property.media.images.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
-            {property.media.images.map((_, index) => (
-              <button
-                key={index}
-                className={`w-2 h-2 rounded-full border-none cursor-pointer transition-colors duration-200 ${
-                  index === currentImageIndex ? "bg-white" : "bg-white/50"
-                }`}
-                onClick={() => goToImage(index)}
-              />
-            ))}
-          </div>
-        )}
+        <div className="pc-badge">{property.status}</div>
       </div>
 
-      {/* Content Section */}
-      <div className="p-3 cursor-pointer" 
-          onClick={()=>handleClick()}
-      >
-        {/* Property Name */}
-        <h3 className="text-lg font-semibold text-gray-900 mb-1 leading-tight">{property.name}</h3>
+      <div className="pc-content" onClick={handleClick}>
+        <h3 className="pc-title">{property.name}</h3>
+        <p className="pc-location">{property.location}</p>
+        <p className="pc-details">
+          {property.areaRange} | {property.propertyType} |{" "}
+          {property.basicInformation.homeType}
+        </p>
+        <p className="pc-price">{property.priceRange}</p>
 
-        {/* Location */}
-        <div className="flex items-center gap-1 text-gray-600 text-sm mb-2">
-          {property.location}
-        </div>
-
-        {/* Property Details */}
-        <div className="text-gray-600 text-sm mb-2 leading-tight">
-          {property.areaRange} | {property.propertyType} | {property.basicInformation.homeType}
-        </div>
-
-        {/* Price */}
-        <div className="text-xl font-bold text-blue-600 mb-3">{property.priceRange}</div>
-
-        {/* Key Features */}
-        <div className="flex flex-wrap gap-1 mb-3">
-          {property.keyFeatures.slice(0, 3).map((feature, index) => (
-            <span key={index} className="bg-blue-50 text-blue-600 px-2 py-1 rounded-lg text-xs font-medium">
-              {feature}
-            </span>
+        <div className="pc-features">
+          {property.keyFeatures.slice(0, 3).map((feat, i) => (
+            <span key={i} className="pc-feature">{feat}</span>
           ))}
         </div>
 
-        {/* Contact Info (if available) */}
         {property.ownerAgent && (
-          <div className="bg-gray-50 p-2 rounded-md mb-3">
-            <div className="font-semibold text-gray-900 text-sm mb-1">{property.ownerAgent.name}</div>
-            <div className="text-gray-600 text-xs">{property.ownerAgent.phone}</div>
+          <div className="pc-agent">
+            <p className="agent-name">{property.ownerAgent.name}</p>
+            <p className="agent-phone">{property.ownerAgent.phone}</p>
           </div>
         )}
 
-        {/* Action Button */}
-        <button
-        onClick={handleClick} 
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white border-none py-2 px-4 rounded-md text-sm font-semibold cursor-pointer transition-colors duration-200">
+        <button className="pc-button" onClick={handleClick}>
           View Details
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PropertyCard
+export default PropertyCard;
+
+

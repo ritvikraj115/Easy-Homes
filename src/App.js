@@ -12,6 +12,7 @@ import './index.css'
 import MainLayout from './layouts/MainLayout';
 import PlainLayout from './layouts/PlainLayout';
 import PropertyDetails from './pages/Propertydetails';
+import Compare from './pages/Compare';
 
 function App() {
   return (
@@ -41,6 +42,8 @@ function App() {
             <Route path="/PropertyDetails" element={<PropertyDetails />} />
             {/* You can add property detail page here too */}
           </Route>
+          <Route path="/favourites" element={<Favourites />} />
+          <Route path="/compare"   element={<Compare />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

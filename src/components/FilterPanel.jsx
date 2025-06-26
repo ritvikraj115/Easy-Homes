@@ -18,7 +18,7 @@ export default function FilterPanel({ filters, onChange }) {
   }, []);
 
   const toggle = key => setOpenKey(o => (o === key ? null : key));
-  const typeOptions = ['Plot', 'Apartment'];
+  const typeOptions = ['Plot', 'Apartment','Villa'];
 
   return (
     <div className="filter-panel" ref={containerRef}>

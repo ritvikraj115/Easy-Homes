@@ -1,143 +1,182 @@
-.favourites-page {
-  padding: 32px 24px 100px;
+.container {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 16px;
+  font-family: 'Inter', sans-serif;
 }
 
 .favourites-page h2 {
-  font-family: 'Poppins', sans-serif;
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 24px;
-  color: var(--primary);
+  font-size: 34px;
+  margin-bottom: 16px;
+  color: #3868B2;
+  font-weight: bolder;
+  margin-top: 30px;
+  margin-bottom: 50px;
+  text-align: center;
 }
 
 .favourites-empty {
-  padding: 48px 0;
   text-align: center;
-  font-size: 16px;
-  color: var(--text-muted);
+  padding: 40px;
+  color: #555;
 }
 
 .favourites-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--gutter);
+  gap: 26px;
 }
 
-.fav-card {
-  background: #fff;
-  border-radius: var(--radius);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-  transition: all 0.2s ease;
-}
-
-.fav-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-}
-
-.fav-card img {
-  width: 100%;
-  height: 160px;
-  object-fit: cover;
-}
-
-.fav-info {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-}
-
-.fav-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.compare-checkbox {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--primary);
-  cursor: pointer;
-}
-
-.fav-info h3 {
-  font-family: 'Poppins', sans-serif;
-  font-size: 18px;
-  color: #222;
-  margin: 0;
-}
-
-.fav-info p {
-  font-size: 14px;
-  color: var(--text-muted);
-  margin: 8px 0;
-}
-
-.fav-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 12px;
-}
-
-.view-btn {
-  font-size: 14px;
-  color: var(--primary);
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.view-btn:hover {
-  text-decoration: underline;
-}
-
-.remove-btn {
-  background: transparent;
-  border: none;
-  color: #c00;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.remove-btn:hover {
-  text-decoration: underline;
-}
-
-/* Sticky compare bar */
 .compare-bar {
-  position: fixed;
+  position: sticky;
   bottom: 0;
-  left: 0;
-  right: 0;
   background: #fff;
-  border-top: 1px solid var(--border);
-  box-shadow: 0 -2px 6px rgba(0,0,0,0.05);
-  padding: 16px 24px;
+  border-top: 1px solid #E0E0E0;
+  padding: 12px 16px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  z-index: 100;
+  justify-content: space-between;
+  margin-top:9%;
 }
 
 .compare-bar p {
   margin: 0;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text-muted);
+  font-size: 16px;
 }
 
 .compare-bar button {
-  padding: 10px 20px;
-  background-color: var(--primary);
+  background: #3868B2;
   color: #fff;
-  font-weight: 600;
-  font-family: 'Poppins', sans-serif;
   border: none;
-  border-radius: var(--radius);
+  padding: 8px 16px;
+  border-radius: 4px;
   cursor: pointer;
 }
-
-.compare-bar button:hover {
-  background-color: var(--primary-dark);
+/* client/src/components/FavouriteCard.css */
+.fav-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
+.fav-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.fav-image-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 66.66%; /* 3:2 aspect */
+  overflow: hidden;
+  cursor: pointer;
+}
+.fav-image {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.fav-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.fav-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fav-checkbox {
+  position: relative;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+}
+.fav-checkbox input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.fav-checkbox span {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.fav-checkbox input:checked + span {
+  background: #3868B2;
+  border-color: #3868B2;
+}
+.fav-checkbox input:checked + span::after {
+  content: '✓';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -60%);
+  color: #fff;
+  font-size: 14px;
+}
+
+.fav-remove {
+  background: transparent;
+  border: none;
+  color: #777;
+  cursor: pointer;
+  padding: 4px;
+}
+.fav-remove:hover {
+  color: #f44336;
+}
+
+.fav-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 8px 0 4px;
+  cursor: pointer;
+}
+.fav-location {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 8px;
+}
+.fav-details {
+  font-size: 13px;
+  color: #777;
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.fav-price {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000;
+  margin-bottom: 12px;
+}
+
+.fav-view {
+  margin-top: auto;
+  background: #3868B2;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.fav-view:hover {
+  background: #2f558f;
+}
+
+

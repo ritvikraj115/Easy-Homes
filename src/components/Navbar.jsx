@@ -11,6 +11,7 @@ const MENU_ITEMS = [
   { label: 'Search Properties',  to: '/searchProperties'   },
   { label: 'About',              to: '/about'    },
   { label: 'Contact',            to: '/contact'  },
+   { label: 'Favourites',            to: '/favourites'  },
 ];
 
 export default function Navbar() {

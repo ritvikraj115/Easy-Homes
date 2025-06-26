@@ -1,41 +1,61 @@
 // client/src/pages/Favourites.jsx
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import apiClient from '../api';
 import '../assets/favourites.css';
 import FavouriteCard from '../components/FavouriteCard';
+import { mockProperties } from '../data/mockdata';
 
 export default function Favourites() {
-  const [favourites, setFavourites] = useState([]);
+  const [favourites, setFavourites] = useState([]); // holds full property objects
   const [selected, setSelected] = useState([]);
-
+  const navigate = useNavigate();
   useEffect(() => {
-    // TODO: Fetch from /api/favourites
-    // setFavourites(response.data);
-  }, []);
+    // Read token _inside_ the effect at the moment we need it
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setFavourites([]);
+      return;
+    }
 
-  const toggleSelect = (id) => {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    apiClient
+      .get('/api/favourites')
+      .then(res => {
+        const savedIds = res.data; // ['AMR2024001', ...]
+        const fullProps = mockProperties.filter(p =>
+          savedIds.includes(p.mlsNumber)
+        );
+        setFavourites(fullProps);
+      })
+      .catch(err => {
+        console.error('Error loading favourites', err);
+        setFavourites([]);
+      });
+  }, []);  // run once on mount
+  const toggleSelect = id => {
+    setSelected(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
   };
 
-  const removeFavourite = (id) => {
-    setFavourites((prev) => prev.filter((item) => item.id !== id));
-    setSelected((prev) => prev.filter((x) => x !== id));
-    // Optionally: call API DELETE /api/favourites/:id
+  const removeFavourite = id => {
+    // Optimistic UI remove
+    setFavourites(prev => prev.filter(p => p.mlsNumber !== id));
+    setSelected(prev => prev.filter(x => x !== id));
+    apiClient.delete(`/api/favourites/${id}`).catch(console.error);
   };
 
   const startCompare = () => {
-    if (selected.length < 2) {
-      alert('Select at least 2 properties to compare.');
+    if (selected.length < 2 || selected.length > 5) {
+      alert('Select between 2 and 5 properties to compare.');
       return;
     }
-    // Navigate to compare page or pass selected IDs
-    window.location.href = `/compare?ids=${selected.join(',')}`;
+    navigate(`/compare?ids=${selected.join(',')}`);
   };
 
   return (
     <div className="favourites-page container">
-      <h2>Your Favourites</h2>
+      <h2>Saved homes</h2>
 
       {favourites.length === 0 ? (
         <div className="favourites-empty">
@@ -43,25 +63,30 @@ export default function Favourites() {
         </div>
       ) : (
         <div className="favourites-grid">
-          {favourites.map((property) => (
+          {favourites.map(property => (
             <FavouriteCard
-              key={property.id}
+              key={property.mlsNumber}
               property={property}
-              isSelected={selected.includes(property.id)}
-              onToggle={() => toggleSelect(property.id)}
-              onRemove={() => removeFavourite(property.id)}
+              isSelected={selected.includes(property.mlsNumber)}
+              onToggle={() => toggleSelect(property.mlsNumber)}
+              onRemove={() => removeFavourite(property.mlsNumber)}
             />
           ))}
         </div>
       )}
 
-      {/* Sticky Bottom Bar */}
       {selected.length > 0 && (
         <div className="compare-bar">
-          <p>{selected.length} selected for comparison</p>
-          <button onClick={startCompare}>Start Compare</button>
+          <p>
+            {selected.length} selected for comparison
+          </p>
+          <button onClick={startCompare}>
+            Compare {selected.length}
+          </button>
         </div>
       )}
     </div>
   );
 }
+
+
