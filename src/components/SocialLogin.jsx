@@ -24,7 +24,7 @@ export function SocialLogin({ onSuccess }) {
 
       // 3) Send it to our backend for verification & user‑upsert
       const response = await axios.post(
-        `/api/auth0/verify-token`,
+        `${process.env.REACT_APP_API_URL}/api/auth0/verify-token`,
         { idToken },
         { withCredentials: true }
       );
