@@ -16,11 +16,11 @@ const MENU_ITEMS = [
 ];
 
 export default function Navbar() {
-  const [openMobile, setOpenMobile]   = useState(false);
+  const [openMobile, setOpenMobile] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
-  const navigate                      = useNavigate();
-  const { isAuthenticated, user }     = useAuthState();
-  const dispatch                      = useAuthDispatch();
+  const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuthState();
+  const dispatch = useAuthDispatch();
 
   // create a ref for the profile dropdown container
   const profileRef = useRef();
@@ -169,7 +169,7 @@ export default function Navbar() {
             {!isAuthenticated && (
               <Link
                 to="/login"
-                className="navbar__button"
+                className="navbar__link"        // ← use the same class as the other mobile items
                 onClick={() => setOpenMobile(false)}
               >
                 Login/Signup

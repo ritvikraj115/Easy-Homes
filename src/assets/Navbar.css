@@ -259,15 +259,16 @@
   .navbar__menu--mobile {
     background: rgba(255, 255, 255, 0.75);
     backdrop-filter: blur(12px);
-    width: 50vh;
+    width: 40vh;
     display: flex;
     position: fixed;
     align-items: center;
+    box-shadow: -4px 0 16px rgba(0,0,0,0.08);
   }
     .navbar__menu--mobile .navbar__link {
     font-size: 1rem;
     margin: 0.5rem 0;
-    text-align: center;
+    /* text-align: center; */
     padding: 0.1rem;
     border-radius: 6px;
     transition: background 0.5s ease, color 0.5s ease;
@@ -277,6 +278,15 @@
     color: #3868B2;
   }
   
+}
+@media (max-width: 584px){
+   .navbar__menu--mobile {
+    width: 35vh;
+    position: fixed;
+    right: -10%;
+    align-items: flex-start;
+    box-shadow: -4px 0 16px rgba(0,0,0,0.08);
+  }
 }
 
 
