@@ -1,6 +1,6 @@
 /* Container & Title */
 .container {
-  max-width: 1140px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 32px 16px;
   font-family: 'Inter', sans-serif;
@@ -70,6 +70,7 @@
   border-bottom: 1px solid #E0E0E0;
   text-align: center;
   vertical-align: middle;
+  max-width: 150px;
 }
 .compare-table thead th {
   border-bottom: 2px solid #E0E0E0;
@@ -89,14 +90,13 @@
 
 /* Property header cell */
 .compare-table thead th img {
-  width: 100%;
-  max-width: 240px;
+  width: 300px;
   height: 156px;
   object-fit: cover;
   border-radius: 6px;
-  margin-bottom: 12px;
   display: block;
   margin: auto;
+  margin-bottom: 18px;
 }
 .prop-name {
   font-size: 18px;
@@ -139,10 +139,10 @@
 @media (max-width: 1000px) {
   /* 1. Full-width wrapper, pinch-and-zoom scroll */
 
-
   /* 2. Force the table to be wider than viewport to enable scroll */
   .compare-table {
-    min-width: 600px;      /* or total columns × 150px */
+    min-width: 600px;    
+    left: 0;  /* or total columns × 150px */
   }
 
   /* 3. Prevent wrapping in th/td so nothing breaks lines */
@@ -155,10 +155,16 @@
 
   /* 4. Keep your sticky label column working */
   .label-col {
-    position: sticky;
-    left: 0;
     background: #FBFBFB;
     z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: white;
+    position: relative;
+    margin-right:5px;
+    height: 50px;
+
   }
 
   /* 5. Ensure header stays sticky at top */
@@ -171,12 +177,10 @@
   /* anywhere after your table styles (or inside your mobile @media if you only want it there) */
 .compare-table td {
   /* set a comfortable max width for each value cell */
-  max-width: 150px;         /* tweak to taste */
-  
+  max-width: 180px;         /* tweak to taste */
   /* allow wrapping within the cell */
   white-space: normal;
   word-wrap: break-word;    /* legacy */
-  overflow-wrap: anywhere;  /* the modern approach */
 }
 
 /* if you want to target only one long-text column, give it its own class in the HTML, e.g.: 
@@ -195,21 +199,21 @@
   /* Prevent wrapping of “Status”, “Amenities”, etc. */
   white-space: nowrap;
   /* Don’t break mid-word */
-  overflow-wrap: normal;
+  /* overflow-wrap: normal; */
   word-break: keep-all;
   /* If you need a bit more room, bump the width */
-  width: 120px; /* adjust as needed */
+  width: 100%; /* adjust as needed */
 }
 /* centre the compare section */
-.compare-page,
-.compare-tabs,
-.compare-table-wrapper,
+
+
 .compare-loading, .compare-table {
   width: 100vh;
   margin: 0 auto;
   padding: 0 16px;        /* match your .container gutter */
   box-sizing: border-box;
   overflow-x: scroll;
+  scroll-behavior: smooth;
 }
 
 /* if you have a wrapper around the title and back link */

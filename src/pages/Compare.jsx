@@ -23,7 +23,7 @@ export default function Compare() {
   useEffect(() => {
     if (ids.length < 2) return navigate('/favourites');
     setProperties(mockProperties.filter(p => ids.includes(p.mlsNumber)));
-  }, [ids, navigate]);
+  }, [navigate]);
 
   if (properties.length === 0) {
     return <div className="compare-loading">Loading comparison…</div>;
