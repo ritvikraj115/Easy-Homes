@@ -13,6 +13,7 @@ import MainLayout from './layouts/MainLayout';
 import PlainLayout from './layouts/PlainLayout';
 import PropertyDetails from './pages/Propertydetails';
 import Compare from './pages/Compare';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
           </Route>
           <Route path="/favourites" element={<Favourites />} />
           <Route path="/compare"   element={<Compare />} />
+          <Route path="/profile"   element={<ProfilePage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

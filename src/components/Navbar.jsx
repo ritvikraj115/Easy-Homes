@@ -1,33 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';  // import useRef, useEffect
 import { Link, useNavigate } from 'react-router-dom';
 import '../assets/Navbar.css';
-import '../assets/fonts.css';
 import logo from '../assets/logo.png';
-import { useAuthState, useAuthDispatch, logout as logoutAction } from '../context/AuthContext';
+import {
+  useAuthState,
+  useAuthDispatch,
+  logout as logoutAction
+} from '../context/AuthContext';
 
 const MENU_ITEMS = [
   { label: 'Featured Projects', to: '/projects' },
   { label: 'Search Properties', to: '/searchProperties' },
   { label: 'About', to: '/about' },
   { label: 'Contact', to: '/contact' },
-  { label: 'Favourites', to: '/favourites' },
 ];
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
-  const { isAuthenticated } = useAuthState();
-  const dispatch = useAuthDispatch();
+  const [openMobile, setOpenMobile]   = useState(false);
+  const [openProfile, setOpenProfile] = useState(false);
+  const navigate                      = useNavigate();
+  const { isAuthenticated, user }     = useAuthState();
+  const dispatch                      = useAuthDispatch();
+
+  // create a ref for the profile dropdown container
+  const profileRef = useRef();
 
   const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-    } catch (err) {
-      console.warn('Logout request failed, clearing client state anyway', err);
-    }
+    try { await fetch('/api/auth/logout', { method: 'POST' }); }
+    catch (err) { console.warn('Logout failed', err); }
     logoutAction(dispatch);
     navigate('/');
   };
+
+  // Close profile dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (
+        openProfile &&
+        profileRef.current &&
+        !profileRef.current.contains(e.target)
+      ) {
+        setOpenProfile(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openProfile]);
 
   return (
     <header className="navbar">
@@ -40,7 +58,7 @@ export default function Navbar() {
         {/* Hamburger (mobile) */}
         <button
           className="navbar__toggle"
-          onClick={() => setOpen(prev => !prev)}
+          onClick={() => setOpenMobile(v => !v)}
           aria-label="Toggle menu"
         >
           <span className="navbar__hamburger" />
@@ -49,22 +67,51 @@ export default function Navbar() {
         {/* Desktop Menu */}
         <nav className="navbar__menu">
           {MENU_ITEMS.map(item => (
-            <Link
-              key={item.label}
-              to={item.to}
-              className="navbar__link"
-            >
+            <Link key={item.label} to={item.to} className="navbar__link">
               {item.label}
             </Link>
           ))}
         </nav>
 
-        {/* Desktop CTA */}
-        <div className="navbar__cta">
+        {/* Desktop Profile (only) */}
+        <div className="navbar__actions" ref={profileRef}>
           {isAuthenticated ? (
-            <button onClick={handleLogout} className="navbar__button">
-              Logout
-            </button>
+            <div className="profile-wrapper">
+              <button
+                className="profile-btn"
+                onClick={() => setOpenProfile(v => !v)}
+                aria-label="Profile menu"
+              >
+                {user.name ? user.name[0].toUpperCase() : 'U'}
+              </button>
+              {openProfile && (
+                <div className="profile-dropdown">
+                  <Link
+                    to="/profile"
+                    className="dropdown-item"
+                    onClick={() => setOpenProfile(false)}
+                  >
+                    Your Profile
+                  </Link>
+                  <Link
+                    to="/favourites"
+                    className="dropdown-item"
+                    onClick={() => setOpenProfile(false)}
+                  >
+                    Your Favourites
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setOpenProfile(false);
+                    }}
+                    className="dropdown-item"
+                  >
+                    Log Out
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <Link to="/login" className="navbar__button">
               Login/Signup
@@ -73,33 +120,68 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Menu Overlay */}
-        {open && (
+        {openMobile && (
           <nav className="navbar__menu navbar__menu--mobile open">
             {MENU_ITEMS.map(item => (
               <Link
                 key={item.label}
                 to={item.to}
                 className="navbar__link"
-                onClick={() => setOpen(false)}
+                onClick={() => setOpenMobile(false)}
               >
                 {item.label}
               </Link>
             ))}
-            <div className="navbar__cta navbar__cta--mobile">
-              {isAuthenticated ? (
-                <button onClick={handleLogout} className="navbar__button">
-                  Logout
-                </button>
-              ) : (
-                <Link to="/login" className="navbar__button">
-                  Login/Signup
+
+            {isAuthenticated && (
+              <>
+                <Link
+                  to="/profile"
+                  className="navbar__link"
+                  onClick={() => {
+                    setOpenMobile(false);
+                  }}
+                >
+                  Your Profile
                 </Link>
-              )}
-            </div>
+                <Link
+                  to="/favourites"
+                  className="navbar__link"
+                  onClick={() => {
+                    setOpenMobile(false);
+                  }}
+                >
+                  Your Favourites
+                </Link>
+                <Link
+                  to="#logout"
+                  className="navbar__link"
+                  onClick={() => {
+                    handleLogout();
+                    setOpenMobile(false);
+                  }}
+                >
+                  Log Out
+                </Link>
+              </>
+            )}
+
+            {!isAuthenticated && (
+              <Link
+                to="/login"
+                className="navbar__button"
+                onClick={() => setOpenMobile(false)}
+              >
+                Login/Signup
+              </Link>
+            )}
           </nav>
         )}
       </div>
     </header>
-);
+  );
 }
+
+
+
 
