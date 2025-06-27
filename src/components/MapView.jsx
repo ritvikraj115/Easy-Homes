@@ -7,6 +7,7 @@ import {
   useJsApiLoader
 } from '@react-google-maps/api';
 import { MAP_LIBRARIES } from '../config/googleMaps';
+import { useNavigate } from 'react-router-dom';
 
 export default function MapView({
   listings,
@@ -18,6 +19,7 @@ export default function MapView({
   onFilteredListings
 }) {
   const mapRef = useRef(null);
+  const navigate = useNavigate(); 
   const [activeId, setActiveId] = useState(null);
   const [center, setCenter] = useState({ lat: 20.5937, lng: 78.9629 });
   const [zoom, setZoom] = useState(5);
@@ -150,14 +152,20 @@ export default function MapView({
           position={{ lat: activeListing.lat, lng: activeListing.lng }}
           onCloseClick={() => setActiveId(null)}
         >
-          <div style={{
-            width: 220,
-            borderRadius: 12,
-            overflow: 'hidden',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-            backgroundColor: '#fff',
-            fontFamily: 'Arial, sans-serif'
-          }}>
+          <div
+            onClick={() =>
+              navigate('/PropertyDetails', { state: { property: activeListing } })
+            }
+            style={{
+              width: 220,
+              borderRadius: 12,
+              overflow: 'hidden',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              backgroundColor: '#fff',
+              fontFamily: 'Arial, sans-serif',
+              cursor: 'pointer'                     // ← indicate clickability
+            }}
+          >
             {activeListing.media?.images?.[0] && (
               <img
                 src={activeListing.media.images[0]}

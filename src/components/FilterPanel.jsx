@@ -2,27 +2,28 @@ import React, { useState, useRef, useEffect } from 'react';
 import '../assets/filterPanel.css';
 
 export default function FilterPanel({ filters, onChange }) {
-  const update = (key, value) => onChange({ ...filters, [key]: value });
-  const [openKey, setOpenKey] = useState(null);
-  const containerRef = useRef();
+  const [openKey, setOpenKey]     = useState(null);
+  const [showMobile, setShowMobile] = useState(false);
+  const containerRef             = useRef();
 
-  // Close dropdown on outside click
+  const update = (key, value) => onChange({ ...filters, [key]: value });
+  const toggle = key => setOpenKey(o => (o === key ? null : key));
+  const typeOptions = ['Plot', 'Apartment', 'Villa'];
+
+  // close any open dropdown on outside click
   useEffect(() => {
-    const handleClick = e => {
+    const handler = e => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
         setOpenKey(null);
       }
     };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const toggle = key => setOpenKey(o => (o === key ? null : key));
-  const typeOptions = ['Plot', 'Apartment','Villa'];
-
-  return (
-    <div className="filter-panel" ref={containerRef}>
-
+  // pull out your filters into a function
+  const renderDropdowns = () => (
+    <>
       {/* Radius */}
       <div className="dropdown">
         <button
@@ -34,11 +35,10 @@ export default function FilterPanel({ filters, onChange }) {
         </button>
         <div className={`dropdown-menu ${openKey === 'radius' ? 'visible' : ''}`}>
           <div className="range-values">
-            <span className="range-min">1 km</span>
-            <span className="range-max">50 km</span>
+            <span className="range-min">1 km</span>
+            <span className="range-max">50 km</span>
           </div>
           <input
-            className="slider"
             type="range"
             min="1"
             max="50"
@@ -54,16 +54,15 @@ export default function FilterPanel({ filters, onChange }) {
           className={`dropdown-header ${openKey === 'budget' ? 'open' : ''}`}
           onClick={() => toggle('budget')}
         >
-          Budget (Lacs): <span className="dropdown-value">Up to {filters.budget[1]} L</span>
+          Budget (Lacs): <span className="dropdown-value">Up to {filters.budget[1]} L</span>
           <span className={`arrow ${openKey === 'budget' ? 'open' : ''}`} />
         </button>
         <div className={`dropdown-menu ${openKey === 'budget' ? 'visible' : ''}`}>
           <div className="range-values">
-            <span className="range-min">0 L</span>
-            <span className="range-max">100 L</span>
+            <span className="range-min">0 L</span>
+            <span className="range-max">100 L</span>
           </div>
           <input
-            className="slider"
             type="range"
             min="0"
             max="100"
@@ -86,7 +85,7 @@ export default function FilterPanel({ filters, onChange }) {
           {typeOptions.map(opt => (
             <button
               key={opt}
-              className="dropdown-item centered"
+              className="dropdown-item"
               onClick={() => { update('type', opt); setOpenKey(null); }}
             >
               {opt}
@@ -101,16 +100,15 @@ export default function FilterPanel({ filters, onChange }) {
           className={`dropdown-header ${openKey === 'size' ? 'open' : ''}`}
           onClick={() => toggle('size')}
         >
-          Size (sq.ft): <span className="dropdown-value">Up to {filters.size[1]} sq.ft</span>
+          Size (sq.ft): <span className="dropdown-value">Up to {filters.size[1]} sq.ft</span>
           <span className={`arrow ${openKey === 'size' ? 'open' : ''}`} />
         </button>
         <div className={`dropdown-menu ${openKey === 'size' ? 'visible' : ''}`}>
           <div className="range-values">
-            <span className="range-min">100 sq.ft</span>
-            <span className="range-max">1000 sq.ft</span>
+            <span className="range-min">100 sq.ft</span>
+            <span className="range-max">1000 sq.ft</span>
           </div>
           <input
-            className="slider"
             type="range"
             min="100"
             max="1000"
@@ -120,7 +118,7 @@ export default function FilterPanel({ filters, onChange }) {
         </div>
       </div>
 
-      {/* Gated Community (always visible tickbox) */}
+      {/* Gated Community */}
       <div className="checkbox-filter">
         <label>
           <input
@@ -131,13 +129,29 @@ export default function FilterPanel({ filters, onChange }) {
           <span>Gated Community</span>
         </label>
       </div>
+    </>
+  );
 
-    </div>
+  return (
+    <>
+      {/* Inline panel (shown ≥ 930px) */}
+      <div className="filter-panel" ref={containerRef}>
+        {renderDropdowns()}
+      </div>
+
+      {/* Mobile bottom-sheet trigger & overlay (≤ 930px) */}
+      <div className="mobile-filter-btn" onClick={() => setShowMobile(true)}>
+        Filters
+      </div>
+      <div className={`mobile-filters-overlay ${showMobile ? 'open' : ''}`}>
+        <button className="close-btn" onClick={() => setShowMobile(false)}>✕</button>
+        <div className="filter-panel" ref={containerRef}>
+          {renderDropdowns()}
+        </div>
+      </div>
+    </>
   );
 }
-
-
-
 
 
 

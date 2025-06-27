@@ -32,8 +32,8 @@ export default function FavouriteCard({
             <X size={16} />
           </button>
         </div>
-
-        <h3 className="fav-title" onClick={() => navigate(`/property/${property.mlsNumber}`)}>
+        
+        <h3 className="fav-title" onClick={() => navigate(`/PropertyDetails`, { state: { property } })}>
           {property.name}
         </h3>
         <p className="fav-location">{property.location}</p>

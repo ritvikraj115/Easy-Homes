@@ -1,6 +1,6 @@
 .container {
   max-width: 1140px;
-  margin: 0 auto;
+  margin: 0;
   padding: 16px;
   font-family: 'Inter', sans-serif;
 }
@@ -28,7 +28,7 @@
 }
 
 .compare-bar {
-  position: sticky;
+  position: fixed;
   bottom: 0;
   background: #fff;
   border-top: 1px solid #E0E0E0;
@@ -36,7 +36,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top:9%;
+  width:96%;
+  left: 2%;
+  /* margin-top:9%; */
 }
 
 .compare-bar p {

@@ -121,6 +121,7 @@ body {
   background: var(--bg-light);
   overflow-y: auto;
   display: grid;
+  align-items: stretch;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--gutter);
 }
@@ -133,6 +134,7 @@ body {
   transition: transform var(--transition), box-shadow var(--transition);
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .property-card:hover {
@@ -195,51 +197,87 @@ body {
   padding: 0.5rem;
   box-sizing: border-box;
 }
+.property-info .view-details {
+  margin-top: auto;   /* keeps “View details” pinned to card bottom */
+}
 
-/* === Responsive Breakpoints === */
-@media (max-width: 1200px) {
+/* === Phone/tablet overrides up to 1100px === */
+@media (max-width: 1500px) {
+  /* Stack the main panes vertically */
   .search-main {
     flex-direction: column;
   }
 
-  .search-left,
+  /* Left pane becomes full-width and flows normally */
+  .search-left {
+    position: relative;          
+    top: auto;
+    left: auto;
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    z-index: 1;
+    position: relative;  /* flow normally at top */
+
+  }
+
+  /* Map wrapper size adjust */
+  .map-wrapper {
+    height: 35vh;               
+  }
+
+  /* Right pane full-width too */
   .search-right {
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
     width: 100%;
   }
 
-  .map-wrapper {
-    height: 300px;
-  }
-
-  /* Container for all property cards */
-  .properties-container {
-    display: flex;
-    flex-wrap: wrap;
-    /* allow wrapping to new rows */
-    justify-content: space-evenly;
-    /* even spacing between cards */
-    align-items: flex-start;
-    /* align cards at top of each row */
-    gap: 0.15rem;
-    /* consistent gap between cards */
-
-    /* allow vertical scrolling if content overflows */
-    overflow-y: scroll;
-    height: 100%;
-    /* ensure it fills its parent’s height */
-    box-sizing: border-box;
-    padding: 0rem;
-    /* optional padding around container */
-  }
-}
-
-@media (max-width: 768px) {
-
+  /* Slim down horizontal padding to align under navbar */
   .search-location,
   .filters-horizontal,
-  .map-wrapper,
   .results-wrapper {
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-left: 4px;
+    padding-right: 4px;
   }
+
+ 
+
+.properties-container {
+  flex: 1 1 auto;      /* grow to fill available vertical space */
+  overflow-y: auto;    /* vertical scroll only */
+  overflow-x: hidden;  /* prevent horizontal scroll */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  align-items: flex-start;
+  gap: 0.2rem;         /* adjust as you like */
+  padding: 0.2rem;
+  box-sizing: border-box;
+  margin-bottom: 45px;
+}
+/* 1. In your grid container */
+.results-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  /* force every row to track the tallest content */
+  align-items: stretch;          
+  gap: var(--gutter);
+}
+
+/* 2. On the cards themselves */
+.property-card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: transform var(--transition), box-shadow var(--transition);
+
+  /* make it stretch to fill the grid cell */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 32%;       /* if you still want three-across on desktop */
+}
 }
