@@ -136,15 +136,9 @@
 
 /* ==== Mobile-friendly Compare Layout (≤800px) ==== */
 /* ==== Mobile (≤800px): simple horizontal scroll ==== */
-@media (max-width: 800px) {
+@media (max-width: 1000px) {
   /* 1. Full-width wrapper, pinch-and-zoom scroll */
-  .compare-table-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin: 0;             /* flush to edges */
-    padding: 0 8px;  
-    width: 100%;      /* small breathing room */
-  }
+
 
   /* 2. Force the table to be wider than viewport to enable scroll */
   .compare-table {
@@ -177,7 +171,7 @@
   /* anywhere after your table styles (or inside your mobile @media if you only want it there) */
 .compare-table td {
   /* set a comfortable max width for each value cell */
-  max-width: 200px;         /* tweak to taste */
+  max-width: 150px;         /* tweak to taste */
   
   /* allow wrapping within the cell */
   white-space: normal;
@@ -189,7 +183,7 @@
      <td class="long-text">Very long description…</td>
    then use: */
 .compare-table td.long-text {
-  max-width: 250px;
+  max-width: 150px;
 }
 
 /* you can also add a little padding tweak to keep things clean */
@@ -226,4 +220,3 @@
 
 
 }
-
