@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';  // import useRef, useEffect
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
 import '../assets/Navbar.css';
 import logo from '../assets/logo.png';
 import {
@@ -21,8 +21,6 @@ export default function Navbar() {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthState();
   const dispatch = useAuthDispatch();
-
-  // create a ref for the profile dropdown container
   const profileRef = useRef();
 
   const handleLogout = async () => {
@@ -32,14 +30,9 @@ export default function Navbar() {
     navigate('/');
   };
 
-  // Close profile dropdown on outside click
   useEffect(() => {
     function handleClickOutside(e) {
-      if (
-        openProfile &&
-        profileRef.current &&
-        !profileRef.current.contains(e.target)
-      ) {
+      if (openProfile && profileRef.current && !profileRef.current.contains(e.target)) {
         setOpenProfile(false);
       }
     }
@@ -50,12 +43,10 @@ export default function Navbar() {
   return (
     <header className="navbar">
       <div className="navbar__container">
-        {/* Logo */}
         <Link to="/" className="navbar__logo">
           <img src={logo} alt="Easy Homes" />
         </Link>
 
-        {/* Hamburger (mobile) */}
         <button
           className="navbar__toggle"
           onClick={() => setOpenMobile(v => !v)}
@@ -64,16 +55,20 @@ export default function Navbar() {
           <span className="navbar__hamburger" />
         </button>
 
-        {/* Desktop Menu */}
         <nav className="navbar__menu">
           {MENU_ITEMS.map(item => (
-            <Link key={item.label} to={item.to} className="navbar__link">
+            <NavLink
+              key={item.label}
+              to={item.to}
+              className={({ isActive }) =>
+                isActive ? 'navbar__link active' : 'navbar__link'
+              }
+            >
               {item.label}
-            </Link>
+            </NavLink>
           ))}
         </nav>
 
-        {/* Desktop Profile (only) */}
         <div className="navbar__actions" ref={profileRef}>
           {isAuthenticated ? (
             <div className="profile-wrapper">
@@ -118,19 +113,20 @@ export default function Navbar() {
             </Link>
           )}
         </div>
-
-        {/* Mobile Menu Overlay */}
         {openMobile && (
+
           <nav className="navbar__menu navbar__menu--mobile open">
             {MENU_ITEMS.map(item => (
-              <Link
+              <NavLink
                 key={item.label}
                 to={item.to}
-                className="navbar__link"
+                className={({ isActive }) =>
+                  isActive ? 'navbar__link active' : 'navbar__link'
+                }
                 onClick={() => setOpenMobile(false)}
               >
                 {item.label}
-              </Link>
+              </NavLink>
             ))}
 
             {isAuthenticated && (
@@ -138,18 +134,14 @@ export default function Navbar() {
                 <Link
                   to="/profile"
                   className="navbar__link"
-                  onClick={() => {
-                    setOpenMobile(false);
-                  }}
+                  onClick={() => setOpenMobile(false)}
                 >
                   Your Profile
                 </Link>
                 <Link
                   to="/favourites"
                   className="navbar__link"
-                  onClick={() => {
-                    setOpenMobile(false);
-                  }}
+                  onClick={() => setOpenMobile(false)}
                 >
                   Your Favourites
                 </Link>
@@ -169,7 +161,7 @@ export default function Navbar() {
             {!isAuthenticated && (
               <Link
                 to="/login"
-                className="navbar__link"        // ← use the same class as the other mobile items
+                className="navbar__link"
                 onClick={() => setOpenMobile(false)}
               >
                 Login/Signup
