@@ -1,6 +1,7 @@
 import React from 'react';
 import { Map, DollarSign, FileCheck, Camera, BarChart3, Handshake, TrendingUp } from 'lucide-react';
 import './Footer.css'
+import { Link } from 'react-router-dom';
 
 const Features = () => {
   const features = [
@@ -76,9 +77,16 @@ const Features = () => {
         </div>
 
         <div className="text-center">
-          <button className="bg-gradient-to-r from-[#3868B2] to-[#38689F] text-white px-8 py-4 rounded-lg text-lg font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105 font-['Poppins']">
-            Contact us Now
-          </button>
+          <Link to="/contact">
+            <button
+              className="bg-gradient-to-r from-[#3868B2] to-[#38689F]
+               text-white px-8 py-4 rounded-lg text-lg font-semibold
+               hover:shadow-lg transition-all duration-300 hover:scale-105
+               font-['Poppins']"
+            >
+              Contact us Now
+            </button>
+          </Link>
         </div>
       </div>
     </section>

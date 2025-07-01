@@ -26,6 +26,7 @@
   width: 100%;
   justify-content: space-evenly;
   align-items: center;
+  margin: 3px;
 }
 
 /* === Each Dropdown Wrapper === */
@@ -188,6 +189,21 @@
   transform: scale(1.1);
   accent-color: var(--primary);
 }
+@media (min-width: 1150px) and (max-width:1500px) {
+ /* === Panel Container === */
+.filter-panel {
+  justify-content: space-evenly;
+}
+/* === Header Button === */
+.dropdown-header {
+  font-size: 10px;
+}
+/* === Gated Community Tickbox === */
+.checkbox-filter {
+  font-size: 10px;
+}
+}
+
 
 /*─────────────────────────────────────────────────────────────────────────────
   MOBILE & TABLET STYLES (≤ 1150px)

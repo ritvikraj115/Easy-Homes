@@ -41,43 +41,56 @@ body {
   flex: 1;
 }
 
-/* Left pane: search box + map (30%) */
+/* Left pane: search box + map (35%) */
 .search-left {
   position: fixed;
-  top: 7%;
+  margin-bottom: 30px;
+  top: auto;
   left: 0;
-  width: 35%;            /* explicitly 35% of the viewport */
-  height: 100vh;         /* full viewport height */
+  width: 35%;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   background: #fff;
-  border-right: 1px solid var(--border);
-  z-index: 10;
+  /* replace border-right with a gentle shadow */
+  box-shadow: 2px 0 8px rgba(0.18, 0.18, 0.18, 0.18);
+  z-index: 1;
 }
 
- .map-wrapper {
-    height: 85vh;
-  }
+/* Map wrapper stays inside but can get an inset glow */
+.map-wrapper {
+  height: 85vh;
+  margin-left: 3px;
+  border-radius: 4px;
+}
 
-/* Right pane: filters + results (70%) */
+/* Right pane: filters + results (65%) */
 .search-right {
   flex: 1 1 65%;
   display: flex;
   flex-direction: column;
   height: 100%;
   margin-left: 35%;
+  /* mirror the left shadow on the inner edge */
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.38);
+  background-color: #fff;
+  z-index: 10;
+  top:auto;
 }
+
 
 /* === Location Input (Left) === */
 .search-location {
   padding: var(--gap) var(--gutter);
   background: #fff;
   border-bottom: 1px solid var(--border);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
   display: flex;
   justify-content: center;
-  margin: 3px;
-  border-radius: var(--radius);
+  margin: 1px;
+  /* border-radius: var(--radius); */
+  bottom: 0;
+  z-index: 10;
 }
 
 .search-location input {
@@ -202,7 +215,7 @@ body {
 }
 
 /* === Phone/tablet overrides up to 1100px === */
-@media (max-width: 1500px) {
+@media (max-width: 1300px) {
   /* Stack the main panes vertically */
   .search-main {
     flex-direction: column;
@@ -218,21 +231,26 @@ body {
     border-right: none;
     border-bottom: 1px solid var(--border);
     z-index: 1;
-    position: relative;  /* flow normally at top */
+    margin-left: 0;
+    bottom: 0;
 
   }
 
   /* Map wrapper size adjust */
   .map-wrapper {
-    height: 35vh;               
+    height: 50vh;   
+    margin:3px;    
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.18); 
+    margin-top: 0;    
   }
 
   /* Right pane full-width too */
   .search-right {
     margin-left: 0;
     margin-right: 0;
-    margin-top: 0;
+    margin-top: -5%;
     width: 100%;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.38);
   }
 
   /* Slim down horizontal padding to align under navbar */
@@ -280,4 +298,9 @@ body {
   height: 100%;
   max-width: 32%;       /* if you still want three-across on desktop */
 }
+}
+@media (max-width: 550px) {
+  .search-right{
+    margin-top: -9%;
+  }
 }

@@ -88,6 +88,7 @@ export default function Navbar() {
                   >
                     Your Profile
                   </Link>
+                  <hr style={{margin: "0 10% 0 10%"}}/>
                   <Link
                     to="/favourites"
                     className="dropdown-item"
@@ -95,6 +96,7 @@ export default function Navbar() {
                   >
                     Your Favourites
                   </Link>
+                   <hr style={{margin: "0 10% 0 10%"}}/>
                   <button
                     onClick={() => {
                       handleLogout();

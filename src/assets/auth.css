@@ -204,13 +204,13 @@
 
 /* Per‑icon sizing */
 .social-button.google .social-icon {
-  width: 39px;
+  width: 45px;
   height: 28px;
 }
 
 .social-button.facebook .social-icon {
-  width: 45px;
-  height: 36px;
+  width: 70px;
+  height: 39px;
 }
 
 .social-button.apple .social-icon {

@@ -43,10 +43,11 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { mockProperties } from '../../data/mockdata';
 import PropertyCard from '../PropertyCard';
 import FilterPanel from '../FilterPanel';
+import { Link } from 'react-router-dom';
 
 const Projects = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  
+
   // Filter state
   const [filters, setFilters] = useState({
     radius: 5,
@@ -82,8 +83,8 @@ const Projects = () => {
         }
 
         if (filters.gated) {
-          const hasGatedFeature = property.keyFeatures.some(feature => 
-            feature.toLowerCase().includes('gated') || 
+          const hasGatedFeature = property.keyFeatures.some(feature =>
+            feature.toLowerCase().includes('gated') ||
             feature.toLowerCase().includes('security') ||
             feature.toLowerCase().includes('community')
           );
@@ -94,7 +95,7 @@ const Projects = () => {
       });
 
       setFilteredProjects(filtered);
-      setCurrentIndex(0); 
+      setCurrentIndex(0);
     };
 
     applyFilters();
@@ -106,7 +107,7 @@ const Projects = () => {
       if (window.innerWidth >= 768) return 2;  // md screens
       return 1; // sm screens
     }
-    return 3; 
+    return 3;
   };
 
   const [cardsPerView, setCardsPerView] = useState(getCardsPerView());
@@ -146,7 +147,7 @@ const Projects = () => {
             All CRDA-approved layouts—organized, verified, and ready to explore
           </p>
         </div>
-        
+
         <div className='w-full py-2 rounded-3xl'>
           <FilterPanel filters={filters} onChange={setFilters} horizontal />
         </div>
@@ -204,11 +205,10 @@ const Projects = () => {
                   <button
                     key={index}
                     onClick={() => goToSlide(index)}
-                    className={`w-3 h-3 rounded-full transition-colors duration-200 ${
-                      index === currentIndex
+                    className={`w-3 h-3 rounded-full transition-colors duration-200 ${index === currentIndex
                         ? 'bg-[#3868B2]'
                         : 'bg-gray-300 hover:bg-gray-400'
-                    }`}
+                      }`}
                   />
                 ))}
               </div>
@@ -217,9 +217,16 @@ const Projects = () => {
         )}
 
         <div className="text-center mt-12 space-y-4">
-          <button className="bg-white border-2 border-[#3868B2] text-[#3868B2] hover:bg-[#3868B2] hover:text-white px-8 py-3 rounded-lg font-medium font-['Poppins'] transition-all duration-200 mr-4">
-            Explore Projects in Maps
-          </button>
+          <Link to="/searchProperties">
+            <button
+              className="bg-white border-2 border-[#3868B2] text-[#3868B2]
+               hover:bg-[#3868B2] hover:text-white
+               px-8 py-3 rounded-lg font-medium font-['Poppins']
+               transition-all duration-200 mr-4"
+            >
+              Explore Projects in Maps
+            </button>
+          </Link>
         </div>
       </div>
     </section>
