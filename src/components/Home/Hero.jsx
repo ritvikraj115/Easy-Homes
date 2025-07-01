@@ -28,16 +28,15 @@ const Hero = () => {
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-white mb-6 font-['Poppins'] leading-tight tracking-tight">
-            CRDA-Approved
-            <br />
-            <span className="text-[#97B3D9]">Open Plots</span> in Amaravati
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-white mb-6 font-['Poppins'] leading-tight sm:!leading-snug tracking-tight">
+            All CRDA-Approved Projects
+              Fully Verified Instantly<span className="text-[#97B3D9]"> Accessible</span>  
           </h1>
           
           <p className="text-xl md:text-2xl text-gray-200 mb-8 font-['Inter'] leading-relaxed max-w-3xl mx-auto">
-            Own a piece of Andhra's Capital Region. Clear titles.
+            Visually explore, compare, and shortlist projects in Amaravati
             <br />
-            Prime locations. Hassle-free buying.
+            and Vijayawada on our interactive map.
           </p>
 
           {/* Trust Indicators */}
