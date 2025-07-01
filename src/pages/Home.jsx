@@ -10,12 +10,12 @@ import FeaturedProjects from '../components/Home/FeaturedProject'
 
 function Home() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen overflow-hidden">
         <Hero/>
         <FeaturedProjects/>
         <Projects/>
-        <Features/>
         <HowItWorks/>
+        <Features/>
         <Testimonials/>
         <CallToAction/>
         <Footer/>

@@ -41,10 +41,10 @@ const CallToAction = () => {
           {/* Content */}
           <div className="text-white">
             <h2 className="text-3xl md:text-4xl font-semibold mb-6 font-['Poppins']">
-              Ready to Invest in Your Future?
+              Let’s Help You Move Forward
             </h2>
             <p className="text-xl mb-8 font-['Inter'] leading-relaxed opacity-90">
-              Get expert guidance on CRDA-approved plots in Amaravati. Our team will help you find the perfect investment opportunity.
+              Reach out for project details, walkthroughs, or a site visit—no pressure, just clarity.
             </p>
             
             <div className="space-y-4">
@@ -89,7 +89,7 @@ const CallToAction = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3868B2] focus:border-transparent font-['Inter']"
+                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg font-['Inter']"
                     placeholder="Enter your full name"
                     required
                   />
@@ -108,7 +108,7 @@ const CallToAction = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3868B2] focus:border-transparent font-['Inter']"
+                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg font-['Inter']"
                     placeholder="+91 98765 43210"
                     required
                   />
@@ -125,7 +125,7 @@ const CallToAction = () => {
                   value={formData.requirements}
                   onChange={handleChange}
                   rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3868B2] focus:border-transparent font-['Inter']"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg font-['Inter']"
                   placeholder="Tell us about your plot requirements..."
                 ></textarea>
               </div>
