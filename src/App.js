@@ -14,6 +14,7 @@ import PlainLayout from './layouts/PlainLayout';
 import PropertyDetails from './pages/Propertydetails';
 import Compare from './pages/Compare';
 import ProfilePage from './pages/ProfilePage';
+import Home from './pages/Home';
 
 function App() {
   return (
@@ -26,7 +27,7 @@ function App() {
             <Route path="/searchProperties" element={<SearchResults />} />
 
             {/* You can stub out the other pages for now */}
-            <Route path="/" element={<div>home page</div>} />
+            <Route path="/" element={<Home/>} />
             <Route path="/projects" element={<div>Projects Page</div>} />
             <Route path="/about" element={<div>About Page</div>} />
             <Route path="/contact" element={<div>Contact Page</div>} />
