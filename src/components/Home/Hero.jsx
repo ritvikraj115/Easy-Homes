@@ -3,7 +3,12 @@ import { CheckCircle, ChevronDown } from 'lucide-react';
 import heropc from '../../assets/img/heroPc.jpg'
 import heroph from '../../assets/img/herophone.jpg'
 
-const Hero = () => {
+
+const Hero = ({ref}) => {
+   const scrollToFeatured = () => {
+    console.log(ref)
+    ref.current?.scrollIntoView({ behavior: 'smooth' });
+  };
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
@@ -65,7 +70,7 @@ const Hero = () => {
       </div>
 
       {/* Scroll Indicator - Positioned at bottom */}
-      <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 animate-bounce z-10">
+      <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 animate-bounce z-10" onClick={scrollToFeatured}>
         <ChevronDown className="text-white/70" size={32} />
       </div>
     </section>
