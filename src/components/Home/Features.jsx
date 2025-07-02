@@ -66,10 +66,10 @@ const Features = () => {
               <div className="w-16 h-16 bg-gradient-to-br from-[#3868B2] to-[#38689F] rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <feature.icon className="text-white" size={28} />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3 font-['Poppins']">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3 font-poppins">
                 {feature.title}
               </h3>
-              <p className="text-gray-600 font-['Inter'] leading-relaxed">
+              <p className="text-gray-600 font-['Inter'] leading-relaxed text-sm">
                 {feature.description}
               </p>
             </div>

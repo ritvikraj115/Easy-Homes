@@ -1,7 +1,7 @@
 import React from 'react';
 import { CheckCircle, ChevronDown } from 'lucide-react';
-import heropc from '../../assets/img/heroPc.jpg'
-import heroph from '../../assets/img/herophone.jpg'
+import heropc from '../../assets/img/Hero Image V2.png'
+import heroph from '../../assets/img/Hero image mobile v1.png'
 
 
 const Hero = ({ref}) => {
