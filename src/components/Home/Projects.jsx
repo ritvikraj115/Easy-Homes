@@ -168,14 +168,14 @@ const Projects = () => {
               {/* Navigation Buttons - Hidden on mobile */}
               <button
                 onClick={prevSlide}
-                className="hidden sm:block absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors duration-200"
+                className="block absolute -left-6 sm:left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors duration-200"
               >
                 <ChevronLeft className="w-5 h-5 lg:w-6 lg:h-6 text-[#3868B2]" />
               </button>
 
               <button
                 onClick={nextSlide}
-                className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors duration-200"
+                className="block absolute -right-6 sm:right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors duration-200"
               >
                 <ChevronRight className="w-5 h-5 lg:w-6 lg:h-6 text-[#3868B2]" />
               </button>
@@ -198,22 +198,6 @@ const Projects = () => {
                     </div>
                   ))}
                 </div>
-              </div>
-
-              {/* Mobile Navigation Buttons */}
-              <div className="flex sm:hidden justify-center mt-4 space-x-4">
-                <button
-                  onClick={prevSlide}
-                  className="bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors duration-200"
-                >
-                  <ChevronLeft className="w-5 h-5 text-[#3868B2]" />
-                </button>
-                <button
-                  onClick={nextSlide}
-                  className="bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors duration-200"
-                >
-                  <ChevronRight className="w-5 h-5 text-[#3868B2]" />
-                </button>
               </div>
 
               {/* Dots Indicator */}
