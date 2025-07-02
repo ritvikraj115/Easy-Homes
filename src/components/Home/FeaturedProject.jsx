@@ -1,16 +1,20 @@
+// src/components/Home/FeaturedProject.jsx
 import React from 'react';
+import PropTypes from 'prop-types';
 import { ArrowRight, MapPin, Building, ShieldCheck, TrendingUp } from 'lucide-react';
-import Kalp from '../../assets/img/Kalp.png'
+import Kalp from '../../assets/img/Kalp.png';
 
-
-function FeaturedProjects() {
+function FeaturedProjects({ cref }) {
   return (
-    <section className="py-20 bg-white">
+    <section ref={cref} className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-semibold font-poppins text-gray-900">Featured Projects</h2>
+          <h2 className="text-3xl md:text-4xl font-semibold font-poppins text-gray-900">
+            Featured Projects
+          </h2>
           <p className="text-gray-600 max-w-2xl mx-auto mt-4 font-inter">
-            The finest CRDA projects—curated for location, infrastructure, and long-term value, with the right entry price and high return potential.
+            The finest CRDA projects—curated for location, infrastructure, and long-term value,
+            with the right entry price and high return potential.
           </p>
         </div>
 
@@ -57,7 +61,7 @@ function FeaturedProjects() {
                 </div>
               </div>
 
-              <button className="bg-[#3868B2] text-white px-8 py-4 rounded-lg text-lg font-poppins font-medium shadow-md hover:bg-[#38689F] hover:shadow-lg transition-all flex items-center gap-3 min-w-[12rem]">
+              <button className="group bg-[#3868B2] text-white px-8 py-4 rounded-lg text-lg font-poppins font-medium shadow-md hover:bg-[#38689F] hover:shadow-lg transition-all flex items-center gap-3 min-w-[12rem]">
                 Explore Kalpavriksha
                 <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
               </button>
@@ -68,5 +72,11 @@ function FeaturedProjects() {
     </section>
   );
 }
+
+FeaturedProjects.propTypes = {
+  cref: PropTypes.shape({
+    current: PropTypes.instanceOf(Element),
+  }),
+};
 
 export default FeaturedProjects;

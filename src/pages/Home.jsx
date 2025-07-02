@@ -9,12 +9,14 @@ import CallToAction from '../components/Home/CallToAction'
 import FeaturedProjects from '../components/Home/FeaturedProject'
 
 function Home() {
- const featuredRef = useRef<HTMLElement>(null);
-
+ const featuredRef = useRef(null);
+ const scrollToFeatured = () => {
+    featuredRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
   return (
     <div className="min-h-screen overflow-hidden">
-        <Hero ref={featuredRef}/>
-        <FeaturedProjects ref={featuredRef}/>
+        <Hero scrollToFeatured={scrollToFeatured}/>
+        <FeaturedProjects cref={featuredRef}/>
         <Projects/>
         <HowItWorks/>
         <Features/>

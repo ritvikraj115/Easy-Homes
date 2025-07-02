@@ -53,7 +53,7 @@ const PropCard = ({ property }) => {
               {property.media.images.map((_, i) => (
                 <button
                   key={i}
-                  className={`w-2 h-2 rounded-full ${i === currentImageIndex ? "bg-blue-500" : "bg-white border border-blue-200"}`}
+                  className={`w-2 h-2 rounded-full ${i === currentImageIndex ? "bg-[#3868B2]" : "bg-white border border-[#3868B2]"}`}
                   onClick={(e) => goToImage(i, e)}
                   aria-label={`Go to image ${i + 1}`}
                 />
@@ -69,10 +69,10 @@ const PropCard = ({ property }) => {
         <h3 className="text-lg font-bold text-gray-800 mb-1">{property.name}</h3>
         <p className="text-sm text-gray-500 mb-1">{property.location}</p>
         <p className="text-xs text-gray-400 mb-1 truncate">{property.areaRange} | {property.propertyType} | {property.basicInformation.homeType}</p>
-        <p className="text-base font-bold text-blue-700 mb-2">{property.priceRange}</p>
+        <p className="text-base font-bold text-[#3868B2] mb-2">{property.priceRange}</p>
         <div className="flex flex-wrap gap-1 mb-2">
           {property.keyFeatures.slice(0, 3).map((feat, i) => (
-            <span key={i} className="bg-blue-50 text-blue-700 text-xs rounded px-2 py-0.5">{feat}</span>
+            <span key={i} className="bg-blue-50 text-[#3868B2] text-xs rounded px-2 py-0.5">{feat}</span>
           ))}
         </div>
         {property.ownerAgent && (
@@ -82,7 +82,7 @@ const PropCard = ({ property }) => {
           </div>
         )}
         <button
-          className="mt-3 w-full bg-blue-600 text-white text-sm font-semibold rounded py-2 hover:bg-blue-700 transition"
+          className="mt-3 w-full bg-[#3868B2] text-white text-sm font-semibold rounded py-2 hover:bg-blue-900 transition"
           onClick={e => { e.stopPropagation(); handleClick(); }}
         >
           View Details

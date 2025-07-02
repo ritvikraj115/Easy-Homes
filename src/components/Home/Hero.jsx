@@ -2,13 +2,10 @@ import React from 'react';
 import { CheckCircle, ChevronDown } from 'lucide-react';
 import heropc from '../../assets/img/Hero Image V2.png'
 import heroph from '../../assets/img/Hero image mobile v1.png'
+import { Link } from 'react-router-dom';
 
 
-const Hero = ({ref}) => {
-   const scrollToFeatured = () => {
-    console.log(ref)
-    ref.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+const Hero = ({scrollToFeatured}) => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
@@ -35,9 +32,9 @@ const Hero = ({ref}) => {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-white mb-6 font-['Poppins'] leading-tight sm:!leading-snug tracking-tight">
             All CRDA-Approved Projects
-              Fully Verified Instantly<span className="text-[#97B3D9]"> Accessible</span>  
+            Fully Verified Instantly<span className="text-[#97B3D9]"> Accessible</span>
           </h1>
-          
+
           <p className="text-xl md:text-2xl text-gray-200 mb-8 font-['Inter'] leading-relaxed max-w-3xl mx-auto">
             Visually explore, compare, and shortlist projects in Amaravati
             <br />
@@ -61,16 +58,28 @@ const Hero = ({ref}) => {
           </div>
 
           {/* Single CTA Button */}
+          <Link to="/searchProperties">
           <div className="flex justify-center">
             <button className="bg-[#3868B2] hover:bg-[#38689F] text-white px-8 py-4 rounded-lg font-medium font-['Poppins'] text-lg transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 min-w-[200px]">
               Explore Projects
             </button>
           </div>
+          </Link>
         </div>
       </div>
 
-      {/* Scroll Indicator - Positioned at bottom */}
-      <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 animate-bounce z-10" onClick={scrollToFeatured}>
+      {/* Scroll Indicator - perfectly centered */}
+      <div
+        onClick={scrollToFeatured}
+        className="
+          absolute inset-x-0     /* left:0; right:0; */
+          bottom-16              /* 4rem from bottom */
+          flex justify-center    /* center children horizontally */
+          animate-bounce
+          z-10
+          cursor-pointer
+        "
+      >
         <ChevronDown className="text-white/70" size={32} />
       </div>
     </section>
