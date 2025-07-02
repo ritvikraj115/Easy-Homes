@@ -99,15 +99,15 @@ const Projects = () => {
     applyFilters();
   }, [filters]);
 
-const getCardsPerView = () => {
-  if (typeof window !== 'undefined') {
-    if (window.innerWidth >= 1280) return 3; // xl screens
-    if (window.innerWidth >= 1024) return 3; // lg screens
-    if (window.innerWidth >= 768) return 2;  // md screens
-    return 1; // sm screens
-  }
-  return 1;
-};
+  const getCardsPerView = () => {
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth >= 1280) return 3; // xl screens
+      if (window.innerWidth >= 1024) return 3; // lg screens
+      if (window.innerWidth >= 768) return 2;  // md screens
+      return 1; // sm screens
+    }
+    return 1;
+  };
 
   const [cardsPerView, setCardsPerView] = useState(getCardsPerView());
 
@@ -141,13 +141,13 @@ const getCardsPerView = () => {
   };
 
   return (
-    <section id="projects" className="py-12 md:py-20 bg-white">
+    <section id="projects" className="py-12 md:py-20 bg-white container">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-8 md:mb-16">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-gray-900 mb-4 font-['Poppins']">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-semibold font-poppins text-gray-900">
             Explore Approved Projects
           </h2>
-          <p className="text-lg md:text-xl text-gray-600 font-['Inter'] max-w-3xl mx-auto px-4">
+          <p className="text-gray-600 max-w-2xl mx-auto mt-4 font-inter">
             All CRDA-approved layouts—organized, verified, and ready to explore
           </p>
         </div>
@@ -223,11 +223,10 @@ const getCardsPerView = () => {
                     <button
                       key={index}
                       onClick={() => goToSlide(index)}
-                      className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-colors duration-200 ${
-                        index === currentIndex
+                      className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-colors duration-200 ${index === currentIndex
                           ? 'bg-[#3868B2]'
                           : 'bg-gray-300 hover:bg-gray-400'
-                      }`}
+                        }`}
                     />
                   ))}
                 </div>

@@ -1,6 +1,5 @@
 // src/components/Home/FeaturedProject.jsx
 import React from 'react';
-import PropTypes from 'prop-types';
 import { ArrowRight, MapPin, Building, ShieldCheck, TrendingUp } from 'lucide-react';
 import Kalp from '../../assets/img/Kalp.png';
 
@@ -72,11 +71,5 @@ function FeaturedProjects({ cref }) {
     </section>
   );
 }
-
-FeaturedProjects.propTypes = {
-  cref: PropTypes.shape({
-    current: PropTypes.instanceOf(Element),
-  }),
-};
 
 export default FeaturedProjects;

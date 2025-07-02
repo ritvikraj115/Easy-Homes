@@ -46,13 +46,13 @@ const Features = () => {
     <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-4 font-['Poppins']">
+          <h2 className="text-3xl md:text-4xl font-semibold font-poppins text-gray-900">
             Why Choose Easy Homes?
           </h2>
-          <h3 className="text-2xl font-medium text-gray-800 mb-4 font-['Poppins']">
+          <h4 className="text-xl font-medium text-gray-800 mb-4 mt-4 font-['Poppins']">
             Built for Clarity. Backed by Trust. Designed Around You.
-          </h3>
-          <p className="text-xl text-gray-600 font-['Inter'] max-w-3xl mx-auto mb-8">
+          </h4>
+          <p className="text-l text-gray-600 font-['Inter'] max-w-3xl mx-auto mb-8 mt-4">
             Easy Homes simplifies your property search with verified data, visual tools, and zero-pressure guidance—so you can buy with confidence.
           </p>
         </div>
