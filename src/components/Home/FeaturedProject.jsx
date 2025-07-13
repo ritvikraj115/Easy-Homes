@@ -2,6 +2,7 @@
 import React from 'react';
 import { ArrowRight, MapPin, Building, ShieldCheck, TrendingUp } from 'lucide-react';
 import Kalp from '../../assets/img/Kalp.png';
+import { Link } from 'react-router-dom';
 
 function FeaturedProjects({ cref }) {
   return (
@@ -60,10 +61,10 @@ function FeaturedProjects({ cref }) {
                 </div>
               </div>
 
-              <button className="group bg-[#3868B2] text-white px-8 py-4 rounded-lg text-lg font-poppins font-medium shadow-md hover:bg-[#38689F] hover:shadow-lg transition-all flex items-center gap-3 min-w-[12rem]">
+              <Link to={'/Kalpavruksha-Details'} className="group bg-[#3868B2] text-white px-8 py-4 rounded-lg text-lg font-poppins font-medium shadow-md hover:bg-[#38689F] hover:shadow-lg transition-all flex items-center gap-3 min-w-[12rem]">
                 Explore Kalpavriksha
                 <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
-              </button>
+              </Link>
             </div>
           </div>
         </div>
