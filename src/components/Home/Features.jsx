@@ -21,11 +21,6 @@ const Features = () => {
       description: 'Every project includes the latest approved CRDA plan—no outdated files, no plot mismatches, no surprises.'
     },
     {
-      icon: Camera,
-      title: 'Real Images & Walkthrough Videos',
-      description: 'Get on-site clarity from wherever you are. We provide up-to-date visuals and 360° walkthroughs where available.'
-    },
-    {
       icon: BarChart3,
       title: 'Transparent Market Insights',
       description: 'Understand pricing with historic data, market comparisons, and suggested price ranges—so you never overpay.'
