@@ -40,7 +40,6 @@ function App() {
             <Route path="/searchProperties" element={<SearchResults />} />
             {/* You can stub out the other pages for now */}
             <Route path="/" element={<Home />} />
-            <Route path="/projects" element={<div>Projects Page</div>} />
             <Route path="/about" element={<div>About Page</div>} />
             <Route path="/contact" element={<div>Contact Page</div>} />
             <Route path="/enquire" element={<div>Enquire Page</div>} />
@@ -60,7 +59,7 @@ function App() {
           <Route path="/compare" element={<Compare />} />
           <Route path="/profile" element={<ProfilePage />} />
           {/* Kalpavruksha page */}
-          <Route path="/Kalpavruksha-Details" element={<KalpavrukshaPage />} />
+          <Route path="/projects" element={<KalpavrukshaPage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

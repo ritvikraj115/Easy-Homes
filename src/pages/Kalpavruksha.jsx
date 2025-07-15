@@ -22,6 +22,7 @@ import heropc from '../assets/img/kalpPcImg.png'
 import heroph from '../assets/img/kalpPhImg.png'
 import card, { CardContent } from '../components/card';
 import vd from '../assets/hero-3.mp4'
+import Navbar from '../components/Navbar'
 
 const KalpavrukshaPage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -142,6 +143,8 @@ const KalpavrukshaPage = () => {
     }
   };
   return (
+    <>
+    <Navbar />
     <div className="min-h-screen bg-white overflow-hidden">
       {/* Nav optional */}
       {/* <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-gray-200">
@@ -655,6 +658,7 @@ const KalpavrukshaPage = () => {
         </div>
       </footer>
     </div>
+    </>
   );
 };
 

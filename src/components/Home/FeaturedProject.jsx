@@ -61,7 +61,7 @@ function FeaturedProjects({ cref }) {
                 </div>
               </div>
 
-              <Link to={'/Kalpavruksha-Details'} className="group bg-[#3868B2] text-white px-8 py-4 rounded-lg text-lg font-poppins font-medium shadow-md hover:bg-[#38689F] hover:shadow-lg transition-all flex items-center gap-3 min-w-[12rem]">
+              <Link to={'/projects'} className="group bg-[#3868B2] text-white px-8 py-4 rounded-lg text-lg font-poppins font-medium shadow-md hover:bg-[#38689F] hover:shadow-lg transition-all flex items-center gap-3 min-w-[12rem]">
                 Explore Kalpavriksha
                 <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
               </Link>
