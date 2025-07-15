@@ -195,9 +195,19 @@ const KalpavrukshaPage = () => {
       {/* Section 1: Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center pt-16">
         <div className="absolute inset-0 bg-gradient-to-b from-[#1b3b26]/80 via-[#295638]/60  to-transparent"></div>
-        <div className="absolute inset-0 bg-cover bg-center opacity-80"
-          style={{ backgroundImage: `url(${heroph})` }}
-        ></div>
+        <picture className="absolute inset-0 w-full h-full z-0 block">
+          <source media="(min-width: 768px)" srcSet={heropc} type="image/png" />
+          <source media="(max-width: 767px)" srcSet={heroph} type="image/png" />
+          <img
+            src={heropc}
+            alt="Kalpavruksha Hero"
+            className="w-full h-full object-cover opacity-80"
+            loading="eager"
+            decoding="async"
+            width="1920"
+            height="1080"
+          />
+        </picture>
 
         <div className="relative z-10 max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <div className='rounded-full shadow  px-3 md:px-4 py-0 max-h-fit bg-[#dbba5733] max-w-fit mx-auto border border-[#f2e5c0] mb-4 lg:mb-12'>

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthDispatch, startVerification } from '../context/AuthContext';
 import '../assets/auth.css';
-import {SocialLogin} from '../components/SocialLogin';
+import SocialLogin from '../components/SocialLogin';
 
 const validateName = (value) => value.trim().length >= 2;
 const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);

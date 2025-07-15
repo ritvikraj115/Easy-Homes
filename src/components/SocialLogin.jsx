@@ -1,4 +1,5 @@
-import React from 'react';
+// client/src/components/SocialLogin.jsx
+import React, { memo } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import googleImg from '../assets/google.png';
 import facebookImg from '../assets/facebook.png';
@@ -8,10 +9,10 @@ import axios from 'axios';
 import { useAuthDispatch, loginSuccess } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-export function SocialLogin({ onSuccess }) {
+function SocialLogin({ onSuccess }) {
   const { loginWithPopup, getIdTokenClaims } = useAuth0();
   const dispatch = useAuthDispatch();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleLogin = async (provider) => {
     try {
@@ -28,9 +29,10 @@ export function SocialLogin({ onSuccess }) {
         { idToken },
         { withCredentials: true }
       );
-      if(response.data.success){
-        loginSuccess(dispatch,  response.data.user , response.data.token);
-        navigate('/')
+      if (response.data.success) {
+        loginSuccess(dispatch, response.data.user, response.data.token);
+        navigate('/');
+        if (onSuccess) onSuccess(response.data.user);
       }
     } catch (err) {
       console.error('Auth0 login failed:', err);
@@ -46,25 +48,49 @@ export function SocialLogin({ onSuccess }) {
           className="social-button google"
           onClick={() => handleLogin('google-oauth2')}
         >
-          <img src={googleImg} alt="Google" className="social-icon" />
+          <img
+            src={googleImg}
+            alt="Google"
+            className="social-icon"
+            width="32"
+            height="32"
+            loading="lazy"
+            decoding="async"
+          />
         </button>
         <button
           type="button"
           className="social-button facebook"
           onClick={() => handleLogin('facebook')}
         >
-          <img src={facebookImg} alt="Facebook" className="social-icon" />
+          <img
+            src={facebookImg}
+            alt="Facebook"
+            className="social-icon"
+            width="32"
+            height="32"
+            loading="lazy"
+            decoding="async"
+          />
         </button>
         <button
           type="button"
           className="social-button apple"
           onClick={() => handleLogin('apple')}
         >
-          <img src={appleImg} alt="Apple" className="social-icon" />
+          <img
+            src={appleImg}
+            alt="Apple"
+            className="social-icon"
+            width="32"
+            height="32"
+            loading="lazy"
+            decoding="async"
+          />
         </button>
       </div>
     </div>
   );
 }
 
-
+export default memo(SocialLogin);

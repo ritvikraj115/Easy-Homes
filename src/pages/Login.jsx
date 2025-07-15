@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthDispatch, loginSuccess, startVerification } from '../context/AuthContext';
 import '../assets/auth.css';
-import {SocialLogin} from '../components/SocialLogin';
+import SocialLogin from '../components/SocialLogin';
 
 const validateEmail = (value) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
