@@ -7,6 +7,7 @@ import {
   useAuthDispatch,
   logout as logoutAction
 } from '../context/AuthContext';
+import { Phone } from 'lucide-react';
 
 const MENU_ITEMS = [
   { label: 'Featured Projects', to: '/projects' },
@@ -70,6 +71,15 @@ export default function Navbar() {
         </nav>
 
         <div className="navbar__actions" ref={profileRef}>
+
+          {/* ←– Added phone pill –– */}
+          <div className="navbar__phone-pill">
+            <a href="tel:+918988896666" aria-label="Call us">
+              <Phone size={16} className="pill-icon" />
+              +91 89888 96666
+            </a>
+          </div>
+
           {isAuthenticated ? (
             <div className="profile-wrapper">
               <button
@@ -115,8 +125,8 @@ export default function Navbar() {
             </Link>
           )}
         </div>
-        {openMobile && (
 
+        {openMobile && (
           <nav className="navbar__menu navbar__menu--mobile open">
             {MENU_ITEMS.map(item => (
               <NavLink
@@ -169,9 +179,23 @@ export default function Navbar() {
                 Login/Signup
               </Link>
             )}
+
+            {/* ←– Added phone pill to mobile menu –– */}
+            <div className="navbar__phone-pill">
+              <a
+                href="tel:+918988896666"
+                onClick={() => setOpenMobile(false)}
+                aria-label="Call us"
+              >
+                <Phone size={18} className="pill-icon" />
+                +91 89888 96666
+              </a>
+            </div>
           </nav>
         )}
       </div>
     </header>
   );
 }
+
+
