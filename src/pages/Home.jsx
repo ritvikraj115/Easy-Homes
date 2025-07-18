@@ -17,7 +17,7 @@ export default function Home() {
     featuredRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Breadcrumb structured data
+  // JSON‑LD structured data snippets
   const breadcrumbData = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -31,42 +31,101 @@ export default function Home() {
     ]
   };
 
+  const orgData = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Easy Homes",
+    "url": "https://easyhomess.com/",
+    "telephone": "+918988896666",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Vijayawada",
+      "addressRegion": "Andhra Pradesh",
+      "addressCountry": "IN"
+    }
+  };
+
+  const siteData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "url": "https://easyhomess.com/",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://easyhomess.com/searchProperties?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  };
+
+  const localBusinessData = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateAgent",
+    "name": "Easy Homes",
+    "image": "https://easyhomess.com/logo.png",
+    "telephone": "+918988896666",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "123 Capital Avenue",
+      "addressLocality": "Amaravati",
+      "addressRegion": "Andhra Pradesh",
+      "postalCode": "522020",
+      "addressCountry": "IN"
+    },
+    "url": "https://easyhomess.com/",
+    "areaServed": ["Vijayawada", "Amaravati"]
+  };
+
   return (
     <>
       <Helmet>
-        {/* Core SEO tags */}
+        {/* Primary SEO tags */}
         <title>Easy Homes | CRDA‑Approved Plots in Amaravati & Vijayawada</title>
         <meta
           name="description"
           content="Discover 100% verified, CRDA‑approved residential plots in Amaravati and Vijayawada. Instantly compare, shortlist, and secure clear‑title land."
         />
+        <meta
+          name="keywords"
+          content="Easy Homes, easy homes, CRDA approved plots, Amaravati real estate, Vijayawada property, verified plots, clear title land"
+        />
+        <meta name="robots" content="index,follow" />
         <link rel="canonical" href="https://easyhomess.com/" />
 
-        {/* Breadcrumb JSON‑LD */}
+        {/* Structured Data */}
         <script type="application/ld+json">
           {JSON.stringify(breadcrumbData)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(orgData)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(siteData)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(localBusinessData)}
         </script>
       </Helmet>
 
       <main>
         {/* Hero */}
-          <Hero scrollToFeatured={scrollToFeatured} />
-
+        <Hero scrollToFeatured={scrollToFeatured} />
 
         {/* Featured Projects */}
-          <FeaturedProjects cref={featuredRef} />
+        <FeaturedProjects cref={featuredRef} />
 
         {/* All Projects */}
-          <Projects />
+        <Projects />
 
         {/* How It Works */}
-          <HowItWorks />
-          <Features />
+        <HowItWorks />
+
+        {/* Features */}
+        <Features />
 
         {/* Testimonials */}
-          <Testimonials />
+        <Testimonials />
 
-          <CallToAction />
+        {/* Call To Action */}
+        <CallToAction />
 
         {/* Footer */}
         <Footer />
@@ -74,4 +133,3 @@ export default function Home() {
     </>
   );
 }
-
