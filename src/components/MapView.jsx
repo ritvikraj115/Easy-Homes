@@ -21,8 +21,8 @@ export default function MapView({
   const mapRef = useRef(null);
   const navigate = useNavigate(); 
   const [activeId, setActiveId] = useState(null);
-  const [center, setCenter] = useState({ lat: 20.5937, lng: 78.9629 });
-  const [zoom, setZoom] = useState(5);
+  const [center, setCenter] = useState({ lat: 16.5937, lng: 80.6629 });
+  const [zoom, setZoom] = useState(10);
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: process.env.REACT_APP_MAP_KEY,
     libraries: MAP_LIBRARIES

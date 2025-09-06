@@ -38,6 +38,7 @@ export default function useGeocodedProperties(properties) {
         }
 
         const { results } = await resp.json();
+        console.log(results)
         // Merge coordinates back into original property objects
         const merged = properties.map((p, i) => ({
           ...p,

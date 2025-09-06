@@ -16,6 +16,7 @@ export default function SearchResults() {
     googleMapsApiKey: process.env.REACT_APP_MAP_KEY,
     libraries: MAP_LIBRARIES,
   });
+
   // Pass google‐loaded flag into your hook
   const geoListings = useGeocodedProperties(mockProperties, isLoaded);
 
@@ -74,18 +75,18 @@ export default function SearchResults() {
 
   // 6) Pre-filter by budget/type/size/gated
   const preFiltered = geoListings.filter(p => {
-    const [minB, maxB] = filters.budget;
-    const [loP, hiP] = p.priceRange.replace(/[^0-9–]/g, '').split('–').map(Number);
-    if (hiP < minB || loP > maxB) return false;
+    // const [minB, maxB] = filters.budget;
+    // const [loP, hiP] = p.priceRange.replace(/[^0-9–]/g, '').split('–').map(Number);
+    // if (hiP < minB || loP > maxB) return false;
 
     if (filters.type && !p.propertyType.includes(filters.type)) return false;
 
-    const [minS, maxS] = filters.size;
-    const [loS, hiS] = p.basicInformation.lotSize
-      .replace(/[^0-9–]/g, '')
-      .split('–')
-      .map(Number);
-    if (hiS < minS || loS > maxS) return false;
+    // const [minS, maxS] = filters.size;
+    // const [loS, hiS] = p.basicInformation.lotSize
+    //   .replace(/[^0-9–]/g, '')
+    //   .split('–')
+    //   .map(Number);
+    // if (hiS < minS || loS > maxS) return false;
 
     if (filters.gated) {
       const hasGate = p.additionalInfo?.amenities?.includes('Security cabin');
@@ -103,6 +104,7 @@ export default function SearchResults() {
         p.lng >= bounds.west
       )
     : preFiltered;
+
 
   // 8) Render the full UI
   return (
