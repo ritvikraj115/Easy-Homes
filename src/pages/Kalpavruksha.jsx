@@ -303,7 +303,13 @@ const KalpavrukshaPage = () => {
           </div>
 
           <div className="relative aspect-video bg-gradient-to-br from-emerald-900 to-teal-900 rounded-2xl overflow-hidden shadow-2xl">
-            <video src={vd} className='w-full' autoPlay muted loop></video>
+            <iframe
+              className="w-full aspect-video"
+              src="https://www.youtube.com/embed/mt-G29uakpQ?autoplay=1&mute=1&loop=1&playlist=mt-G29uakpQ"
+              title="YouTube video player"
+              frameBorder="0"
+              allow="autoplay; fullscreen"
+            ></iframe>
             <div className="absolute bottom-4 left-4 right-4 hidden md:block">
               <div className="bg-black/50 backdrop-blur-sm rounded-lg p-4">
                 <p className="text-white font-medium">Project Walkthrough Video</p>
