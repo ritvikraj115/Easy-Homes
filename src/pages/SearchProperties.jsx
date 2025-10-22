@@ -1,7 +1,7 @@
 // client/src/pages/SearchResults.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../assets/searchPage.css';
-import { useJsApiLoader } from '@react-google-maps/api';  // ← ensure this is imported
+import { useJsApiLoader } from '@react-google-maps/api';
 import FilterPanel from '../components/FilterPanel';
 import MapView from '../components/MapView';
 import PropertyCard from '../components/PropertyCard';
@@ -11,10 +11,11 @@ import { MAP_LIBRARIES } from '../config/googleMaps';
 
 export default function SearchResults() {
   const [hoveredListingId, setHoveredListingId] = useState(null);
-  // 1) Always call your hooks first, in the same order:
+
+  // 1) Hooks that must always run in the same order
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: process.env.REACT_APP_MAP_KEY,
-    libraries: MAP_LIBRARIES,
+    libraries: MAP_LIBRARIES, // must include 'places'
   });
 
   // Pass google‐loaded flag into your hook
@@ -33,15 +34,80 @@ export default function SearchResults() {
   const [bounds, setBounds] = useState(null);
   const [filteredListings, setFilteredListings] = useState([]);
 
-  // 3) Reset when location cleared
+  // NEW: suggestions state + keyboard index
+  const [suggestions, setSuggestions] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const serviceRef = useRef(null);
+  const debounceRef = useRef(null);
+  const inputRef = useRef(null);
+  const suggestionsVisible = suggestions.length > 0;
+
+  // NEW: key to force MapView remount (resets map to MapView's defaults)
+  const [mapKey, setMapKey] = useState(0);
+
+  // Compute preFiltered defensively (so it's safe before maps/geocoding finish)
+  const preFiltered = Array.isArray(geoListings)
+    ? geoListings.filter(p => {
+        if (filters.type && !p.propertyType.includes(filters.type)) return false;
+        if (filters.gated) {
+          const hasGate = p.additionalInfo?.amenities?.includes('Security cabin');
+          if (!hasGate) return false;
+        }
+        return true;
+      })
+    : [];
+
+  // Initialize AutocompleteService once maps script is loaded
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!window.google || !window.google.maps) return;
+    if (!serviceRef.current) {
+      serviceRef.current = new window.google.maps.places.AutocompleteService();
+    }
+  }, [isLoaded]);
+
+  // Query suggestions (debounced)
+  useEffect(() => {
+    if (!isLoaded || !serviceRef.current) return;
+    const q = searchLocation?.trim();
+    if (!q) {
+      setSuggestions([]);
+      setActiveIndex(-1);
+      return;
+    }
+
+    // debounce 250ms
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      const request = {
+        input: q,
+      };
+      serviceRef.current.getPlacePredictions(request, (preds, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && Array.isArray(preds)) {
+          setSuggestions(preds.slice(0, 5)); // take up to 5 suggestions
+          setActiveIndex(-1);
+        } else {
+          setSuggestions([]);
+          setActiveIndex(-1);
+        }
+      });
+    }, 250);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [searchLocation, isLoaded]);
+
+  // Reset when location cleared -> show all preFiltered properties and clear bounds
+  // <-- IMPORTANT: this useEffect is declared BEFORE any early returns so hooks order is stable
   useEffect(() => {
     if (!locationQuery) {
       setBounds(null);
-      setFilteredListings([]);
+      setFilteredListings(preFiltered);
     }
-  }, [locationQuery]);
+  }, [locationQuery, preFiltered]);
 
-  // 4) Early returns *after* hooks but *before* allGeocoded check:
+  // 3) Early returns *after* all hooks
   if (loadError) {
     return <div className="map-wrapper">Error loading maps</div>;
   }
@@ -49,9 +115,7 @@ export default function SearchResults() {
     return <div className="map-wrapper">Loading Maps…</div>;
   }
 
-  // 5) Now that the script is loaded, your hook can run.
-  //    geoListings starts `null`, flips to array once done.
-  //    We guard until it's a full array matching mockProperties length.
+  // 4) Now that the script is loaded, your hook can run.
   const allGeocoded =
     Array.isArray(geoListings) &&
     geoListings.length === mockProperties.length &&
@@ -73,40 +137,70 @@ export default function SearchResults() {
     );
   }
 
-  // 6) Pre-filter by budget/type/size/gated
-  const preFiltered = geoListings.filter(p => {
-    // const [minB, maxB] = filters.budget;
-    // const [loP, hiP] = p.priceRange.replace(/[^0-9–]/g, '').split('–').map(Number);
-    // if (hiP < minB || loP > maxB) return false;
-
-    if (filters.type && !p.propertyType.includes(filters.type)) return false;
-
-    // const [minS, maxS] = filters.size;
-    // const [loS, hiS] = p.basicInformation.lotSize
-    //   .replace(/[^0-9–]/g, '')
-    //   .split('–')
-    //   .map(Number);
-    // if (hiS < minS || loS > maxS) return false;
-
-    if (filters.gated) {
-      const hasGate = p.additionalInfo?.amenities?.includes('Security cabin');
-      if (!hasGate) return false;
-    }
-    return true;
-  });
-
-  // 7) Filter by viewport bounds
+  // 5) Filter by viewport bounds (use preFiltered computed above)
   const inBounds = bounds
-    ? preFiltered.filter(p =>
-        p.lat <= bounds.north &&
-        p.lat >= bounds.south &&
-        p.lng <= bounds.east &&
-        p.lng >= bounds.west
+    ? preFiltered.filter(
+        p =>
+          p.lat <= bounds.north &&
+          p.lat >= bounds.south &&
+          p.lng <= bounds.east &&
+          p.lng >= bounds.west
       )
     : preFiltered;
 
+  // --- Handlers for suggestion selection & keyboard ---
+  const handleSelectSuggestion = suggestion => {
+    // suggestion has description and place_id
+    setSearchLocation(suggestion.description);
+    setLocationQuery(suggestion.description); // trigger search immediately
+    setSuggestions([]);
+    setActiveIndex(-1);
+  };
 
-  // 8) Render the full UI
+  const handleInputKeyDown = e => {
+    if (!suggestions.length) {
+      // still allow Enter to submit even if suggestions empty
+      if (e.key === 'Enter') {
+        // no active suggestion, submit form normally
+        setLocationQuery(searchLocation.trim());
+        setSuggestions([]);
+        setActiveIndex(-1);
+        if (!searchLocation.trim()) {
+          setMapKey(k => k + 1);
+          setBounds(null);
+          setFilteredListings(preFiltered);
+        }
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIndex(i => Math.min(i + 1, suggestions.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIndex(i => Math.max(i - 1, 0));
+    } else if (e.key === 'Enter') {
+      if (activeIndex >= 0 && activeIndex < suggestions.length) {
+        e.preventDefault();
+        handleSelectSuggestion(suggestions[activeIndex]);
+      } else {
+        // no active suggestion, submit form normally
+        setLocationQuery(searchLocation.trim());
+        setSuggestions([]);
+        setActiveIndex(-1);
+        if (!searchLocation.trim()) {
+          setMapKey(k => k + 1);
+          setBounds(null);
+          setFilteredListings(preFiltered);
+        }
+      }
+    } else if (e.key === 'Escape') {
+      setSuggestions([]);
+      setActiveIndex(-1);
+    }
+  };
+
   return (
     <div className="search-page">
       <div className="search-main">
@@ -116,18 +210,69 @@ export default function SearchResults() {
             className="search-location"
             onSubmit={e => {
               e.preventDefault();
-              setLocationQuery(searchLocation.trim());
+              const q = searchLocation.trim();
+              setLocationQuery(q);
+              setSuggestions([]);
+              setActiveIndex(-1);
+
+              if (!q) {
+                // user cleared the input and pressed Enter -> reset map + show all properties
+                setMapKey(k => k + 1);
+                setBounds(null);
+                setFilteredListings(preFiltered);
+              }
             }}
+            autoComplete="off"
           >
-            <input
-              type="text"
-              placeholder="Enter city or area"
-              value={searchLocation}
-              onChange={e => setSearchLocation(e.target.value)}
-            />
+            <div style={{ position: 'relative', width: '100%' }}>
+              <input
+                ref={inputRef}
+                name="location"
+                type="text"
+                placeholder="Enter city or area"
+                value={searchLocation}
+                onChange={e => setSearchLocation(e.target.value)}
+                onKeyDown={handleInputKeyDown}
+                onBlur={() => {
+                  // delay hide so click can register
+                  setTimeout(() => {
+                    setSuggestions([]);
+                    setActiveIndex(-1);
+                  }, 150);
+                }}
+              />
+
+              {/* Suggestions dropdown */}
+              {suggestionsVisible && (
+                <ul className="suggestions-list" role="listbox">
+                  {suggestions.map((s, idx) => (
+                    <li
+                      key={s.place_id}
+                      role="option"
+                      aria-selected={idx === activeIndex}
+                      className={`suggestion-item ${idx === activeIndex ? 'active' : ''}`}
+                      onMouseDown={e => {
+                        // use onMouseDown to prevent blur from clearing suggestions before click
+                        e.preventDefault();
+                        handleSelectSuggestion(s);
+                      }}
+                      onMouseEnter={() => setActiveIndex(idx)}
+                    >
+                      <strong>{s.structured_formatting.main_text}</strong>{' '}
+                      <span className="secondary-text">
+                        {s.structured_formatting.secondary_text}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </form>
+
           <div className="map-wrapper">
+            {/* key causes MapView to remount when mapKey changes */}
             <MapView
+              key={mapKey}
               listings={inBounds}
               hoveredListingId={hoveredListingId}
               onHoverListing={setHoveredListingId}
@@ -154,13 +299,3 @@ export default function SearchResults() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-

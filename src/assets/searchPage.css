@@ -110,6 +110,41 @@ body {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(56, 104, 178, 0.15);
 }
+/* suggestions dropdown */
+.suggestions-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  background: white;
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.suggestion-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.suggestion-item .secondary-text {
+  color: #666;
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+.suggestion-item:hover,
+.suggestion-item.active {
+  background: rgba(0,0,0,0.04);
+}
+
 
 /* === Map Wrapper (Left) === */
 .map-wrapper {
