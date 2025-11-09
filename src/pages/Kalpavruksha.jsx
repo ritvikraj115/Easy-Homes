@@ -607,8 +607,8 @@ const KalpavrukshaPage = () => {
             </p>
             <div className='mt-6'>
               {/* <!-- Elfsight Google Reviews | Untitled Google Reviews --> */}
-                <script src="https://elfsightcdn.com/platform.js" async></script>
-                <div class="elfsight-app-60cbc103-358f-491e-9cd9-e210af3e21a9" data-elfsight-app-lazy></div>
+                {/* <script src="https://elfsightcdn.com/platform.js" async></script>
+                <div class="elfsight-app-60cbc103-358f-491e-9cd9-e210af3e21a9" data-elfsight-app-lazy></div> */}
             </div>
           </div>
         </div>
