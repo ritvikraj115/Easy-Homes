@@ -1,7 +1,7 @@
 // src/components/Home/FeaturedProject.jsx
 import React from 'react';
 import { ArrowRight, MapPin, Building, ShieldCheck, TrendingUp } from 'lucide-react';
-import Kalp from '../../assets/img/Kalp.png';
+import Kalp from '../../assets/img/kalp.png';
 import { Link } from 'react-router-dom';
 
 function FeaturedProjects({ cref }) {
@@ -36,7 +36,7 @@ function FeaturedProjects({ cref }) {
             {/* Right Content */}
             <div className="p-10 flex flex-col justify-center">
               <h3 className="text-2xl md:text-3xl font-semibold text-gray-900 font-poppins leading-tight mb-4">
-                Kalpavriksha – CRDA-Approved Layout
+                Kalpavruksha – CRDA-Approved Layout
                 <span className="block text-[#3868B2] font-medium text-base mt-2">
                   Strategically Located Between Vijayawada and Amaravati
                 </span>

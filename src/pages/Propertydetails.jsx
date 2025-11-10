@@ -33,6 +33,8 @@ export default function PropertyDetails() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [selectedImage, setSelectedImage] = useState(0)
   const [showAllPhotos, setShowAllPhotos] = useState(false)
+  const [showAllWorkingImages, setShowAllWorkingImages] = useState(false)
+  const [selectedWorkingImage, setSelectedWorkingImage] = useState(null)
   const navigate = useNavigate();
   const { state } = useLocation();
   const { property } = state || {};
@@ -81,6 +83,7 @@ export default function PropertyDetails() {
     facts: useRef(null),
     market: useRef(null),
     neighborhood: useRef(null),
+    workingImages: useRef(null),
     contact: useRef(null),
   }
 
@@ -137,6 +140,7 @@ export default function PropertyDetails() {
     { id: "facts", label: "Facts & Features" },
     { id: "market", label: "Market Value" },
     { id: "neighborhood", label: "Neighbourhood" },
+    { id: "workingImages", label: "Working Images" },
     { id: "contact", label: "Contact Info" },
   ]
 
@@ -536,6 +540,45 @@ export default function PropertyDetails() {
                 </div>
               </section>
 
+              {/* Working Images Section */}
+              <section id="workingImages" ref={sectionRefs.workingImages} className="scroll-mt-32">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Working Images</h2>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {property.media.images.slice(0, 5).map((image, index) => (
+                        <div
+                          key={index}
+                          className="relative group cursor-pointer aspect-square overflow-hidden rounded-lg"
+                          onClick={() => setSelectedWorkingImage(image)}
+                        >
+                          <img
+                            src={image || "/placeholder.svg"}
+                            alt={`Working image ${index + 1}`}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                          />
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300" />
+                        </div>
+                      ))}
+                      
+                      {/* View All Overlay */}
+                      <div
+                        className="relative group cursor-pointer aspect-square overflow-hidden rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center"
+                        onClick={() => setShowAllWorkingImages(true)}
+                      >
+                        <div className="text-center text-white">
+                          <Camera className="h-10 w-10 mx-auto mb-2" />
+                          <div className="font-semibold text-lg">View All</div>
+                          <div className="text-sm opacity-90">({property.media.images.length} photos)</div>
+                        </div>
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+
               {/* Contact Section */}
               <section id="contact" ref={sectionRefs.contact} className="scroll-mt-32">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Contact Information</h2>
@@ -681,6 +724,62 @@ export default function PropertyDetails() {
                 />
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Working Images Gallery Modal */}
+      {showAllWorkingImages && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
+          <div className="max-w-4xl w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-white text-xl font-semibold">Working Images</h3>
+              <Button
+                variant="ghost"
+                onClick={() => setShowAllWorkingImages(false)}
+                className="text-white hover:bg-white hover:bg-opacity-20"
+              >
+                ✕
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[80vh] overflow-y-auto">
+              {property.media.images.map((image, index) => (
+                <img
+                  key={index}
+                  src={image || "/placeholder.svg"}
+                  alt={`Working image ${index + 1}`}
+                  className="w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                  onClick={() => {
+                    setSelectedWorkingImage(image);
+                    setShowAllWorkingImages(false);
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Single Working Image Modal */}
+      {selectedWorkingImage && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedWorkingImage(null)}
+        >
+          <div className="max-w-6xl w-full relative">
+            <Button
+              variant="ghost"
+              onClick={() => setSelectedWorkingImage(null)}
+              className="absolute top-4 right-4 text-white hover:bg-white hover:bg-opacity-20 z-10"
+            >
+              ✕
+            </Button>
+            <img
+              src={selectedWorkingImage || "/placeholder.svg"}
+              alt="Working image"
+              className="w-full max-h-[90vh] object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
         </div>
       )}
