@@ -575,9 +575,9 @@ const KalpavrukshaPage = () => {
                   Reviews
                 </p>
                 <div className='mt-12'>
-                  {/* <!-- Elfsight Google Reviews | Untitled Google Reviews --> */}
-                  <script src="https://elfsightcdn.com/platform.js" async></script>
-                  <div class="elfsight-app-7829a5f6-a3f3-4050-bf71-276b7ccd8082" data-elfsight-app-lazy></div>
+                {/* <!-- Elfsight Google Reviews | Untitled Google Reviews --> */}
+                <script src="https://elfsightcdn.com/platform.js" async></script>
+                <div class="elfsight-app-60cbc103-358f-491e-9cd9-e210af3e21a9" data-elfsight-app-lazy></div>
                 </div>
               </div>
             </div>
