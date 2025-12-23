@@ -30,6 +30,8 @@ const PropertyCard = ({ property }) => {
           src={property.media.images[currentImageIndex] || "/placeholder.svg"}
           alt={property.name}
           className="pc-image"
+          loading="lazy"
+          decoding="async"
         />
 
         {property.media.images.length > 1 && (

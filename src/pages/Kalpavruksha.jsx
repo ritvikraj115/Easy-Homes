@@ -18,8 +18,8 @@ import {
   X,
   Star
 } from 'lucide-react';
-import heropc from '../assets/img/kalpPcImg.png'
-import heroph from '../assets/img/kalpPhImg.png'
+import heropc from '../assets/img/kalpPcImg.webp'
+import heroph from '../assets/img/kalpPhImg.webp'
 import card, { CardContent } from '../components/card';
 import Navbar from '../components/Navbar'
 
@@ -28,7 +28,7 @@ const KalpavrukshaPage = () => {
 
   const features = [
     {
-      icon: <CheckCircle className="w-6 h-6 text-green-600" />,
+      icon: <CheckCircle className="w-6 h-6 text-g  reen-600" />,
       title: "Fully Approved. Carefully Maintained.",
       description: "CRDA-approved and backed by 5 years of developer maintenance.",
     },
@@ -80,27 +80,6 @@ const KalpavrukshaPage = () => {
     },
   ]
 
-  const testimonials = [
-    {
-      name: "Rajesh Kumar",
-      location: "Vijayawada",
-      text: "Kalpavruksha exceeded our expectations. The location is perfect and the amenities are world-class.",
-      rating: 5
-    },
-    {
-      name: "Priya Sharma",
-      location: "Amaravati",
-      text: "We found our dream home here. The community feel and green spaces make it truly special.",
-      rating: 5
-    },
-    {
-      name: "Amit Patel",
-      location: "Guntur",
-      text: "Outstanding project with excellent connectivity. The developer's commitment to quality is evident.",
-      rating: 5
-    }
-  ];
-
   const CTAButton = ({ icon, text, primary = false, onClick = () => { } }) => (
     <button
       onClick={onClick}
@@ -145,71 +124,29 @@ const KalpavrukshaPage = () => {
     <>
       <Navbar />
       <div className="min-h-screen bg-white overflow-hidden">
-        {/* Nav optional */}
-        {/* <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <TreePine className="w-8 h-8 text-emerald-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">Kalpavruksha</span>
-              <span className="ml-2 text-sm text-gray-500">by Easy Homes</span>
-            </div>
-            
-            <div className="hidden md:flex items-center space-x-4">
-              <CTAButton 
-                icon={<Phone className="w-4 h-4" />} 
-                text="Call Now" 
-              />
-              <CTAButton 
-                icon={<MessageCircle className="w-4 h-4" />} 
-                text="WhatsApp" 
-                primary 
-              />
-            </div>
-
-            <button 
-              className="md:hidden"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-        </div>
-      </nav> */}
-
-        {/* Mobile Menu */}
-        {/* {isMenuOpen && (
-        <div className="fixed top-16 w-full bg-white z-40 border-b border-gray-200 md:hidden">
-          <div className="px-4 py-4 space-y-3">
-            <CTAButton 
-              icon={<Phone className="w-4 h-4" />} 
-              text="Call Now" 
-            />
-            <CTAButton 
-              icon={<MessageCircle className="w-4 h-4" />} 
-              text="WhatsApp" 
-              primary 
-            />
-          </div>
-        </div>
-      )} */}
-
         {/* Section 1: Hero Section */}
         <section className="relative min-h-screen flex items-center justify-center pt-16">
           <div className="absolute inset-0 bg-gradient-to-b from-[#1b3b26]/80 via-[#295638]/60  to-transparent"></div>
           <picture className="absolute inset-0 w-full h-full z-0 block">
-            <source media="(min-width: 768px)" srcSet={heropc} type="image/png" />
-            <source media="(max-width: 767px)" srcSet={heroph} type="image/png" />
-            <img
-              src={heropc}
-              alt="Kalpavruksha Hero"
-              className="w-full h-full object-cover opacity-80"
-              loading="eager"
-              decoding="async"
-              width="1920"
-              height="1080"
+            <source
+              media="(min-width: 768px)"
+              srcSet={heropc}
+              type="image/webp"
             />
+            <source
+              media="(max-width: 767px)"
+              srcSet={heroph}
+              type="image/webp"
+            />
+           <img
+            src={heropc}
+            alt="Kalpavruksha Hero"
+            className="w-full h-full object-cover opacity-80 aspect-[16/9]"
+            loading="lazy"
+            decoding="async"
+          />
           </picture>
+
 
           <div className="relative z-10 max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
             <div className='rounded-full shadow  px-3 md:px-4 py-0 max-h-fit bg-[#dbba5733] max-w-fit mx-auto border border-[#f2e5c0] mb-4 lg:mb-12'>
@@ -340,6 +277,8 @@ const KalpavrukshaPage = () => {
                     <img
                       src={item.image}
                       alt={item.title}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                   </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Phone, Mail, User } from 'lucide-react';
-import bgMap from '../../assets/img/map.png'
+import bgMap from '../../assets/img/map.webp'
 
 const CallToAction = () => {
   const [formData, setFormData] = useState({

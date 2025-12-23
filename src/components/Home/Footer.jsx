@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import logo from '../../assets/img/Logo.png';
+import logo from '../../assets/img/Logo.webp';
 import { Facebook, Instagram, Mail, MapPin, MessageCircle, Phone, Twitter } from 'react-feather';
 
 const Footer = () => {

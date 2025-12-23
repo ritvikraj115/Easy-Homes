@@ -16,7 +16,8 @@ export default function FavouriteCard({
   return (
     <div className="fav-card">
       <div className="fav-image-wrapper" onClick={() => navigate(`/property/${property.mlsNumber}`)}>
-        <img src={imgSrc} alt={property.name} className="fav-image" />
+        <img src={imgSrc} alt={property.name} className="fav-image" loading="lazy"
+  decoding="async" />
       </div>
       <div className="fav-body">
         <div className="fav-top">

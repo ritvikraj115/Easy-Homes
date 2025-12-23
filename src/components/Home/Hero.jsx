@@ -1,27 +1,29 @@
 // client/src/components/Hero.jsx
 import React from 'react';
 import { CheckCircle, ChevronDown } from 'lucide-react';
-import heropc from '../../assets/img/Hero Image V2.png';
-import heroph from '../../assets/img/Hero image mobile v1.png';
+import heropc from '../../assets/img/Hero Image V2.webp';
+import heroph from '../../assets/img/Hero image mobile v1.webp';
 import { Link } from 'react-router-dom';
 
 const Hero = ({ scrollToFeatured }) => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Responsive background image */}
-      <picture className="absolute inset-0 z-0 w-full h-full block">
+     <picture className="absolute inset-0 z-0 w-full h-full block">
         {/* Desktop */}
         <source
           media="(min-width: 1024px)"
           srcSet={heropc}
-          type="image/png"
+          type="image/webp"
         />
+
         {/* Mobile */}
         <source
           media="(max-width: 1023px)"
           srcSet={heroph}
-          type="image/png"
+          type="image/webp"
         />
+
         {/* Fallback */}
         <img
           src={heropc}
@@ -29,9 +31,11 @@ const Hero = ({ scrollToFeatured }) => {
           className="w-full h-full object-cover"
           decoding="async"
           loading="eager"
+          fetchpriority="high"
           width="1920"
           height="1080"
         />
+
         {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/30" />
       </picture>

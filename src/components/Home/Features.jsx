@@ -1,6 +1,5 @@
 import React from 'react';
 import { Map, DollarSign, FileCheck, Camera, BarChart3, Handshake, TrendingUp } from 'lucide-react';
-import './Footer.css'
 import { Link } from 'react-router-dom';
 
 const Features = () => {

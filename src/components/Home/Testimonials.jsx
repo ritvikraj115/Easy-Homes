@@ -1,29 +1,3 @@
-import { Quote, Star } from 'lucide-react';
-
-const testimonials = [
-  {
-    name: 'Rajesh Kumar',
-    location: 'Hyderabad',
-    text: 'Easy Homes made our dream of owning land in Amaravati a reality. The entire process was transparent, and the team guided us at every step. Highly recommended!',
-    image:
-      'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=150',
-  },
-  {
-    name: 'Priya Sharma',
-    location: 'Vijayawada',
-    text: 'Excellent service and genuine plots with clear titles. The location we chose has great potential for appreciation. Thank you Easy Homes for the professional approach.',
-    image:
-      'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150',
-  },
-  {
-    name: 'Anil Reddy',
-    location: 'Guntur',
-    text: 'Best investment decision we made! The plot we purchased through Easy Homes has already shown good appreciation. Their after-sales support is also commendable.',
-    image:
-      'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150',
-  },
-];
-
 export default function Testimonials() {
   return (
     <section className="py-20 bg-[#DFE5EF]">

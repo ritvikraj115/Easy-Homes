@@ -218,6 +218,8 @@ export default function PropertyDetails() {
                   src={property.media.images[selectedImage] || "/placeholder.svg"}
                   alt="Property main view"
                   className="w-full h-full object-cover rounded-lg"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 rounded-lg" />
               </div>
@@ -233,6 +235,8 @@ export default function PropertyDetails() {
                       src={image || "/placeholder.svg"}
                       alt={`Property view ${index + 2}`}
                       className="w-full h-full object-cover rounded-lg"
+                      loading="lazy"
+                      decoding="async"
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 rounded-lg" />
                   </div>

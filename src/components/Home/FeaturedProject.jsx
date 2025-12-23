@@ -1,7 +1,7 @@
 // src/components/Home/FeaturedProject.jsx
 import React from 'react';
 import { ArrowRight, MapPin, Building, ShieldCheck, TrendingUp } from 'lucide-react';
-import Kalp from '../../assets/img/kalp.png';
+import Kalp from '../../assets/img/kalp.webp';
 import { Link } from 'react-router-dom';
 
 function FeaturedProjects({ cref }) {
