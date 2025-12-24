@@ -231,7 +231,7 @@ export default function SearchResults() {
           content="search plots Vijayawada, CRDA approved plots Amaravati, buy open plots Andhra Pradesh, property search Easy Homes, gated community plots"
         />
 
-        <meta name="robots" content="index,follow" />
+        <meta name="robots" content="noindex,follow" />
         <link
           rel="canonical"
           href="https://easyhomess.com/searchProperties"

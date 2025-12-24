@@ -87,6 +87,26 @@ export default function Home() {
           Easy Homes | CRDA-Approved Plots in Amaravati & Vijayawada
         </title>
 
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Easy Homes" />
+        <meta property="og:title" content="Easy Homes | CRDA-Approved Plots in Amaravati & Vijayawada" />
+        <meta
+          property="og:description"
+          content="Explore verified CRDA-approved plots in Amaravati and Vijayawada. Clear titles, trusted developers, and transparent pricing."
+        />
+        <meta property="og:url" content="https://easyhomess.com/" />
+        <meta
+          property="og:image"
+          content="https://easyhomess.com/logo.png"
+        />
+        <meta property="og:image:width" content="512" />
+        <meta property="og:image:height" content="512" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://easyhomess.com/logo.png" />
+
         <meta
           name="description"
           content="Discover 100% CRDA-approved residential plots in Amaravati and Vijayawada. Compare verified projects, clear titles, amenities, pricing, and secure trusted land with Easy Homes."
