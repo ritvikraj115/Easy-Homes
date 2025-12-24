@@ -1,23 +1,24 @@
 // client/src/pages/Home.jsx
-import React, { useRef } from 'react';
-import { Helmet } from 'react-helmet-async';
+import React, { useRef } from "react";
+import { Helmet } from "react-helmet-async";
 
-import Projects from '../components/Home/Projects';
-import Features from '../components/Home/Features';
-import Hero from '../components/Home/Hero';
-import Footer from '../components/Home/Footer';
-import HowItWorks from '../components/Home/HowItWorks';
-import Testimonials from '../components/Home/Testimonials';
-import CallToAction from '../components/Home/CallToAction';
-import FeaturedProjects from '../components/Home/FeaturedProject';
+import Projects from "../components/Home/Projects";
+import Features from "../components/Home/Features";
+import Hero from "../components/Home/Hero";
+import Footer from "../components/Home/Footer";
+import HowItWorks from "../components/Home/HowItWorks";
+import Testimonials from "../components/Home/Testimonials";
+import CallToAction from "../components/Home/CallToAction";
+import FeaturedProjects from "../components/Home/FeaturedProject";
 
 export default function Home() {
   const featuredRef = useRef(null);
   const scrollToFeatured = () => {
-    featuredRef.current?.scrollIntoView({ behavior: 'smooth' });
+    featuredRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // JSON‑LD structured data snippets
+  /* ---------- Structured Data ---------- */
+
   const breadcrumbData = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -42,7 +43,11 @@ export default function Home() {
       "addressLocality": "Vijayawada",
       "addressRegion": "Andhra Pradesh",
       "addressCountry": "IN"
-    }
+    },
+    "sameAs": [
+      "https://www.facebook.com/easyhomes",
+      "https://www.instagram.com/easyhomes"
+    ]
   };
 
   const siteData = {
@@ -77,18 +82,25 @@ export default function Home() {
   return (
     <>
       <Helmet>
-        {/* Primary SEO tags */}
-        <title>Easy Homes | CRDA‑Approved Plots in Amaravati & Vijayawada</title>
+        {/* Primary SEO */}
+        <title>
+          Easy Homes | CRDA-Approved Plots in Amaravati & Vijayawada
+        </title>
+
         <meta
           name="description"
-          content="Discover 100% verified, CRDA‑approved residential plots in Amaravati and Vijayawada. Instantly compare, shortlist, and secure clear‑title land."
+          content="Discover 100% CRDA-approved residential plots in Amaravati and Vijayawada. Compare verified projects, clear titles, amenities, pricing, and secure trusted land with Easy Homes."
         />
-        <meta
-          name="keywords"
-          content="Easy Homes, easy homes, CRDA approved plots, Amaravati real estate, Vijayawada property, verified plots, clear title land"
-        />
+
         <meta name="robots" content="index,follow" />
         <link rel="canonical" href="https://easyhomess.com/" />
+
+        {/* Open Graph (Social Sharing) */}
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Easy Homes | CRDA-Approved Plots in Amaravati & Vijayawada" />
+        <meta property="og:description" content="Explore verified CRDA-approved plots in Amaravati and Vijayawada. Clear titles, trusted developers, and transparent pricing with Easy Homes." />
+        <meta property="og:url" content="https://easyhomess.com/" />
+        <meta property="og:image" content="https://easyhomess.com/og-home.jpg" />
 
         {/* Structured Data */}
         <script type="application/ld+json">
@@ -106,30 +118,16 @@ export default function Home() {
       </Helmet>
 
       <main>
-        {/* Hero */}
         <Hero scrollToFeatured={scrollToFeatured} />
-
-        {/* Featured Projects */}
         <FeaturedProjects cref={featuredRef} />
-
-        {/* All Projects */}
         <Projects />
-
-        {/* How It Works */}
         <HowItWorks />
-
-        {/* Features */}
         <Features />
-
-        {/* Testimonials */}
         <Testimonials />
-
-        {/* Call To Action */}
         <CallToAction />
-
-        {/* Footer */}
         <Footer />
       </main>
     </>
   );
 }
+

@@ -7,8 +7,22 @@ import PropertyCard from '../components/PropertyCard';
 import { mockProperties } from '../data/mockdata';
 import useGeocodedProperties from '../hooks/useGeocodedProperties';
 import { MAP_LIBRARIES } from '../config/googleMaps';
+import { Helmet } from 'react-helmet-async';
+import { Link } from 'react-router-dom';
 
 export default function SearchResults() {
+    const searchSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Search Properties | Easy Homes",
+    "url": "https://easyhomess.com/searchProperties",
+    "description":
+      "Search and filter CRDA-approved plots in Vijayawada and Amaravati. Compare verified properties, locations, prices, and amenities.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://easyhomess.com/PropertyDetails",
+    }
+  };
   // -------------------------
   // All hooks / state (stable order)
   // -------------------------
@@ -199,6 +213,39 @@ export default function SearchResults() {
   // Render (no conditional hooks)
   // -------------------------
   return (
+    <>
+     <Helmet>
+        {/* ================= PRIMARY SEO ================= */}
+
+        <title>
+          Search CRDA Approved Plots in Vijayawada & Amaravati | Easy Homes
+        </title>
+
+        <meta
+          name="description"
+          content="Search, compare, and shortlist CRDA-approved plots in Vijayawada and Amaravati. Verified listings, clear titles, and gated community projects by Easy Homes."
+        />
+
+        <meta
+          name="keywords"
+          content="search plots Vijayawada, CRDA approved plots Amaravati, buy open plots Andhra Pradesh, property search Easy Homes, gated community plots"
+        />
+
+        <meta name="robots" content="index,follow" />
+        <link
+          rel="canonical"
+          href="https://easyhomess.com/searchProperties"
+        />
+
+        {/* ================= STRUCTURED DATA ================= */}
+        <script type="application/ld+json">
+          {JSON.stringify(searchSchema)}
+        </script>
+    </Helmet>
+    <h1 className="sr-only">
+      Search CRDA Approved Plots in Vijayawada and Amaravati
+      <Link to="/projects">View All Projects</Link>
+    </h1>
     <div className="search-page">
       <div className="search-main">
         {/* LEFT */}
@@ -318,5 +365,6 @@ export default function SearchResults() {
         </div>
       </div>
     </div>
+    </>
   );
 }

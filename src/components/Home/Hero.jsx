@@ -65,13 +65,15 @@ const Hero = ({ scrollToFeatured }) => {
           </div>
 
           {/* Call to Action */}
-          <Link to="/searchProperties">
-            <div className="flex justify-center">
-              <button className="bg-[#3868B2] hover:bg-[#38689F] text-white px-8 py-4 rounded-lg font-medium font-['Poppins'] text-lg transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 min-w-[200px]">
-                Explore Projects
-              </button>
-            </div>
+         <div className="flex justify-center">
+          <Link
+            to="/searchProperties"
+            className="bg-[#3868B2] hover:bg-[#38689F] text-white px-8 py-4 rounded-lg font-medium font-['Poppins'] text-lg transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 min-w-[200px] text-center"
+            aria-label="Search CRDA Approved Plots in Amaravati and Vijayawada"
+          >
+            Explore Projects
           </Link>
+        </div>
         </div>
       </div>
 

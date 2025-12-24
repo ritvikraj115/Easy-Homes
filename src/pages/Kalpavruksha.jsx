@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import {
   Download,
   MapPin,
@@ -22,9 +23,31 @@ import heropc from '../assets/img/kalpPcImg.webp'
 import heroph from '../assets/img/kalpPhImg.webp'
 import card, { CardContent } from '../components/card';
 import Navbar from '../components/Navbar'
+import { Link } from 'react-router-dom';
 
 const KalpavrukshaPage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+   /* ---------------- SEO STRUCTURED DATA ---------------- */
+
+  const projectSchema = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    "name": "Kalpavruksha Open Plots",
+    "description":
+      "CRDA-approved residential open plots near Vijayawada and Amaravati by Easy Homes. Premium gated community with clubhouse, infrastructure, and clear title.",
+    "url": "https://easyhomess.com/projects",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Vijayawada",
+      "addressRegion": "Andhra Pradesh",
+      "addressCountry": "IN"
+    },
+    "provider": {
+      "@type": "RealEstateAgent",
+      "name": "Easy Homes",
+      "telephone": "+918988896666"
+    }
+  };
 
   const features = [
     {
@@ -122,6 +145,32 @@ const KalpavrukshaPage = () => {
   };
   return (
     <>
+       <Helmet>
+        <title>
+          Kalpavruksha Open Plots in Vijayawada | CRDA Approved Plots Near Amaravati
+        </title>
+
+        <meta
+          name="description"
+          content="Kalpavruksha by Easy Homes offers CRDA-approved open plots near Vijayawada & Amaravati. Premium gated layout with clubhouse, infrastructure & clear title."
+        />
+
+        <meta
+          name="keywords"
+          content="Kalpavruksha plots, CRDA approved plots Vijayawada, open plots near Amaravati, Easy Homes projects, gated community plots Andhra Pradesh"
+        />
+
+        <link rel="canonical" href="https://easyhomess.com/projects" />
+        <meta name="robots" content="index,follow" />
+
+        <script type="application/ld+json">
+          {JSON.stringify(projectSchema)}
+        </script>
+      </Helmet>
+      <h1 className="sr-only">
+        Kalpavruksha Project
+        <Link to="/searchProperties">View All Projects</Link>
+      </h1>
       <Navbar />
       <div className="min-h-screen bg-white overflow-hidden">
         {/* Section 1: Hero Section */}
