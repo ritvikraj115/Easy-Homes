@@ -19,8 +19,6 @@ import {
   X,
   Star
 } from 'lucide-react';
-import heropc from '../assets/img/kalpPcImg.webp'
-import heroph from '../assets/img/kalpPhImg.webp'
 import card, { CardContent } from '../components/card';
 import Navbar from '../components/Navbar'
 import { Link } from 'react-router-dom';
@@ -180,19 +178,19 @@ const KalpavrukshaPage = () => {
           <picture className="absolute inset-0 w-full h-full z-0 block">
             <source
               media="(min-width: 768px)"
-              srcSet={heropc}
+              srcSet="kalpPcImg.webp"
               type="image/webp"
             />
             <source
               media="(max-width: 767px)"
-              srcSet={heroph}
+              srcSet="kalpPhImg.webp"
               type="image/webp"
             />
            <img
-            src={heropc}
+            src="/kalpPcImg.webp"
             alt="Kalpavruksha Hero"
             className="w-full h-full object-cover opacity-80 aspect-[16/9]"
-            loading="lazy"
+            fetchpriority="high"
             decoding="async"
           />
           </picture>
@@ -480,7 +478,7 @@ const KalpavrukshaPage = () => {
 
                   <div className="aspect-square bg-white rounded-lg shadow-inner">
                     <div className="w-full h-full rounded-lg flex items-center justify-center">
-                      <img src={heroph} alt="" className='h-full w-full rounded-lg' />
+                      <img src="/hero-dekstop.webp" alt="" className='h-full w-full rounded-lg' />
                     </div>
                   </div>
                 </div>

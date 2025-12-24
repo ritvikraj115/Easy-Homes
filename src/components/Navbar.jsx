@@ -45,7 +45,16 @@ export default function Navbar() {
     <header className="navbar">
       <div className="navbar__container">
         <Link to="/" className="navbar__logo">
-          <img src={logo} alt="Easy Homes" />
+          <img
+            src="/logo.png"
+            srcSet="/logo.png 1x"
+            width="240"
+            height="96"
+            alt="Easy Homes"
+            loading="eager"
+            decoding="async"
+            fetchpriority="high"
+          />
         </Link>
 
         <button

@@ -1,13 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+  <!-- Google Fonts: non-blocking -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Desktop -->
+  <!-- LCP Hero Image Preload -->
+  <link rel="preload" as="image" href="/logo.png" fetchpriority="high" />
+  <link rel="preload" as="image" href="/hero-dekstop.webp"
+    imagesrcset="/hero-mobile.webp 768w, /hero-dekstop.webp 1920w" imagesizes="100vw" />
+  <link rel="preload" as="image" href="/kalpPcImg.webp" imagesrcset="/kalpPhImg.webp 768w, /kalpPcImg.webp 1920w"
+    imagesizes="100vw" />
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      background-color: #ffffff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    }
+
+    #root {
+      min-height: 100vh;
+      display: block;
+    }
+  </style>
+
   <!-- ===================== -->
   <!-- Google Analytics (GA4) -->
   <!-- ===================== -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-PS0CKM6BCZ"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
     gtag('config', 'G-PS0CKM6BCZ', {
       anonymize_ip: true,
@@ -33,10 +62,8 @@
   <!-- Default SEO (Fallback) -->
   <!-- ===================== -->
   <title>Easy Homes | CRDA-Approved Plots in Amaravati & Vijayawada</title>
-  <meta
-    name="description"
-    content="Easy Homes helps you explore, compare, and buy verified CRDA-approved residential plots in Amaravati and Vijayawada with clear titles and trusted developers."
-  />
+  <meta name="description"
+    content="Easy Homes helps you explore, compare, and buy verified CRDA-approved residential plots in Amaravati and Vijayawada with clear titles and trusted developers." />
   <meta name="robots" content="index,follow" />
 
   <!-- ===================== -->
@@ -45,10 +72,8 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Easy Homes" />
   <meta property="og:title" content="Easy Homes | CRDA-Approved Plots in Amaravati & Vijayawada" />
-  <meta
-    property="og:description"
-    content="Discover verified CRDA-approved plots in Amaravati and Vijayawada. Clear titles, transparent pricing, and trusted real estate projects by Easy Homes."
-  />
+  <meta property="og:description"
+    content="Discover verified CRDA-approved plots in Amaravati and Vijayawada. Clear titles, transparent pricing, and trusted real estate projects by Easy Homes." />
   <meta property="og:url" content="https://easyhomess.com/" />
   <meta property="og:image" content="https://easyhomess.com/logo.png" />
   <meta property="og:image:width" content="512" />
@@ -59,10 +84,8 @@
   <!-- ===================== -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Easy Homes | CRDA-Approved Plots" />
-  <meta
-    name="twitter:description"
-    content="Search and compare CRDA-approved plots in Amaravati and Vijayawada with Easy Homes."
-  />
+  <meta name="twitter:description"
+    content="Search and compare CRDA-approved plots in Amaravati and Vijayawada with Easy Homes." />
   <meta name="twitter:image" content="https://easyhomess.com/logo.png" />
 
   <!-- ===================== -->
@@ -75,4 +98,5 @@
   <noscript>You need to enable JavaScript to run this app.</noscript>
   <div id="root"></div>
 </body>
+
 </html>

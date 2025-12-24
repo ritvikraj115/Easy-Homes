@@ -1,8 +1,6 @@
 // client/src/components/Hero.jsx
 import React from 'react';
 import { CheckCircle, ChevronDown } from 'lucide-react';
-import heropc from '../../assets/img/Hero Image V2.webp';
-import heroph from '../../assets/img/Hero image mobile v1.webp';
 import { Link } from 'react-router-dom';
 
 const Hero = ({ scrollToFeatured }) => {
@@ -13,20 +11,20 @@ const Hero = ({ scrollToFeatured }) => {
         {/* Desktop */}
         <source
           media="(min-width: 1024px)"
-          srcSet={heropc}
+          srcSet="hero-dekstop.webp"
           type="image/webp"
         />
 
         {/* Mobile */}
         <source
           media="(max-width: 1023px)"
-          srcSet={heroph}
+          srcSet="hero-mobile.webp"
           type="image/webp"
         />
 
         {/* Fallback */}
         <img
-          src={heropc}
+          src="/hero-dekstop.webp"
           alt="CRDA Approved Plots in Amaravati"
           className="w-full h-full object-cover"
           decoding="async"
