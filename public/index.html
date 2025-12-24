@@ -3,30 +3,22 @@
 
 <head>
   <!-- Preconnect -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-<!-- Preload fonts stylesheet -->
-<link
-  rel="preload"
-  as="style"
-  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap"
-/>
+  <!-- Preload fonts stylesheet -->
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap" />
 
-<!-- Load fonts non-blocking -->
-<link
-  rel="stylesheet"
-  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap"
-  media="print"
-  onload="this.media='all'"
-/>
-
-<noscript>
-  <link
-    rel="stylesheet"
+  <!-- Load fonts non-blocking -->
+  <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap"
-  />
-</noscript>
+    media="print" onload="this.media='all'" />
+
+  <noscript>
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap" />
+  </noscript>
 
   <!-- Desktop -->
   <!-- LCP Hero Image Preload -->
@@ -62,6 +54,15 @@
       send_page_view: true
     });
   </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Easy Homes",
+      "alternateName": "Easy Homes Real Estate",
+      "url": "https://easyhomess.com/"
+    }
+</script>
 
   <!-- ===================== -->
   <!-- Basic Meta -->
@@ -74,7 +75,7 @@
   <!-- ===================== -->
   <!-- Favicon / App Icons -->
   <!-- ===================== -->
-  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
 
   <!-- ===================== -->
