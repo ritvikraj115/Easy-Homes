@@ -23,6 +23,14 @@ function App() {
   function ScrollToTop() {
     const { pathname } = useLocation();
 
+  useEffect(() => {
+    if (window.gtag) {
+      window.gtag('config', 'G-PS0CKM6BCZ', {
+        page_path: pathname,
+      });
+    }
+  }, [pathname]);
+
     useEffect(() => {
       window.scrollTo(0, 0);
     }, [pathname]);

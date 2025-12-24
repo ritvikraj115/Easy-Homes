@@ -293,6 +293,7 @@ const KalpavrukshaPage = () => {
                 src="https://www.youtube.com/embed/mt-G29uakpQ?autoplay=1&mute=1&loop=1&playlist=mt-G29uakpQ"
                 title="YouTube video player"
                 frameBorder="0"
+                loading='lazy'
                 allow="autoplay; fullscreen"
               ></iframe>
               <div className="absolute bottom-4 left-4 right-4 hidden md:block">
