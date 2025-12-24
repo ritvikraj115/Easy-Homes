@@ -2,9 +2,32 @@
 <html lang="en">
 
 <head>
-  <!-- Google Fonts: non-blocking -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Preconnect -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<!-- Preload fonts stylesheet -->
+<link
+  rel="preload"
+  as="style"
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap"
+/>
+
+<!-- Load fonts non-blocking -->
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap"
+  media="print"
+  onload="this.media='all'"
+/>
+
+<noscript>
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap"
+  />
+</noscript>
+
   <!-- Desktop -->
   <!-- LCP Hero Image Preload -->
   <link rel="preload" as="image" href="/logo.png" fetchpriority="high" />
@@ -12,10 +35,6 @@
     imagesrcset="/hero-mobile.webp 768w, /hero-dekstop.webp 1920w" imagesizes="100vw" />
   <link rel="preload" as="image" href="/kalpPcImg.webp" imagesrcset="/kalpPhImg.webp 768w, /kalpPcImg.webp 1920w"
     imagesizes="100vw" />
-
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap"
-    rel="stylesheet" />
   <style>
     body {
       margin: 0;
