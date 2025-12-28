@@ -22,11 +22,39 @@ import {
 import card, { CardContent } from '../components/card';
 import Navbar from '../components/Navbar'
 import { Link } from 'react-router-dom';
-import ReviewsSection from '../components/Reviews';
+import ReviewsSection from '../components/ReviewProject';
+import api from '../api';
 
 const KalpavrukshaPage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-   /* ---------------- SEO STRUCTURED DATA ---------------- */
+  const [showVisitModal, setShowVisitModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ name: '', phone: '', email: '', preferredDate: '' });
+  const [toast, setToast] = useState(null);
+
+  // Footer quick link refs and scroll handlers (like Home page)
+  const aboutRef = React.useRef(null);
+  const locationRef = React.useRef(null);
+  const amenitiesRef = React.useRef(null);
+  const galleryRef = React.useRef(null);
+  // For Home page CallToAction scroll (no reload)
+  const goToHomeCallToAction = () => {
+    window.location.href = "/#contact";
+  };
+
+  const scrollToAbout = () => {
+    aboutRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+  const scrollToLocation = () => {
+    locationRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+  const scrollToAmenities = () => {
+    amenitiesRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+  const scrollToGallery = () => {
+    galleryRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+  /* ---------------- SEO STRUCTURED DATA ---------------- */
 
   const projectSchema = {
     "@context": "https://schema.org",
@@ -102,22 +130,47 @@ const KalpavrukshaPage = () => {
     },
   ]
 
-  const CTAButton = ({ icon, text, primary = false, onClick = () => { } }) => (
-    <button
-      onClick={onClick}
-      className={`
-        inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold 
-        transition-all duration-300 transform hover:scale-105 hover:shadow-lg
-        ${primary
-          ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700'
-          : 'bg-white text-gray-800 border border-gray-300 hover:bg-gray-50'
-        }
-      `}
-    >
-      {icon}
-      <span>{text}</span>
-    </button>
-  );
+  const CTAButton = ({
+    icon,
+    text,
+    primary = false,
+    onClick,
+    href,
+    target,
+  }) => {
+    const classes = `
+    inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold 
+    transition-all duration-300 transform hover:scale-105 hover:shadow-lg
+    ${primary
+        ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700'
+        : 'bg-white text-gray-800 border border-gray-300 hover:bg-gray-50'
+      }
+  `;
+
+    // 👉 If link exists, render <a>
+    if (href) {
+      return (
+        <a
+          href={href}
+          target={target}
+          rel={target === "_blank" ? "noopener noreferrer" : undefined}
+          className={classes}
+        >
+          {icon}
+          <span>{text}</span>
+        </a>
+      );
+    }
+
+    // 👉 Default: button
+    return (
+      <button onClick={onClick} className={classes}>
+        {icon}
+        <span>{text}</span>
+      </button>
+    );
+  };
+
 
   //All codes related to img glary 
   const demoImg = [
@@ -142,9 +195,45 @@ const KalpavrukshaPage = () => {
       closeModal();
     }
   };
+
+  const openVisitModal = () => setShowVisitModal(true);
+  const closeVisitModal = () => setShowVisitModal(false);
+
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const submitSiteVisit = async (e) => {
+    e?.preventDefault?.();
+    if (!form.name || !form.phone || !form.preferredDate) {
+      setToast({ type: 'error', msg: 'Please enter name, phone and date.' });
+      return;
+    }
+    try {
+      setSubmitting(true);
+      await api.post('/api/site-visits', {
+        project: 'Kalpavruksha',
+        name: form.name,
+        phone: form.phone,
+        email: form.email || undefined,
+        preferredDate: form.preferredDate,
+      });
+      setToast({ type: 'success', msg: 'Request received. We will confirm shortly.' });
+      setShowVisitModal(false);
+      setForm({ name: '', phone: '', email: '', preferredDate: '' });
+    } catch (err) {
+      console.error(err);
+      const msg = err.response?.data?.message || 'Failed to submit. Please try again.';
+      setToast({ type: 'error', msg });
+    } finally {
+      setSubmitting(false);
+      setTimeout(() => setToast(null), 4000);
+    }
+  };
   return (
     <>
-       <Helmet>
+      <Helmet>
         <title>
           Kalpavruksha Open Plots in Vijayawada | CRDA Approved Plots Near Amaravati
         </title>
@@ -166,6 +255,47 @@ const KalpavrukshaPage = () => {
           {JSON.stringify(projectSchema)}
         </script>
       </Helmet>
+      {/* Toast */}
+      {toast && (
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded shadow text-white ${toast.type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`}>
+          {toast.msg}
+        </div>
+      )}
+
+      {/* Site Visit Modal */}
+      {showVisitModal && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50" onClick={(e) => { if (e.target === e.currentTarget) closeVisitModal(); }}>
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold">Book a Site Visit</h3>
+              <button onClick={closeVisitModal} className="p-2 rounded hover:bg-gray-100"><X className="w-5 h-5" /></button>
+            </div>
+            <form onSubmit={submitSiteVisit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input name="name" value={form.name} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Your name" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <input name="phone" value={form.phone} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="e.g., 9898899666" required />
+                <p className="text-xs text-gray-500 mt-1">We will also send a WhatsApp update to this number.</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email (optional)</label>
+                <input type="email" name="email" value={form.email} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="you@example.com" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Date & Time</label>
+                <input type="datetime-local" name="preferredDate" value={form.preferredDate} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" required />
+              </div>
+              <button type="submit" disabled={submitting} className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-white font-semibold ${submitting ? 'bg-emerald-400' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
+                {submitting ? 'Submitting...' : 'Submit Request'}
+              </button>
+              <p className="text-xs text-gray-500 text-center">You will receive an email and WhatsApp update once submitted.</p>
+            </form>
+          </div>
+        </div>
+      )}
       <h1 className="sr-only">
         Kalpavruksha Project
         <Link to="/searchProperties">View All Projects</Link>
@@ -186,13 +316,13 @@ const KalpavrukshaPage = () => {
               srcSet="kalpPhImg.webp"
               type="image/webp"
             />
-           <img
-            src="/kalpPcImg.webp"
-            alt="Kalpavruksha Hero"
-            className="w-full h-full object-cover opacity-80 aspect-[16/9]"
-            fetchpriority="high"
-            decoding="async"
-          />
+            <img
+              src="/kalpPcImg.webp"
+              alt="Kalpavruksha Hero"
+              className="w-full h-full object-cover opacity-80 aspect-[16/9]"
+              fetchpriority="high"
+              decoding="async"
+            />
           </picture>
 
 
@@ -225,28 +355,35 @@ const KalpavrukshaPage = () => {
                   primary
                   className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-gray-900"
                 /></a>
-              <CTAButton
+              {/* <CTAButton
                 icon={<MapPin className="w-5 h-5" />}
                 text="Schedule Site Visit"
                 className="bg-yellow-500 text-gray-900 hover:bg-yellow-400"
-              />
-              <CTAButton
-                icon={<MessageCircle className="w-5 h-5" />}
-                text="Talk to Us on WhatsApp"
-                className="bg-yellow-500 text-gray-900 hover:bg-yellow-400"
-              />
+              /> */}
+              <a
+                href="https://wa.me/918988896666?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20Kalpavruksha%20project."
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <CTAButton
+                  icon={<MessageCircle className="w-5 h-5" />}
+                  text="Talk to Us on WhatsApp"
+                  className="bg-yellow-500 text-gray-900 hover:bg-yellow-400"
+                />
+              </a>
             </div>
 
-            <CTAButton
+            {/* <CTAButton
               icon={<Phone className="w-5 h-5" />}
               text="Request a Callback"
               className="bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30"
-            />
+            /> */}
           </div>
         </section>
 
         {/* Section 2: From Longing to Belonging */}
-        <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+        <div ref={aboutRef} />
+        <section id="about" className="py-20 bg-gradient-to-b from-white to-gray-50">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-8">
               From Longing to <span className="text-emerald-600">Belonging</span>
@@ -306,7 +443,8 @@ const KalpavrukshaPage = () => {
         </section>
 
         {/* Section 4: Project Renderings Gallery */}
-        <section className="py-20 bg-white">
+        <div ref={galleryRef} />
+        <section id="gallery" className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -376,7 +514,8 @@ const KalpavrukshaPage = () => {
           </div>)}
 
         {/* Section 5: What Sets Kalpavruksha Apart */}
-        <section className="py-20 bg-white">
+        <div ref={amenitiesRef} />
+        <section id="amenities" className="py-20 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
@@ -456,10 +595,13 @@ const KalpavrukshaPage = () => {
                     <CTAButton
                       icon={<MapPin className="w-5 h-5" />}
                       text="Book a Site Visit"
+                      onClick={openVisitModal}
                     />
                     <CTAButton
                       icon={<MessageCircle className="w-5 h-5" />}
                       text="Chat on WhatsApp"
+                      href="https://wa.me/918988896666?text=Hi%20Easy%20Homes,%20I%20want%20to%20book%20a%20site%20visit%20for%20Kalpavruksha."
+                      target="_blank"
                     />
                   </div>
                 </div>
@@ -488,7 +630,8 @@ const KalpavrukshaPage = () => {
         </section>
 
         {/* Section 7: Location */}
-        <section className="py-20 bg-gradient-to-br from-emerald-900 to-teal-900 text-white">
+        <div ref={locationRef} />
+        <section id="location" className="py-20 bg-gradient-to-br from-emerald-900 to-teal-900 text-white">
           <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl md:text-5xl font-bold mb-8">
               Moments from the City. <br />
@@ -516,16 +659,24 @@ const KalpavrukshaPage = () => {
                 icon={<MapPin className="w-5 h-5" />}
                 text="Schedule a Site Visit"
                 primary
+                onClick={openVisitModal}
               />
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <CTAButton
-                  icon={<MessageCircle className="w-5 h-5" />}
-                  text="Talk to Us on WhatsApp"
-                />
+                <a
+                  href="https://wa.me/918988896666?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20Kalpavruksha."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <CTAButton
+                    icon={<MessageCircle className="w-5 h-5" />}
+                    text="Talk to Us on WhatsApp"
+                  />
+                </a>
                 <CTAButton
                   icon={<Phone className="w-5 h-5" />}
                   text="Request a Callback"
+                  onClick={goToHomeCallToAction}
                 />
                 <a
                   href="/mainBrouche.pdf"
@@ -548,7 +699,7 @@ const KalpavrukshaPage = () => {
               <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
                 Voices That Speak for <span className="text-emerald-600">Kalpavruksha</span>
               </h2>
-              <div className=" rounded-2xl text-center min-h-[600px] sm:min-h-[550px]">
+              <div className="rounded-2xl text-center">
                 <p className="text-gray-600 text-xl">
                   See what our customers are saying on {' '}
                   <span className="mb-4">
@@ -584,29 +735,34 @@ const KalpavrukshaPage = () => {
               <div>
                 <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
                 <ul className="space-y-2 text-gray-400">
-                  <li><a href="#" className="hover:text-emerald-400 transition-colors">About Project</a></li>
-                  <li><a href="#" className="hover:text-emerald-400 transition-colors">Location</a></li>
-                  <li><a href="#" className="hover:text-emerald-400 transition-colors">Amenities</a></li>
-                  <li><a href="#" className="hover:text-emerald-400 transition-colors">Gallery</a></li>
+                  <li><button onClick={scrollToAbout} className="footer-slide-link bg-transparent border-none outline-none p-0">About Project</button></li>
+                  <li><button onClick={scrollToLocation} className="footer-slide-link bg-transparent border-none outline-none p-0">Location</button></li>
+                  <li><button onClick={scrollToAmenities} className="footer-slide-link bg-transparent border-none outline-none p-0">Amenities</button></li>
+                  <li><button onClick={scrollToGallery} className="footer-slide-link bg-transparent border-none outline-none p-0">Gallery</button></li>
                 </ul>
               </div>
 
               <div>
                 <h4 className="text-lg font-semibold mb-4">Contact Us</h4>
                 <div className="flex gap-4">
-                  <div className=''>
+                  <a href="tel:+918988896666">
                     <CTAButton
                       icon={<Phone className="w-4 h-4 " />}
                       text="Call Now"
-
                     />
-                  </div>
+                  </a>
                   <div>
-                    <CTAButton
-                      icon={<MessageCircle className="w-4 h-4" />}
-                      text="WhatsApp"
-                      primary
-                    />
+                    <a
+                      href="https://wa.me/918988896666?text=Hi%20Easy%20Homes,%20please%20contact%20me%20regarding%20Kalpavruksha."
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <CTAButton
+                        icon={<MessageCircle className="w-4 h-4" />}
+                        text="WhatsApp"
+                        primary
+                      />
+                    </a>
                   </div>
                 </div>
               </div>

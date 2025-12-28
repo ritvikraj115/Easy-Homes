@@ -1,11 +1,12 @@
 // client/src/pages/Home.jsx
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 
 import Projects from "../components/Home/Projects";
 import Features from "../components/Home/Features";
 import Hero from "../components/Home/Hero";
 import Footer from "../components/Home/Footer";
+import { useState } from "react";
 import HowItWorks from "../components/Home/HowItWorks";
 import Testimonials from "../components/Home/Testimonials";
 import CallToAction from "../components/Home/CallToAction";
@@ -13,8 +14,32 @@ import FeaturedProjects from "../components/Home/FeaturedProject";
 
 export default function Home() {
   const featuredRef = useRef(null);
+  const aboutRef = useRef(null);
+  const contactRef = useRef(null);
+  const [toast, setToast] = useState(null);
+
   const scrollToFeatured = () => {
     featuredRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+  const scrollToAbout = () => {
+    aboutRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+  const scrollToContact = () => {
+    contactRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Smooth scroll to #contact if navigated with hash
+  useEffect(() => {
+    if (window.location.hash === "#contact") {
+      setTimeout(() => {
+        contactRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  }, []);
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
   };
 
   /* ---------- Structured Data ---------- */
@@ -69,10 +94,10 @@ export default function Home() {
     "telephone": "+918988896666",
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "123 Capital Avenue",
-      "addressLocality": "Amaravati",
+      "streetAddress": "4th Floor, adjacent to GIG International School, Gollapudi",
+      "addressLocality": "Vijayawada",
       "addressRegion": "Andhra Pradesh",
-      "postalCode": "522020",
+      "postalCode": "521225",
       "addressCountry": "IN"
     },
     "url": "https://easyhomess.com/",
@@ -137,15 +162,31 @@ export default function Home() {
         </script>
       </Helmet>
 
+      {toast && (
+        <div style={{position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 9999}}>
+          <div className="bg-[#3868B2] text-white px-6 py-3 rounded-lg shadow-lg font-poppins text-base animate-fade-in">
+            {toast}
+          </div>
+        </div>
+      )}
       <main>
         <Hero scrollToFeatured={scrollToFeatured} />
         <FeaturedProjects cref={featuredRef} />
         <Projects />
         <HowItWorks />
+        {/* About Section Anchor */}
+        <div ref={aboutRef} />
         <Features />
         <Testimonials />
+        {/* Contact Section Anchor */}
+        <div ref={contactRef} />
         <CallToAction />
-        <Footer />
+        <Footer
+          onAboutClick={scrollToAbout}
+          onContactClick={scrollToContact}
+          onTermsClick={() => showToast("Terms & Conditions page is under development.")}
+          onPrivacyClick={() => showToast("Privacy Policy page is under development.")}
+        />
       </main>
     </>
   );

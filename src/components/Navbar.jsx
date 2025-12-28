@@ -12,14 +12,19 @@ import { Phone } from 'lucide-react';
 const MENU_ITEMS = [
   { label: 'Featured Projects', to: '/projects' },
   { label: 'Search Properties', to: '/searchProperties' },
-  { label: 'About', to: '/about' },
-  { label: 'Contact', to: '/contact' },
+  { label: 'About', to: '/about', isStub: true },
+  { label: 'Contact', to: '/contact', isStub: true },
 ];
 
 export default function Navbar() {
   const [openMobile, setOpenMobile] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
   const navigate = useNavigate();
+  const [toast, setToast] = useState(null);
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  };
   const { isAuthenticated, user } = useAuthState();
   const dispatch = useAuthDispatch();
   const profileRef = useRef();
@@ -67,15 +72,26 @@ export default function Navbar() {
 
         <nav className="navbar__menu">
           {MENU_ITEMS.map(item => (
-            <NavLink
-              key={item.label}
-              to={item.to}
-              className={({ isActive }) =>
-                isActive ? 'navbar__link active' : 'navbar__link'
-              }
-            >
-              {item.label}
-            </NavLink>
+            item.isStub ? (
+              <button
+                key={item.label}
+                className="navbar__link bg-transparent border-none outline-none cursor-pointer"
+                style={{background: 'none', border: 'none', padding: 0}}
+                onClick={() => showToast(`${item.label} page is under development.`)}
+              >
+                {item.label}
+              </button>
+            ) : (
+              <NavLink
+                key={item.label}
+                to={item.to}
+                className={({ isActive }) =>
+                  isActive ? 'navbar__link active' : 'navbar__link'
+                }
+              >
+                {item.label}
+              </NavLink>
+            )
           ))}
         </nav>
 
@@ -138,16 +154,27 @@ export default function Navbar() {
         {openMobile && (
           <nav className="navbar__menu navbar__menu--mobile open">
             {MENU_ITEMS.map(item => (
-              <NavLink
-                key={item.label}
-                to={item.to}
-                className={({ isActive }) =>
-                  isActive ? 'navbar__link active' : 'navbar__link'
-                }
-                onClick={() => setOpenMobile(false)}
-              >
-                {item.label}
-              </NavLink>
+              item.isStub ? (
+                <button
+                  key={item.label}
+                  className="navbar__link bg-transparent border-none outline-none cursor-pointer"
+                  style={{background: 'none', border: 'none', padding: 0}}
+                  onClick={() => { showToast(`${item.label} page is under development.`); setOpenMobile(false); }}
+                >
+                  {item.label}
+                </button>
+              ) : (
+                <NavLink
+                  key={item.label}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    isActive ? 'navbar__link active' : 'navbar__link'
+                  }
+                  onClick={() => setOpenMobile(false)}
+                >
+                  {item.label}
+                </NavLink>
+              )
             ))}
 
             {isAuthenticated && (
@@ -202,9 +229,18 @@ export default function Navbar() {
             </div>
           </nav>
         )}
-      </div>
-    </header>
+      {/* Toast notification (always visible, not inside nav) */}
+      {toast && (
+        <div style={{position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 9999}}>
+          <div className="bg-[#3868B2] text-white px-6 py-3 rounded-lg shadow-lg font-poppins text-base animate-fade-in">
+            {toast}
+          </div>
+        </div>
+      )}
+    </div>
+  </header>
   );
 }
+
 
 

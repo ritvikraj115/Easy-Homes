@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import logo from '../../assets/img/Logo.webp';
 import { Facebook, Instagram, Mail, MapPin, MessageCircle, Phone, Twitter } from 'react-feather';
 
-const Footer = () => {
+const Footer = ({ onAboutClick, onContactClick, onTermsClick, onPrivacyClick }) => {
   return (
     <footer className="bg-[#020407] text-white relative">
       <div className="container mx-auto !px-4 md:!px-10 lg:!px-32">
@@ -39,12 +39,12 @@ const Footer = () => {
           <div className="sm:ml-4">
             <h4 className="text-lg font-semibold mb-6 font-poppins">Quick Links</h4>
             <ul className="flex flex-col gap-3">
-              <li><Link to="/#projects" className="text-gray-300 hover:text-white font-inter">Projects</Link></li>
-              <li><Link to="/#buy-plot" className="text-gray-300 hover:text-white font-inter">Buy a Plot</Link></li>
-              <li><Link to="/#about" className="text-gray-300 hover:text-white font-inter">About Us</Link></li>
-              <li><Link to="/#contact" className="text-gray-300 hover:text-white font-inter">Contact</Link></li>
-              <li><Link to="/terms" className="text-gray-300 hover:text-white font-inter">Terms & Conditions</Link></li>
-              <li><Link to="/privacy" className="text-gray-300 hover:text-white font-inter">Privacy Policy</Link></li>
+              <li><Link to="/projects" className="text-gray-300 hover:text-white font-inter">Projects</Link></li>
+              <li><Link to="/searchProperties" className="text-gray-300 hover:text-white font-inter">Buy a Plot</Link></li>
+              <li><button onClick={onAboutClick} className="text-left text-gray-300 hover:text-white font-inter bg-transparent border-none outline-none cursor-pointer">About Us</button></li>
+              <li><button onClick={onContactClick} className="text-left text-gray-300 hover:text-white font-inter bg-transparent border-none outline-none cursor-pointer">Contact</button></li>
+              <li><button onClick={onTermsClick} className="text-left text-gray-300 hover:text-white font-inter bg-transparent border-none outline-none cursor-pointer">Terms & Conditions</button></li>
+              <li><button onClick={onPrivacyClick} className="text-left text-gray-300 hover:text-white font-inter bg-transparent border-none outline-none cursor-pointer">Privacy Policy</button></li>
             </ul>
           </div>
 
@@ -54,17 +54,38 @@ const Footer = () => {
             <div className="flex flex-col gap-4">
               <div className="flex items-start gap-3">
                 <MapPin size={20} className="text-[#3868B2] mt-1" />
-                <p className="text-gray-300 font-inter">
-                  123 Capital Avenue,<br />Amaravati, Andhra Pradesh<br />522020
-                </p>
+                <a
+                  href="https://www.google.com/maps/place/Easy+Homes/@16.553755,80.568644,17z/data=!4m6!3m5!1s0x3a35efa10202d185:0x6a994082397967aa!8m2!3d16.553755!4d80.570832!16s%2Fg%2F11t4w2w7qg?entry=ttu"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-300 font-inter hover:text-emerald-400 transition-colors no-underline"
+                  style={{ textDecoration: 'none' }}
+                  title="Open Easy Homes in Google Maps"
+                >
+                  4th Floor, adjacent to GIG International School,<br />Gollapudi, Vijayawada,<br />Andhra Pradesh 521225
+                </a>
               </div>
               <div className="flex items-start gap-3">
                 <Phone size={20} className="text-[#3868B2] mt-1" />
-                <p className="text-gray-300 font-inter">+91 98765 43210</p>
+                <a
+                  href="tel:+918988896666"
+                  className="text-gray-300 font-inter hover:text-emerald-400 transition-colors no-underline"
+                  style={{ textDecoration: 'none' }}
+                  title="Call Easy Homes"
+                >
+                  +91 8988896666
+                </a>
               </div>
               <div className="flex items-start gap-3">
                 <Mail size={20} className="text-[#3868B2] mt-1" />
-                <p className="text-gray-300 font-inter">info@easyhomes.com</p>
+                <a
+                  href="mailto:contact@easyhomess.com"
+                  className="text-gray-300 font-inter hover:text-emerald-400 transition-colors no-underline"
+                  style={{ textDecoration: 'none' }}
+                  title="Email Easy Homes"
+                >
+                  contact@easyhomess.com
+                </a>
               </div>
             </div>
           </div>
@@ -78,9 +99,9 @@ const Footer = () => {
       </div>
 
       {/* WhatsApp Floating Button */}
-      <Link to='/' className="fixed bottom-6 right-6 w-14 h-14 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center text-white shadow-xl z-50 transition-transform transform hover:scale-110">
+      <a href="https://wa.me/918988896666?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20your%20projects." target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 w-14 h-14 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center text-white shadow-xl z-50 transition-transform transform hover:scale-110">
         <MessageCircle className="w-8 h-8" />
-      </Link>
+      </a>
     </footer>
   );
 };

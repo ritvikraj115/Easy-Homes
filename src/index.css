@@ -1,3 +1,31 @@
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+/* Sliding animation for Kalpavruksha footer quick links */
+.footer-slide-link {
+  display: inline-block;
+  color: #9ca3af; /* Tailwind gray-400 */
+  transition: color 0.3s, transform 0.3s;
+  cursor: pointer;
+  text-decoration: none;
+}
+.footer-slide-link:hover {
+  color: #34d399; /* Tailwind emerald-400 */
+  transform: translateX(8px);
+}
+/* Click sliding animation */
+.footer-slide-link.clicked {
+  animation: slide-right-click 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes slide-right-click {
+  0% { transform: translateX(0); }
+  40% { transform: translateX(16px); }
+  100% { transform: translateX(0); }
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -20,4 +48,8 @@ code {
 .removeScorll{
       scrollbar-width: none;      
   -ms-overflow-style: none; 
+}
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
 }
