@@ -27,6 +27,11 @@ export default function Home() {
   const scrollToContact = () => {
     contactRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+  // Expose scrollToContact and scrollToAbout globally for Navbar/Features buttons
+  if (typeof window !== 'undefined') {
+    window.scrollToContact = scrollToContact;
+    window.scrollToAbout = scrollToAbout;
+  }
 
   // Smooth scroll to #contact if navigated with hash
   useEffect(() => {

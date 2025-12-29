@@ -71,8 +71,32 @@ export default function Navbar() {
         </button>
 
         <nav className="navbar__menu">
-          {MENU_ITEMS.map(item => (
-            item.isStub ? (
+          {MENU_ITEMS.map(item => {
+            // For About and Contact, scroll to section if on home page
+            if (item.label === 'About' || item.label === 'Contact') {
+              return (
+                <button
+                  key={item.label}
+                  className="navbar__link bg-transparent border-none outline-none cursor-pointer"
+                  style={{background: 'none', border: 'none', padding: 0}}
+                  onClick={() => {
+                    showToast(`${item.label} page is under development.`);
+                    if (typeof window !== 'undefined') {
+                      if (window.location.pathname === '/') {
+                        if (item.label === 'About' && window.scrollToAbout) window.scrollToAbout();
+                        if (item.label === 'Contact' && window.scrollToContact) window.scrollToContact();
+                      } else if (window.location.pathname.includes('projects')) {
+                        if (item.label === 'About' && window.scrollToAmenities) window.scrollToAmenities();
+                        if (item.label === 'Contact' && window.scrollToContact) window.scrollToContact();
+                      }
+                    }
+                  }}
+                >
+                  {item.label}
+                </button>
+              );
+            }
+            return item.isStub ? (
               <button
                 key={item.label}
                 className="navbar__link bg-transparent border-none outline-none cursor-pointer"
@@ -91,8 +115,8 @@ export default function Navbar() {
               >
                 {item.label}
               </NavLink>
-            )
-          ))}
+            );
+          })}
         </nav>
 
         <div className="navbar__actions" ref={profileRef}>
@@ -153,8 +177,32 @@ export default function Navbar() {
 
         {openMobile && (
           <nav className="navbar__menu navbar__menu--mobile open">
-            {MENU_ITEMS.map(item => (
-              item.isStub ? (
+            {MENU_ITEMS.map(item => {
+              if (item.label === 'About' || item.label === 'Contact') {
+                return (
+                  <button
+                    key={item.label}
+                    className="navbar__link bg-transparent border-none outline-none cursor-pointer"
+                    style={{background: 'none', border: 'none', padding: 0}}
+                    onClick={() => {
+                      showToast(`${item.label} page is under development.`);
+                      if (typeof window !== 'undefined') {
+                        if (window.location.pathname === '/') {
+                          if (item.label === 'About' && window.scrollToAbout) window.scrollToAbout();
+                          if (item.label === 'Contact' && window.scrollToContact) window.scrollToContact();
+                        } else if (window.location.pathname.includes('Kalpavruksha')) {
+                          if (item.label === 'About' && window.scrollToAmenities) window.scrollToAmenities();
+                          if (item.label === 'Contact' && window.scrollToContact) window.scrollToContact();
+                        }
+                      }
+                      setOpenMobile(false);
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                );
+              }
+              return item.isStub ? (
                 <button
                   key={item.label}
                   className="navbar__link bg-transparent border-none outline-none cursor-pointer"
@@ -174,8 +222,8 @@ export default function Navbar() {
                 >
                   {item.label}
                 </NavLink>
-              )
-            ))}
+              );
+            })}
 
             {isAuthenticated && (
               <>

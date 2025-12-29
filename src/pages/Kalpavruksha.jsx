@@ -26,6 +26,7 @@ import ReviewsSection from '../components/ReviewProject';
 import api from '../api';
 
 const KalpavrukshaPage = () => {
+  // ...existing code...
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showVisitModal, setShowVisitModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -54,6 +55,15 @@ const KalpavrukshaPage = () => {
   const scrollToGallery = () => {
     galleryRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+  // Expose scroll handlers globally for Navbar (after function declarations)
+  if (typeof window !== 'undefined') {
+    window.scrollToAmenities = scrollToAmenities;
+    window.scrollToContact = () => {
+      // Scroll to footer contact section
+      const footer = document.querySelector('footer');
+      if (footer) footer.scrollIntoView({ behavior: 'smooth' });
+    };
+  }
   /* ---------------- SEO STRUCTURED DATA ---------------- */
 
   const projectSchema = {
@@ -174,12 +184,12 @@ const KalpavrukshaPage = () => {
 
   //All codes related to img glary 
   const demoImg = [
-    { title: "Grand Entrance", image: "https://images.pexels.com/photos/1396132/pexels-photo-1396132.jpeg?auto=compress&cs=tinysrgb&w=600" },
-    { title: "Clubhouse", image: "https://images.pexels.com/photos/1029599/pexels-photo-1029599.jpeg?auto=compress&cs=tinysrgb&w=600" },
-    { title: "Landscaped Gardens", image: "https://images.pexels.com/photos/1105766/pexels-photo-1105766.jpeg?auto=compress&cs=tinysrgb&w=600" },
-    { title: "Kids Play Area", image: "https://images.pexels.com/photos/1148998/pexels-photo-1148998.jpeg?auto=compress&cs=tinysrgb&w=600" },
-    { title: "Internal Roads", image: "https://images.pexels.com/photos/1166473/pexels-photo-1166473.jpeg?auto=compress&cs=tinysrgb&w=600" },
-    { title: "Master Layout", image: "https://images.pexels.com/photos/1029604/pexels-photo-1029604.jpeg?auto=compress&cs=tinysrgb&w=600" }
+    { title: "Grand Entrance", image: require("../assets/kalpavruksha/Entry-000.webp"), alt: "Kalpavruksha Grand Entrance - CRDA Approved Plots Vijayawada" },
+    { title: "Modern Clubhouse", image: require("../assets/kalpavruksha/club house.webp"), alt: "Kalpavruksha Modern Clubhouse - Luxury Amenities" },
+    { title: "Contour Garden", image: require("../assets/kalpavruksha/contour garden.webp"), alt: "Kalpavruksha Contour Garden - Landscaped Greenery" },
+    { title: "Arrival Court", image: require("../assets/kalpavruksha/arrival court.webp"), alt: "Kalpavruksha Arrival Court - Gated Community Entrance" },
+    { title: "Lotus Pond Retreat", image: require("../assets/kalpavruksha/lotus pond 2 (1).webp"), alt: "Kalpavruksha Lotus Pond - Serene Water Feature" },
+    { title: "Seating Area", image: require("../assets/kalpavruksha/seating area.webp"), alt: "Kalpavruksha Seating Area - Relaxing Outdoor Space" }
   ]
   const [selectedImage, setSelectedImage] = useState(null);
   const openModal = (item) => {
@@ -582,7 +592,7 @@ const KalpavrukshaPage = () => {
 
                 <div className="mt-8 space-y-4">
                   <a
-                    href="/pdfLayOut.pdf"
+                    href="/Kalpavruksha Master Layout.pdf"
                     download
                     className="inline-flex items-center h-fit w-fit  text-white rounded-full transition duration-200"
                   >
@@ -618,11 +628,18 @@ const KalpavrukshaPage = () => {
                     but to cultivate a lifestyle.
                   </p>
 
-                  <div className="aspect-square bg-white rounded-lg shadow-inner">
-                    <div className="w-full h-full rounded-lg flex items-center justify-center">
-                      <img src="/hero-dekstop.webp" alt="" className='h-full w-full rounded-lg' />
-                    </div>
+                  {/* Landscape aspect ratio for layout image */}
+                  <div className="aspect-[16/9] bg-white rounded-lg shadow-inner cursor-pointer flex items-center justify-center overflow-hidden" onClick={() => setSelectedImage({ image: require('../assets/kalpavruksha/layout.webp'), title: 'Kalpavruksha Project Master Layout', alt: 'Kalpavruksha Project Master Layout - CRDA Approved Plots Map' })}>
+                    <img
+                      src={require('../assets/kalpavruksha/layout.webp')}
+                      alt="Kalpavruksha Project Master Layout - CRDA Approved Plots Map"
+                      className="object-contain w-full h-full rounded-lg transition-transform duration-300 hover:scale-105"
+                      loading="lazy"
+                      decoding="async"
+                      style={{ maxHeight: '320px' }}
+                    />
                   </div>
+                  <p className="text-xs text-gray-500 mt-2">Click image to enlarge</p>
                 </div>
               </div>
             </div>
