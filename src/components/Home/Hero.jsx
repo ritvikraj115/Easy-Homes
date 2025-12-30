@@ -29,7 +29,7 @@ const Hero = ({ scrollToFeatured }) => {
           className="w-full h-full object-cover"
           decoding="async"
           loading="eager"
-          fetchpriority="high"
+          fetchPriority="high"
           width="1920"
           height="1080"
         />

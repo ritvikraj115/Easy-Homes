@@ -19,7 +19,7 @@ import {
   X,
   Star
 } from 'lucide-react';
-import card, { CardContent } from '../components/card';
+import card, { Card, CardContent } from '../components/card';
 import Navbar from '../components/Navbar'
 import { Link } from 'react-router-dom';
 import ReviewsSection from '../components/ReviewProject';
@@ -330,7 +330,7 @@ const KalpavrukshaPage = () => {
               src="/kalpPcImg.webp"
               alt="Kalpavruksha Hero"
               className="w-full h-full object-cover opacity-80 aspect-[16/9]"
-              fetchpriority="high"
+              fetchPriority="high"
               decoding="async"
             />
           </picture>
@@ -539,7 +539,7 @@ const KalpavrukshaPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
               {features.map((feature, index) => (
-                <card
+                <Card
                   key={index}
                   className="p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-l-emerald-500"
                 >
@@ -554,7 +554,7 @@ const KalpavrukshaPage = () => {
                       </div>
                     </div>
                   </CardContent>
-                </card>
+                </Card>
               ))}
             </div>
           </div>

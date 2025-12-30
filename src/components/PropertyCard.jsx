@@ -32,6 +32,11 @@ const PropertyCard = ({ property }) => {
           className="pc-image"
           loading="lazy"
           decoding="async"
+          width="400"
+          height="225"
+          style={{ aspectRatio: '16/9', objectFit: 'cover', width: '100%', height: 'auto', display: 'block' }}
+          srcSet={property.media.images[currentImageIndex] ? `${property.media.images[currentImageIndex]} 1x, ${property.media.images[currentImageIndex]} 2x` : undefined}
+          sizes="(max-width: 600px) 100vw, 400px"
         />
 
         {property.media.images.length > 1 && (

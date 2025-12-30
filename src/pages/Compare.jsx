@@ -82,7 +82,15 @@ export default function Compare() {
               <th className="label-col" />
               {properties.map(p => (
                 <th key={p.mlsNumber}>
-                  <img src={p.media.images[0]} alt={p.name} />
+                  <img
+                    src={p.media.images[0]}
+                    alt={p.name}
+                    width="300"
+                    height="156"
+                    style={{ aspectRatio: '300/156', objectFit: 'cover', width: '100%', height: 'auto', display: 'block' }}
+                    srcSet={p.media.images[0] ? `${p.media.images[0]} 1x, ${p.media.images[0]} 2x` : undefined}
+                    sizes="(max-width: 600px) 100vw, 300px"
+                  />
                   <div className="prop-name">{p.name}</div>
                   <div className="prop-loc">{p.location}</div>
                   <div className="prop-price">{p.priceRange}</div>

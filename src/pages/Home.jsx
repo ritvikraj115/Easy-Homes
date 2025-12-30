@@ -70,14 +70,12 @@ export default function Home() {
     "telephone": "+918988896666",
     "address": {
       "@type": "PostalAddress",
+      "streetAddress": "4th Floor, adjacent to GIG International School, Gollapudi",
       "addressLocality": "Vijayawada",
       "addressRegion": "Andhra Pradesh",
+      "postalCode": "521225",
       "addressCountry": "IN"
-    },
-    "sameAs": [
-      "https://www.facebook.com/easyhomes",
-      "https://www.instagram.com/easyhomes"
-    ]
+    }
   };
 
   const siteData = {
@@ -112,61 +110,42 @@ export default function Home() {
   return (
     <>
       <Helmet>
-        {/* Primary SEO */}
-        <title>
-          Easy Homes | CRDA-Approved Plots in Amaravati & Vijayawada
-        </title>
+        {/* Primary SEO with all target keywords */}
+        <title>Easy Homes | CRDA-Approved Plots in Amaravati & Vijayawada</title>
+        <meta name="description" content="View details and compare CRDA-approved residential plots in Andhra Pradesh. Find your ideal plot in Amaravati, Vijayawada, and more. Explore plot listings, view amenities, and get all details with Easy Homes." />
+        <meta name="keywords" content="plot, andhra, pradesh, view, details, plots in Andhra Pradesh, plot view, plot details, buy plot Andhra Pradesh, Amaravati, Vijayawada" />
+        <meta name="robots" content="index,follow" />
+        <link rel="canonical" href="https://easyhomess.com/" />
 
         {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Easy Homes" />
-        <meta property="og:title" content="Easy Homes | CRDA-Approved Plots in Amaravati & Vijayawada" />
-        <meta
-          property="og:description"
-          content="Explore verified CRDA-approved plots in Amaravati and Vijayawada. Clear titles, trusted developers, and transparent pricing."
-        />
+        <meta property="og:title" content="Andhra Pradesh Plot View Details | Buy Plots in Andhra Pradesh | Easy Homes" />
+        <meta property="og:description" content="View details and compare CRDA-approved residential plots in Andhra Pradesh. Find your ideal plot in Amaravati, Vijayawada, and more. Explore plot listings, view amenities, and get all details with Easy Homes." />
         <meta property="og:url" content="https://easyhomess.com/" />
-        <meta
-          property="og:image"
-          content="https://easyhomess.com/logo.png"
-        />
+        <meta property="og:image" content="https://easyhomess.com/logo.png" />
         <meta property="og:image:width" content="512" />
         <meta property="og:image:height" content="512" />
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Andhra Pradesh Plot View Details | Buy Plots in Andhra Pradesh | Easy Homes" />
+        <meta name="twitter:description" content="View details and compare CRDA-approved residential plots in Andhra Pradesh. Find your ideal plot in Amaravati, Vijayawada, and more. Explore plot listings, view amenities, and get all details with Easy Homes." />
         <meta name="twitter:image" content="https://easyhomess.com/logo.png" />
 
-        <meta
-          name="description"
-          content="Discover 100% CRDA-approved residential plots in Amaravati and Vijayawada. Compare verified projects, clear titles, amenities, pricing, and secure trusted land with Easy Homes."
-        />
-
-        <meta name="robots" content="index,follow" />
-        <link rel="canonical" href="https://easyhomess.com/" />
-
-        {/* Open Graph (Social Sharing) */}
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="Easy Homes | CRDA-Approved Plots in Amaravati & Vijayawada" />
-        <meta property="og:description" content="Explore verified CRDA-approved plots in Amaravati and Vijayawada. Clear titles, trusted developers, and transparent pricing with Easy Homes." />
-        <meta property="og:url" content="https://easyhomess.com/" />
-        <meta property="og:image" content="https://easyhomess.com/og-home.jpg" />
-
         {/* Structured Data */}
-        <script type="application/ld+json">
-          {JSON.stringify(breadcrumbData)}
-        </script>
-        <script type="application/ld+json">
-          {JSON.stringify(orgData)}
-        </script>
-        <script type="application/ld+json">
-          {JSON.stringify(siteData)}
-        </script>
-        <script type="application/ld+json">
-          {JSON.stringify(localBusinessData)}
-        </script>
+        <script type="application/ld+json">{JSON.stringify(breadcrumbData)}</script>
+        <script type="application/ld+json">{JSON.stringify(orgData)}</script>
+        <script type="application/ld+json">{JSON.stringify(siteData)}</script>
+        <script type="application/ld+json">{JSON.stringify(localBusinessData)}</script>
       </Helmet>
 
+        {/* SEO Headings for keyword coverage */}
+        <h1 style={{display:'none'}}>Andhra Pradesh Plot View Details</h1>
+        <h2 style={{display:'none'}}>Plot Listings in Andhra Pradesh</h2>
+        <h2 style={{display:'none'}}>View Plot Details in Andhra Pradesh</h2>
+        <h2 style={{display:'none'}}>Andhra Pradesh Plot Amenities and Features</h2>
+        <h2 style={{display:'none'}}>Compare Plots in Andhra Pradesh</h2>
       {toast && (
         <div style={{position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 9999}}>
           <div className="bg-[#3868B2] text-white px-6 py-3 rounded-lg shadow-lg font-poppins text-base animate-fade-in">

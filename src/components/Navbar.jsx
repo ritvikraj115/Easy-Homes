@@ -58,7 +58,7 @@ export default function Navbar() {
             alt="Easy Homes"
             loading="eager"
             decoding="async"
-            fetchpriority="high"
+            fetchPriority="high"
           />
         </Link>
 

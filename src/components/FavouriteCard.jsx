@@ -16,8 +16,18 @@ export default function FavouriteCard({
   return (
     <div className="fav-card">
       <div className="fav-image-wrapper" onClick={() => navigate(`/property/${property.mlsNumber}`)}>
-        <img src={imgSrc} alt={property.name} className="fav-image" loading="lazy"
-  decoding="async" />
+        <img
+          src={imgSrc}
+          alt={property.name}
+          className="fav-image"
+          loading="lazy"
+          decoding="async"
+          width="400"
+          height="266"
+          style={{ aspectRatio: '3/2', objectFit: 'cover', width: '100%', height: '100%', display: 'block' }}
+          srcSet={imgSrc ? `${imgSrc} 1x, ${imgSrc} 2x` : undefined}
+          sizes="(max-width: 600px) 100vw, 400px"
+        />
       </div>
       <div className="fav-body">
         <div className="fav-top">

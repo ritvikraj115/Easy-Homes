@@ -14,7 +14,14 @@ export default function About() {
         <div className="absolute inset-0 pointer-events-none select-none opacity-30 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-[#3868B2]/20 via-white/0 to-transparent" />
         <div className="max-w-5xl mx-auto px-4 sm:px-8 lg:px-12 relative z-10">
           <div className="flex flex-col items-center text-center mb-16">
-            <img src={logo} alt="Easy Homes Logo" className="w-24 h-24 mb-6 rounded-xl shadow-xl border-4 border-white bg-white" />
+            <img
+              src={logo}
+              alt="Easy Homes Logo"
+              className="w-24 h-24 mb-6 rounded-xl shadow-xl border-4 border-white bg-white"
+              width="96"
+              height="96"
+              style={{ aspectRatio: '1/1', objectFit: 'contain', width: '6rem', height: '6rem', display: 'block' }}
+            />
             <h1 className="text-4xl md:text-5xl font-bold text-[#3868B2] mb-3 font-poppins tracking-tight drop-shadow-lg">About Easy Homes</h1>
             <h2 className="text-xl md:text-2xl font-medium text-gray-800 mb-4 font-poppins">Building Dreams, Delivering Trust</h2>
             <p className="text-lg md:text-xl text-gray-700 mb-8 font-inter max-w-2xl mx-auto">

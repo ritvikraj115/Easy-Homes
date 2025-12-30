@@ -156,7 +156,13 @@ export default function PropertyDetails() {
             </Button>
 
             <div className="max-w-72">
-              <img src={logo} alt="" />
+              <img
+                src={logo}
+                alt="Easy Homes Logo"
+                width="120"
+                height="40"
+                style={{ aspectRatio: '3/1', objectFit: 'contain', width: '120px', height: '40px', display: 'block' }}
+              />
             </div>
 
             <div className="flex items-center gap-2">
