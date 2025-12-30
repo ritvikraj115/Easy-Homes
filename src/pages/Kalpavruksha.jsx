@@ -188,7 +188,7 @@ const KalpavrukshaPage = () => {
     { title: "Modern Clubhouse", image: require("../assets/kalpavruksha/club house.webp"), alt: "Kalpavruksha Modern Clubhouse - Luxury Amenities" },
     { title: "Contour Garden", image: require("../assets/kalpavruksha/contour garden.webp"), alt: "Kalpavruksha Contour Garden - Landscaped Greenery" },
     { title: "Arrival Court", image: require("../assets/kalpavruksha/arrival court.webp"), alt: "Kalpavruksha Arrival Court - Gated Community Entrance" },
-    { title: "Lotus Pond Retreat", image: require("../assets/kalpavruksha/lotus pond 2 (1).webp"), alt: "Kalpavruksha Lotus Pond - Serene Water Feature" },
+    { title: "Lotus Pond Retreat", image: require("../assets/kalpavruksha/lotus pond 2.webp"), alt: "Kalpavruksha Lotus Pond - Serene Water Feature" },
     { title: "Seating Area", image: require("../assets/kalpavruksha/seating area.webp"), alt: "Kalpavruksha Seating Area - Relaxing Outdoor Space" }
   ]
   const [selectedImage, setSelectedImage] = useState(null);
