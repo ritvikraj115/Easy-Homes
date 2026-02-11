@@ -34,6 +34,7 @@ const Hero = ({ scrollToFeatured }) => {
           height="1080"
         />
 
+
         {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/30" />
       </picture>
