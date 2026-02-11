@@ -20,6 +20,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import ThankYouPage from './pages/ThankYouPage';
 
 function App() {
   function ScrollToTop() {
@@ -70,6 +71,8 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           {/* Kalpavruksha page */}
           <Route path="/projects" element={<KalpavrukshaPage />} />
+          {/* Thankyou page */}
+          <Route path="/thank-you" element={<ThankYouPage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
