@@ -1,0 +1,101 @@
+.thankyou-container {
+  /* background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center; */
+  font-family: "poppins";
+  text-align: center;
+  color: #ffffff; 
+  text-align: center;
+  min-height: 70vh;
+  padding: 40px 20px;
+  padding-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.thankyou-container h1 {
+  font-size: 48px;
+  margin-bottom: 10px;
+  color: #2c2c2c;
+  margin-top: 30px;
+}
+
+.success-message {
+  font-size: 22px;
+  margin-bottom: 30px;
+  color: #000000;
+}
+
+.thankyou-logo {
+  width: 250px;
+  max-width: 90%;
+  margin-bottom: 30px;
+}
+
+.team-msg {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #000000;
+}
+
+.follow-msg {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #000000;
+}
+
+.thankyou-social-icons {
+    display: flex;
+    flex-direction: row;
+    color: #000000;
+}
+
+.thankyou-social-icons a {
+  margin: 0 10px;
+  font-size: 25px;
+  color: #000000; 
+  transition: color 0.3s;
+}
+
+.thankyou-social-icons a:hover {
+  color: #2563EB; 
+}
+
+.thankyou-social-icons svg {
+  color: #000000;
+  transition: transform 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+}
+
+.thankyou-social-icons svg:hover {
+  color: #16516a;
+  transform: scale(1.1);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .thankyou-container h1 {
+    font-size: 36px;
+  }
+
+  .thankyou-container {
+    min-height: 60vh;
+  }
+
+  .success-message,
+  .team-msg,
+  .follow-msg {
+    font-size: 18px;
+  }
+
+  .thankyou-social-icons {
+    font-size: 24px;
+    gap: 16px;
+  }
+}
