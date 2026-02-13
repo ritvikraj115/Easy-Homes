@@ -100,7 +100,7 @@ const Footer = ({ onAboutClick, onContactClick, onTermsClick, onPrivacyClick }) 
       </div>
 
       {/* WhatsApp Floating Button */}
-      <a href="https://wa.me/918988896666?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20your%20projects." target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 w-14 h-14 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center text-white shadow-xl z-50 transition-transform transform hover:scale-110">
+      <a href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20your%20projects." target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 w-14 h-14 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center text-white shadow-xl z-50 transition-transform transform hover:scale-110">
         <MessageCircle className="w-8 h-8" />
       </a>
     </footer>

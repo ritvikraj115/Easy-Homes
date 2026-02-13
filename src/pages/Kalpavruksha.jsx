@@ -19,19 +19,58 @@ import {
   X,
   Star
 } from 'lucide-react';
+import { GoogleMap, MarkerF, useJsApiLoader } from '@react-google-maps/api';
 import card, { Card, CardContent } from '../components/card';
 import Navbar from '../components/Navbar'
 import { Link } from 'react-router-dom';
 import ReviewsSection from '../components/ReviewProject';
 import api from '../api';
+import { MAP_LIBRARIES } from '../config/googleMaps';
+
+const VISIT_TIME_SLOTS = Array.from({ length: 33 }, (_, index) => {
+  const totalMinutes = (9 * 60) + (index * 15);
+  const hours24 = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  const suffix = hours24 < 12 ? 'AM' : 'PM';
+  const hours12 = (hours24 % 12) || 12;
+  const paddedMinutes = String(minutes).padStart(2, '0');
+  const value = `${String(hours24).padStart(2, '0')}:${paddedMinutes}`;
+  const label = `${hours12}:${paddedMinutes} ${suffix}`;
+  return { value, label };
+});
+
+const PICKUP_MAP_DEFAULT_CENTER = { lat: 16.553755, lng: 80.570832 };
+const PICKUP_MAP_CONTAINER_STYLE = { width: '100%', height: '220px' };
 
 const KalpavrukshaPage = () => {
   // ...existing code...
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showVisitModal, setShowVisitModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ name: '', phone: '', email: '', preferredDate: '' });
+  const [form, setForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    preferredDate: '',
+    preferredTime: '',
+    transportRequired: 'Yes',
+    pickupAddress: '',
+    pickupMode: 'manual',
+    pickupLat: '',
+    pickupLng: ''
+  });
   const [toast, setToast] = useState(null);
+  const todayDate = new Date().toISOString().split('T')[0];
+  const [pickupMapCenter, setPickupMapCenter] = useState(PICKUP_MAP_DEFAULT_CENTER);
+  const pickupGeocodeRequestRef = React.useRef(0);
+  const {
+    isLoaded: isPickupMapLoaded,
+    loadError: pickupMapLoadError
+  } = useJsApiLoader({
+    id: 'pickup-address-map',
+    googleMapsApiKey: process.env.REACT_APP_MAP_KEY || '',
+    libraries: MAP_LIBRARIES
+  });
 
   // Footer quick link refs and scroll handlers (like Home page)
   const aboutRef = React.useRef(null);
@@ -96,7 +135,7 @@ const KalpavrukshaPage = () => {
       icon: <MapPin className="w-6 h-6 text-blue-600" />,
       title: "Closer to Everything That Matters",
       description:
-        "7 km from Vijayawada • 12.5 km from Amaravati's Startup Village & BITS • Adjacent to Vijayawada–Nagpur Greenfield Highway",
+        "7 km from Vijayawada â€¢ 12.5 km from Amaravati's Startup Village & BITS â€¢ Adjacent to Vijayawadaâ€“Nagpur Greenfield Highway",
     },
     {
       icon: <Car className="w-6 h-6 text-purple-600" />,
@@ -106,7 +145,7 @@ const KalpavrukshaPage = () => {
     {
       icon: <Zap className="w-6 h-6 text-yellow-600" />,
       title: "Seamless Systems Beneath the Surface",
-      description: "Underground networks for power, water, fiber, and sewage — silent, secure, and future-ready.",
+      description: "Underground networks for power, water, fiber, and sewage â€” silent, secure, and future-ready.",
     },
     {
       icon: <Waves className="w-6 h-6 text-cyan-600" />,
@@ -120,7 +159,7 @@ const KalpavrukshaPage = () => {
     },
     {
       icon: <Users className="w-6 h-6 text-pink-600" />,
-      title: "Play Isn't Just for Kids — It's for Community",
+      title: "Play Isn't Just for Kids â€” It's for Community",
       description: "Basketball, net cricket, multi-purpose court, children's play zone, and indoor games.",
     },
     {
@@ -135,8 +174,8 @@ const KalpavrukshaPage = () => {
     },
     {
       icon: <Heart className="w-6 h-6 text-rose-600" />,
-      title: "Designed Not Just to Last — But to Mean Something",
-      description: "More than a layout — a vision grounded in values for your family's legacy.",
+      title: "Designed Not Just to Last â€” But to Mean Something",
+      description: "More than a layout â€” a vision grounded in values for your family's legacy.",
     },
   ]
 
@@ -157,7 +196,7 @@ const KalpavrukshaPage = () => {
       }
   `;
 
-    // 👉 If link exists, render <a>
+    // ðŸ‘‰ If link exists, render <a>
     if (href) {
       return (
         <a
@@ -172,7 +211,7 @@ const KalpavrukshaPage = () => {
       );
     }
 
-    // 👉 Default: button
+    // ðŸ‘‰ Default: button
     return (
       <button onClick={onClick} className={classes}>
         {icon}
@@ -209,29 +248,116 @@ const KalpavrukshaPage = () => {
   const openVisitModal = () => setShowVisitModal(true);
   const closeVisitModal = () => setShowVisitModal(false);
 
+  const reverseGeocodePickup = (lat, lng) => {
+    const requestId = Date.now();
+    pickupGeocodeRequestRef.current = requestId;
+    const fallbackText = `Selected location near ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+
+    setForm(prev => ({
+      ...prev,
+      pickupAddress: 'Fetching address from map...',
+      pickupLat: String(lat),
+      pickupLng: String(lng)
+    }));
+
+    if (!window.google?.maps) {
+      setForm(prev => ({
+        ...prev,
+        pickupAddress: fallbackText,
+        pickupLat: String(lat),
+        pickupLng: String(lng)
+      }));
+      return;
+    }
+
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+      if (pickupGeocodeRequestRef.current !== requestId) return;
+
+      if (status === 'OK' && results && results[0]) {
+        setForm(prev => ({
+          ...prev,
+          pickupAddress: results[0].formatted_address || fallbackText,
+          pickupLat: String(lat),
+          pickupLng: String(lng)
+        }));
+        return;
+      }
+
+      setForm(prev => ({
+        ...prev,
+        pickupAddress: fallbackText,
+        pickupLat: String(lat),
+        pickupLng: String(lng)
+      }));
+    });
+  };
+
+  const onPickupMapClick = (event) => {
+    const lat = event?.latLng?.lat?.();
+    const lng = event?.latLng?.lng?.();
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    setPickupMapCenter({ lat, lng });
+    reverseGeocodePickup(lat, lng);
+  };
+
+  const onPickupMarkerDragEnd = (event) => {
+    const lat = event?.latLng?.lat?.();
+    const lng = event?.latLng?.lng?.();
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    setPickupMapCenter({ lat, lng });
+    reverseGeocodePickup(lat, lng);
+  };
+
   const onChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'pickupMode') {
+      setForm(prev => ({
+        ...prev,
+        pickupMode: value,
+        pickupLat: value === 'manual' ? '' : prev.pickupLat,
+        pickupLng: value === 'manual' ? '' : prev.pickupLng
+      }));
+      return;
+    }
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
   const submitSiteVisit = async (e) => {
     e?.preventDefault?.();
-    if (!form.name || !form.phone || !form.preferredDate) {
-      setToast({ type: 'error', msg: 'Please enter name, phone and date.' });
+    if (!form.name || !form.phone || !form.preferredDate || !form.preferredTime || !form.pickupAddress.trim()) {
+      setToast({ type: 'error', msg: 'Please fill name, phone, date, time slot and pickup address.' });
       return;
     }
     try {
       setSubmitting(true);
+      const preferredDateTime = `${form.preferredDate}T${form.preferredTime}`;
       await api.post('/api/site-visits', {
         project: 'Kalpavruksha',
         name: form.name,
         phone: form.phone,
         email: form.email || undefined,
-        preferredDate: form.preferredDate,
+        preferredDate: preferredDateTime,
+        transportRequired: form.transportRequired,
+        pickupAddress: form.pickupAddress.trim(),
+        pickupMode: form.pickupMode,
+        pickupLat: form.pickupLat || undefined,
+        pickupLng: form.pickupLng || undefined
       });
       setToast({ type: 'success', msg: 'Request received. We will confirm shortly.' });
       setShowVisitModal(false);
-      setForm({ name: '', phone: '', email: '', preferredDate: '' });
+      setForm({
+        name: '',
+        phone: '',
+        email: '',
+        preferredDate: '',
+        preferredTime: '',
+        transportRequired: 'Yes',
+        pickupAddress: '',
+        pickupMode: 'manual',
+        pickupLat: '',
+        pickupLng: ''
+      });
     } catch (err) {
       console.error(err);
       const msg = err.response?.data?.message || 'Failed to submit. Please try again.';
@@ -274,13 +400,13 @@ const KalpavrukshaPage = () => {
 
       {/* Site Visit Modal */}
       {showVisitModal && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50" onClick={(e) => { if (e.target === e.currentTarget) closeVisitModal(); }}>
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl">
-            <div className="flex items-center justify-between mb-4">
+        <div className="fixed inset-0 z-40 flex items-start md:items-center justify-center bg-black/50 overflow-y-auto p-4" onClick={(e) => { if (e.target === e.currentTarget) closeVisitModal(); }}>
+          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl my-6 max-h-[calc(100vh-3rem)] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
               <h3 className="text-xl font-bold">Book a Site Visit</h3>
               <button onClick={closeVisitModal} className="p-2 rounded hover:bg-gray-100"><X className="w-5 h-5" /></button>
             </div>
-            <form onSubmit={submitSiteVisit} className="space-y-4">
+            <form onSubmit={submitSiteVisit} className="space-y-4 overflow-y-auto px-6 py-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                 <input name="name" value={form.name} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Your name" required />
@@ -295,13 +421,122 @@ const KalpavrukshaPage = () => {
                 <input type="email" name="email" value={form.email} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="you@example.com" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Date & Time</label>
-                <input type="datetime-local" name="preferredDate" value={form.preferredDate} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" required />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Date</label>
+                <input type="date" name="preferredDate" min={todayDate} value={form.preferredDate} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" required />
               </div>
-              <button type="submit" disabled={submitting} className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-white font-semibold ${submitting ? 'bg-emerald-400' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
-                {submitting ? 'Submitting...' : 'Submit Request'}
-              </button>
-              <p className="text-xs text-gray-500 text-center">You will receive an email and WhatsApp update once submitted.</p>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Time Slot</label>
+                <div className="border rounded-lg p-2 bg-gray-50 max-h-36 overflow-y-auto">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {VISIT_TIME_SLOTS.map((slot) => (
+                      <button
+                        key={slot.value}
+                        type="button"
+                        onClick={() => setForm(prev => ({ ...prev, preferredTime: slot.value }))}
+                        className={`px-3 py-2 rounded-md text-sm font-medium border transition-colors ${
+                          form.preferredTime === slot.value
+                            ? 'bg-emerald-600 text-white border-emerald-600'
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-emerald-500 hover:text-emerald-700'
+                        }`}
+                      >
+                        {slot.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <input type="hidden" name="preferredTime" value={form.preferredTime} required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Transport Required</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {['Yes', 'No'].map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setForm(prev => ({ ...prev, transportRequired: value }))}
+                      className={`px-3 py-2 rounded-md text-sm font-medium border transition-colors ${
+                        form.transportRequired === value
+                          ? 'bg-emerald-600 text-white border-emerald-600'
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-emerald-500 hover:text-emerald-700'
+                      }`}
+                    >
+                      {value}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Pickup Address Input</label>
+                <div className="flex items-center gap-4 mb-2">
+                  <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="radio"
+                      name="pickupMode"
+                      value="manual"
+                      checked={form.pickupMode === 'manual'}
+                      onChange={onChange}
+                    />
+                    Manual
+                  </label>
+                  <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="radio"
+                      name="pickupMode"
+                      value="map"
+                      checked={form.pickupMode === 'map'}
+                      onChange={onChange}
+                    />
+                    Select on Map
+                  </label>
+                </div>
+
+                {form.pickupMode === 'map' && (
+                  <div className="rounded-lg overflow-hidden border border-gray-200 mb-2">
+                    {pickupMapLoadError ? (
+                      <div className="p-3 text-xs text-red-600">
+                        Map failed to load. Enter the pickup address manually below.
+                      </div>
+                    ) : !isPickupMapLoaded ? (
+                      <div className="p-3 text-xs text-gray-600">Loading map...</div>
+                    ) : (
+                      <GoogleMap
+                        mapContainerStyle={PICKUP_MAP_CONTAINER_STYLE}
+                        center={pickupMapCenter}
+                        zoom={14}
+                        onClick={onPickupMapClick}
+                        options={{ streetViewControl: false, mapTypeControl: false, fullscreenControl: false }}
+                      >
+                        {form.pickupLat && form.pickupLng && (
+                          <MarkerF
+                            position={{ lat: Number(form.pickupLat), lng: Number(form.pickupLng) }}
+                            draggable
+                            onDragEnd={onPickupMarkerDragEnd}
+                          />
+                        )}
+                      </GoogleMap>
+                    )}
+                  </div>
+                )}
+
+                <textarea
+                  name="pickupAddress"
+                  value={form.pickupAddress}
+                  onChange={onChange}
+                  rows={3}
+                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  placeholder={form.pickupMode === 'map' ? 'Click map/drag marker to fill textual address, or type manually' : 'Enter pickup address'}
+                  required
+                />
+                {form.pickupMode === 'map' && (
+                  <p className="text-xs text-gray-500 mt-1">Tap on map or drag marker to auto-fill a textual address.</p>
+                )}
+              </div>
+              <div className="sticky bottom-0 bg-white pt-2 pb-1">
+                <button type="submit" disabled={submitting} className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-white font-semibold ${submitting ? 'bg-emerald-400' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
+                  {submitting ? 'Submitting...' : 'Submit Request'}
+                </button>
+                <p className="text-xs text-gray-500 text-center mt-2">You will receive an email and WhatsApp update once submitted.</p>
+              </div>
             </form>
           </div>
         </div>
@@ -345,11 +580,11 @@ const KalpavrukshaPage = () => {
 
             <h1 className="text-4xl md:text-6xl font-bold text-[#fbfaf9] mb-6 leading-tight">
               Where You Don't Just <br />
-              Arrive — <span className='text-[#f2e5c0]'>You Belong</span>
+              Arrive â€” <span className='text-[#f2e5c0]'>You Belong</span>
             </h1>
 
             <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed max-w-3xl mx-auto">
-              It's not just the feeling of arriving somewhere new — but somewhere<br />
+              It's not just the feeling of arriving somewhere new â€” but somewhere<br />
               right, where your heart belongs. Just 12 mins from Amaravati.
             </p>
 
@@ -371,7 +606,7 @@ const KalpavrukshaPage = () => {
                 className="bg-yellow-500 text-gray-900 hover:bg-yellow-400"
               /> */}
               <a
-                href="https://wa.me/918988896666?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20Kalpavruksha%20project."
+                href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20Kalpavruksha%20project."
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -401,13 +636,13 @@ const KalpavrukshaPage = () => {
 
             <div className="prose prose-lg md:prose-xl mx-auto text-gray-700 leading-relaxed">
               <p className="mb-6">
-                Some journeys don't begin with a destination. They begin with a feeling —
+                Some journeys don't begin with a destination. They begin with a feeling â€”
                 and some places bring a stillness so true, your heart remembers it.
               </p>
 
               <p className="mb-6">
                 Kalpavruksha was shaped by that search. Not just to be seen, but to be felt.
-                And when you stand here — with hills behind you and the creek beside you —
+                And when you stand here â€” with hills behind you and the creek beside you â€”
                 something in you softens.
               </p>
 
@@ -426,7 +661,7 @@ const KalpavrukshaPage = () => {
                 A Glimpse of What <span className="text-emerald-400">Belonging</span> Looks Like
               </h2>
               <p className="text-xl text-gray-300">
-                Let Kalpavruksha reveal itself — in motion, in flow, in feeling.
+                Let Kalpavruksha reveal itself â€” in motion, in flow, in feeling.
               </p>
               <p className="text-gray-400 mt-2">
                 Watch the vision unfold before your visit
@@ -461,7 +696,7 @@ const KalpavrukshaPage = () => {
                 Picture the Life That <span className="text-emerald-600">Awaits</span>
               </h2>
               <p className="text-xl text-gray-600">
-                Every space rendered with care — so you can feel it before it's real.
+                Every space rendered with care â€” so you can feel it before it's real.
               </p>
             </div>
 
@@ -532,7 +767,7 @@ const KalpavrukshaPage = () => {
                 What Sets <span className="text-emerald-600">Kalpavruksha</span> Apart
               </h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Some places are where you stay — but some places stay with you.
+                Some places are where you stay â€” but some places stay with you.
                 Kalpavruksha is built with quiet assurances that go beyond the sale.
               </p>
             </div>
@@ -610,7 +845,7 @@ const KalpavrukshaPage = () => {
                     <CTAButton
                       icon={<MessageCircle className="w-5 h-5" />}
                       text="Chat on WhatsApp"
-                      href="https://wa.me/918988896666?text=Hi%20Easy%20Homes,%20I%20want%20to%20book%20a%20site%20visit%20for%20Kalpavruksha."
+                      href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20I%20want%20to%20book%20a%20site%20visit%20for%20Kalpavruksha."
                       target="_blank"
                     />
                   </div>
@@ -624,7 +859,7 @@ const KalpavrukshaPage = () => {
                     Master Plan Layout
                   </h4>
                   <p className="text-gray-600 mb-6">
-                    Every plot and pathway — drawn with care, not just to optimize space,
+                    Every plot and pathway â€” drawn with care, not just to optimize space,
                     but to cultivate a lifestyle.
                   </p>
 
@@ -681,7 +916,7 @@ const KalpavrukshaPage = () => {
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <a
-                  href="https://wa.me/918988896666?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20Kalpavruksha."
+                  href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20Kalpavruksha."
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -770,7 +1005,7 @@ const KalpavrukshaPage = () => {
                   </a>
                   <div>
                     <a
-                      href="https://wa.me/918988896666?text=Hi%20Easy%20Homes,%20please%20contact%20me%20regarding%20Kalpavruksha."
+                      href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20please%20contact%20me%20regarding%20Kalpavruksha."
                       target="_blank"
                       rel="noopener noreferrer"
                     >
