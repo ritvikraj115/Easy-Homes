@@ -1,54 +1,23 @@
-// import React from 'react';
-// import { mockProperties } from '../../data/mockdata';
-// import PropertyCard from '../PropertyCard';
-
-// const Projects = () => {
-//   const projects = mockProperties
-
-
-
-//   return (
-//     <section id="projects" className="py-20 bg-white">
-//       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-//         <div className="text-center mb-16">
-//           <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-4 font-['Poppins']">
-//             Explore Approved Projects
-//           </h2>
-//           <p className="text-xl text-gray-600 font-['Inter'] max-w-3xl mx-auto">
-//             All CRDA-approved layouts—organized, verified, and ready to explore
-//           </p>
-
-//         </div>
-
-//         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-//           {projects.map((project) => (
-//             <PropertyCard key={project.mlsNumber} property={project} />
-//           ))}
-//         </div>
-
-//         <div className="text-center mt-12 space-y-4">
-//           <button className="bg-white border-2 border-[#3868B2] text-[#3868B2] hover:bg-[#3868B2] hover:text-white px-8 py-3 rounded-lg font-medium font-['Poppins'] transition-all duration-200 mr-4">
-//             Explore Projects in Maps
-//           </button>
-//         </div>
-
-//       </div>
-//     </section>
-//   );
-// };
-
-// export default Projects;
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { mockProperties } from '../../data/mockdata';
-import FilterPanel from '../FilterPanel';
 import { Link } from 'react-router-dom';
+import FilterPanel from '../FilterPanel';
 import PropCard from './propCard';
+import useProperties from '../../hooks/useProperties';
+
+const getRange = (value) => {
+  const nums = String(value || '').match(/\d+/g);
+  if (!nums || nums.length === 0) return null;
+
+  const min = Number(nums[0]);
+  const max = Number(nums[nums.length - 1]);
+  return { min, max };
+};
 
 const Projects = () => {
+  const { properties, loading: propertiesLoading, error: propertiesError } = useProperties();
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Filter state
   const [filters, setFilters] = useState({
     radius: 5,
     budget: [0, 50],
@@ -57,54 +26,49 @@ const Projects = () => {
     gated: false,
   });
 
-  const [filteredProjects, setFilteredProjects] = useState(mockProperties);
+  const [filteredProjects, setFilteredProjects] = useState([]);
 
   useEffect(() => {
-    const applyFilters = () => {
-      let filtered = mockProperties.filter(property => {
-        const priceMatch = property.priceRange.match(/₹(\d+)–(\d+)/);
-        if (priceMatch) {
-          const minPrice = parseInt(priceMatch[1]);
-          const maxPrice = parseInt(priceMatch[2]);
-          if (maxPrice > filters.budget[1]) return false;
-        }
+    const filtered = properties.filter((property) => {
+      const price = getRange(property.priceRange);
+      if (price && price.max > filters.budget[1]) {
+        return false;
+      }
 
-        if (filters.type !== 'Plot' && !property.propertyType.toLowerCase().includes(filters.type.toLowerCase())) {
+      const type = String(property.propertyType || '').toLowerCase();
+      if (filters.type !== 'Plot' && !type.includes(filters.type.toLowerCase())) {
+        return false;
+      }
+
+      const area = getRange(property.areaRange);
+      if (area && (area.max > filters.size[1] || area.min < filters.size[0])) {
+        return false;
+      }
+
+      if (filters.gated) {
+        const features = Array.isArray(property.keyFeatures) ? property.keyFeatures : [];
+        const hasGatedFeature = features.some((feature) => {
+          const item = String(feature || '').toLowerCase();
+          return item.includes('gated') || item.includes('security') || item.includes('community');
+        });
+
+        if (!hasGatedFeature) {
           return false;
         }
+      }
 
-        const areaMatch = property.areaRange.match(/(\d+)–(\d+)/);
-        if (areaMatch) {
-          const minArea = parseInt(areaMatch[1]);
-          const maxArea = parseInt(areaMatch[2]);
-          if (maxArea > filters.size[1] || minArea < filters.size[0]) return false;
-        }
+      return true;
+    });
 
-        if (filters.gated) {
-          const hasGatedFeature = property.keyFeatures.some(feature =>
-            feature.toLowerCase().includes('gated') ||
-            feature.toLowerCase().includes('security') ||
-            feature.toLowerCase().includes('community')
-          );
-          if (!hasGatedFeature) return false;
-        }
-
-        return true;
-      });
-
-      setFilteredProjects(filtered);
-      setCurrentIndex(0);
-    };
-
-    applyFilters();
-  }, [filters]);
+    setFilteredProjects(filtered);
+    setCurrentIndex(0);
+  }, [filters, properties]);
 
   const getCardsPerView = () => {
     if (typeof window !== 'undefined') {
-      if (window.innerWidth >= 1280) return 3; // xl screens
-      if (window.innerWidth >= 1024) return 3; // lg screens
-      if (window.innerWidth >= 768) return 2;  // md screens
-      return 1; // sm screens
+      if (window.innerWidth >= 1024) return 3;
+      if (window.innerWidth >= 768) return 2;
+      return 1;
     }
     return 1;
   };
@@ -113,9 +77,10 @@ const Projects = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setCardsPerView(getCardsPerView());
-      // Reset to valid index when screen size changes
-      const newMaxIndex = Math.max(0, filteredProjects.length - getCardsPerView());
+      const nextCardsPerView = getCardsPerView();
+      setCardsPerView(nextCardsPerView);
+
+      const newMaxIndex = Math.max(0, filteredProjects.length - nextCardsPerView);
       if (currentIndex > newMaxIndex) {
         setCurrentIndex(newMaxIndex);
       }
@@ -125,7 +90,6 @@ const Projects = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, [filteredProjects.length, currentIndex]);
 
-  // Use filtered projects for carousel calculations
   const maxIndex = Math.max(0, filteredProjects.length - cardsPerView);
 
   const nextSlide = () => {
@@ -148,15 +112,27 @@ const Projects = () => {
             Explore Approved Projects
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto mt-4 font-inter">
-            All CRDA-approved layouts—organized, verified, and ready to explore
+            All CRDA-approved layouts organized, verified, and ready to explore
           </p>
         </div>
 
-        <div className='w-full py-2 rounded-3xl mb-8 flex justify-center'>
+        <div className="w-full py-2 rounded-3xl mb-8 flex justify-center">
           <FilterPanel filters={filters} onChange={setFilters} horizontal />
         </div>
 
-        {filteredProjects.length === 0 ? (
+        {propertiesLoading ? (
+          <div className="text-center py-12">
+            <p className="text-lg md:text-xl text-gray-600 font-['Inter'] px-4">
+              Loading properties...
+            </p>
+          </div>
+        ) : propertiesError ? (
+          <div className="text-center py-12">
+            <p className="text-lg md:text-xl text-red-600 font-['Inter'] px-4">
+              {propertiesError}
+            </p>
+          </div>
+        ) : filteredProjects.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-lg md:text-xl text-gray-600 font-['Inter'] px-4">
               No properties match your current filters. Try adjusting your search criteria.
@@ -165,7 +141,6 @@ const Projects = () => {
         ) : (
           <>
             <div className="relative px-4 sm:px-8 lg:px-12">
-              {/* Navigation Buttons - Hidden on mobile */}
               <button
                 onClick={prevSlide}
                 className="block absolute -left-6 sm:left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors duration-200"
@@ -180,13 +155,10 @@ const Projects = () => {
                 <ChevronRight className="w-5 h-5 lg:w-6 lg:h-6 text-[#3868B2]" />
               </button>
 
-              {/* Carousel Track */}
               <div className="overflow-hidden mx-auto">
                 <div
                   className="flex transition-transform duration-300 ease-in-out"
-                  style={{
-                    transform: `translateX(-${currentIndex * (100 / cardsPerView)}%)`,
-                  }}
+                  style={{ transform: `translateX(-${currentIndex * (100 / cardsPerView)}%)` }}
                 >
                   {filteredProjects.map((project) => (
                     <div
@@ -200,17 +172,15 @@ const Projects = () => {
                 </div>
               </div>
 
-              {/* Dots Indicator */}
               {maxIndex > 0 && (
                 <div className="flex justify-center mt-6 md:mt-8 space-x-2">
                   {Array.from({ length: maxIndex + 1 }, (_, index) => (
                     <button
                       key={index}
                       onClick={() => goToSlide(index)}
-                      className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-colors duration-200 ${index === currentIndex
-                          ? 'bg-[#3868B2]'
-                          : 'bg-gray-300 hover:bg-gray-400'
-                        }`}
+                      className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-colors duration-200 ${
+                        index === currentIndex ? 'bg-[#3868B2]' : 'bg-gray-300 hover:bg-gray-400'
+                      }`}
                     />
                   ))}
                 </div>

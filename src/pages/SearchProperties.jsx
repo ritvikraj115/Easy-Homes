@@ -4,8 +4,8 @@ import { useJsApiLoader } from '@react-google-maps/api';
 import FilterPanel from '../components/FilterPanel';
 import MapView from '../components/MapView';
 import PropertyCard from '../components/PropertyCard';
-import { mockProperties } from '../data/mockdata';
 import useGeocodedProperties from '../hooks/useGeocodedProperties';
+import useProperties from '../hooks/useProperties';
 import { MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
@@ -27,6 +27,7 @@ export default function SearchResults() {
   // All hooks / state (stable order)
   // -------------------------
   const [hoveredListingId, setHoveredListingId] = useState(null);
+  const { properties, loading: propertiesLoading, error: propertiesError } = useProperties();
 
   // Load maps once at parent
   const { isLoaded, loadError } = useJsApiLoader({
@@ -36,7 +37,7 @@ export default function SearchResults() {
   });
 
   // custom hook to geocode properties (always called)
-  const geoListings = useGeocodedProperties(mockProperties, isLoaded);
+  const geoListings = useGeocodedProperties(properties);
 
   // Main UI state
   const [filters, setFilters] = useState({
@@ -146,7 +147,7 @@ export default function SearchResults() {
   // Derived data & handlers
   // -------------------------
   const allGeocoded =
-    safeGeo.length === mockProperties.length &&
+    safeGeo.length === properties.length &&
     safeGeo.every(p => Number.isFinite(p.lat) && Number.isFinite(p.lng));
 
   const preFiltered = safeGeo.filter(p => {
@@ -316,6 +317,10 @@ export default function SearchResults() {
               <div className="map-wrapper">Loading Maps…</div>
             ) : loadError ? (
               <div className="map-wrapper">Error loading maps</div>
+            ) : propertiesLoading ? (
+              <div className="map-wrapper">Loading properties...</div>
+            ) : propertiesError ? (
+              <div className="map-wrapper">{propertiesError}</div>
             ) : !allGeocoded ? (
               <div
                 className="map-wrapper"

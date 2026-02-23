@@ -4,9 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import apiClient from '../api';
 import '../assets/favourites.css';
 import FavouriteCard from '../components/FavouriteCard';
-import { mockProperties } from '../data/mockdata';
+import useProperties from '../hooks/useProperties';
 
 export default function Favourites() {
+  const { properties, loading: propertiesLoading } = useProperties();
   const [favourites, setFavourites] = useState([]); // holds full property objects
   const [selected, setSelected] = useState([]);
   const navigate = useNavigate();
@@ -17,12 +18,13 @@ export default function Favourites() {
       setFavourites([]);
       return;
     }
+    if (propertiesLoading) return;
 
     apiClient
       .get('/api/favourites')
       .then(res => {
         const savedIds = res.data; // ['AMR2024001', ...]
-        const fullProps = mockProperties.filter(p =>
+        const fullProps = properties.filter(p =>
           savedIds.includes(p.mlsNumber)
         );
         setFavourites(fullProps);
@@ -31,7 +33,7 @@ export default function Favourites() {
         console.error('Error loading favourites', err);
         setFavourites([]);
       });
-  }, []);  // run once on mount
+  }, [properties, propertiesLoading]);  // run when properties are loaded
   const toggleSelect = id => {
     setSelected(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]

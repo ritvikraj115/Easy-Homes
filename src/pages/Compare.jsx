@@ -1,8 +1,8 @@
 // client/src/pages/Compare.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { mockProperties } from '../data/mockdata';
 import '../assets/compare.css';
+import useProperties from '../hooks/useProperties';
 
 const TABS = [
   { key: 'overview', label: 'Overview' },
@@ -15,15 +15,21 @@ const TABS = [
 export default function Compare() {
   const { search } = useLocation();
   const navigate = useNavigate();
-  const ids = new URLSearchParams(search).get('ids')?.split(',') || [];
+  const idsParam = new URLSearchParams(search).get('ids') || '';
+  const ids = useMemo(() => idsParam.split(',').filter(Boolean), [idsParam]);
+  const { properties: allProperties, loading: propertiesLoading } = useProperties();
 
   const [properties, setProperties] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
-    if (ids.length < 2) return navigate('/favourites');
-    setProperties(mockProperties.filter(p => ids.includes(p.mlsNumber)));
-  }, [navigate]);
+    if (ids.length < 2) {
+      navigate('/favourites');
+      return;
+    }
+    if (propertiesLoading) return;
+    setProperties(allProperties.filter(p => ids.includes(p.mlsNumber)));
+  }, [allProperties, ids, navigate, propertiesLoading]);
 
   if (properties.length === 0) {
     return <div className="compare-loading">Loading comparison…</div>;

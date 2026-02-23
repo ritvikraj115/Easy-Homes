@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar';
 import SearchResults from './pages/SearchProperties';  // make sure this exists
 import Favourites from './pages/Favourites';
 import Login from './pages/Login';
@@ -18,9 +17,8 @@ import Home from './pages/Home';
 import KalpavrukshaPage from './pages/Kalpavruksha';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import About from './pages/About';
-import Contact from './pages/Contact';
 import ThankYouPage from './pages/ThankYouPage';
+import AdminPanel from './pages/AdminPanel';
 
 function App() {
   function ScrollToTop() {
@@ -73,6 +71,7 @@ function App() {
           <Route path="/projects" element={<KalpavrukshaPage />} />
           {/* Thankyou page */}
           <Route path="/thank-you" element={<ThankYouPage />} />
+          <Route path="/admin" element={<AdminPanel />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

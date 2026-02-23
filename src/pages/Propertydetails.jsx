@@ -28,6 +28,19 @@ import { useLocation, useNavigate } from "react-router-dom";
 import PropertyLocationMap from "../components/PropertyLocationMap";
 import apiClient from "../api";
 
+function normalizeImageList(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => (typeof item === "string" ? item.trim() : ""))
+      .filter(Boolean);
+  }
+  if (typeof value === "string") {
+    const single = value.trim();
+    return single ? [single] : [];
+  }
+  return [];
+}
+
 export default function PropertyDetails() {
   const [activeTab, setActiveTab] = useState("overview")
   const [isScrolled, setIsScrolled] = useState(false)
@@ -39,6 +52,9 @@ export default function PropertyDetails() {
   const { state } = useLocation();
   const { property } = state || {};
   const [isFavorited, setIsFavorited] = useState(false);
+  const galleryImages = normalizeImageList(property?.media?.images);
+  const explicitWorkingImages = normalizeImageList(property?.media?.workingImages);
+  const workingImages = explicitWorkingImages.length > 0 ? explicitWorkingImages : galleryImages;
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -221,7 +237,7 @@ export default function PropertyDetails() {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-96 lg:h-[500px]">
               <div className="lg:col-span-2 relative group cursor-pointer" onClick={() => setShowAllPhotos(true)}>
                 <img
-                  src={property.media.images[selectedImage] || "/placeholder.svg"}
+                  src={galleryImages[selectedImage] || "/placeholder.svg"}
                   alt="Property main view"
                   className="w-full h-full object-cover rounded-lg"
                   loading="lazy"
@@ -231,7 +247,7 @@ export default function PropertyDetails() {
               </div>
 
               <div className="hidden lg:grid lg:col-span-2 grid-cols-2 gap-4">
-                {property.media.images.slice(1, 5).map((image, index) => (
+                {galleryImages.slice(1, 5).map((image, index) => (
                   <div
                     key={index}
                     className="relative group cursor-pointer"
@@ -253,7 +269,7 @@ export default function PropertyDetails() {
             <div className="flex flex-wrap gap-4 mt-4">
               <Button variant="outline" className="flex items-center gap-2" onClick={() => setShowAllPhotos(true)}>
                 <Camera className="h-4 w-4" />
-                See all photos ({property.media.images.length})
+                See all photos ({galleryImages.length})
               </Button>
               <Button variant="outline" className="flex items-center gap-2">
                 <Video className="h-4 w-4" />
@@ -557,7 +573,7 @@ export default function PropertyDetails() {
                 <Card>
                   <CardContent className="p-6">
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {property.media.images.slice(0, 5).map((image, index) => (
+                      {workingImages.slice(0, 5).map((image, index) => (
                         <div
                           key={index}
                           className="relative group cursor-pointer aspect-square overflow-hidden rounded-lg"
@@ -580,7 +596,7 @@ export default function PropertyDetails() {
                         <div className="text-center text-white">
                           <Camera className="h-10 w-10 mx-auto mb-2" />
                           <div className="font-semibold text-lg">View All</div>
-                          <div className="text-sm opacity-90">({property.media.images.length} photos)</div>
+                          <div className="text-sm opacity-90">({workingImages.length} photos)</div>
                         </div>
                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300" />
                       </div>
@@ -725,7 +741,7 @@ export default function PropertyDetails() {
               </Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[80vh] overflow-y-auto">
-              {property.media.images.map((image, index) => (
+              {galleryImages.map((image, index) => (
                 <img
                   key={index}
                   src={image || "/placeholder.svg"}
@@ -753,7 +769,7 @@ export default function PropertyDetails() {
               </Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[80vh] overflow-y-auto">
-              {property.media.images.map((image, index) => (
+              {workingImages.map((image, index) => (
                 <img
                   key={index}
                   src={image || "/placeholder.svg"}
