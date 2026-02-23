@@ -1,12 +1,13 @@
 // client/src/components/PropertyLocationMap.jsx
 import React, { useState, useEffect } from 'react';
 import { GoogleMap, MarkerF, useJsApiLoader } from '@react-google-maps/api';
-import { MAP_LIBRARIES } from '../config/googleMaps';
+import { MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
 
 
 export default function PropertyLocationMap({ address }) {
   const [center, setCenter] = useState(null);
   const { isLoaded, loadError } = useJsApiLoader({
+    id: MAPS_LOADER_ID,
     googleMapsApiKey: process.env.REACT_APP_MAP_KEY,
     libraries: MAP_LIBRARIES
   });

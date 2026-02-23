@@ -25,7 +25,7 @@ import Navbar from '../components/Navbar'
 import { Link } from 'react-router-dom';
 import ReviewsSection from '../components/ReviewProject';
 import api from '../api';
-import { MAP_LIBRARIES } from '../config/googleMaps';
+import { MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
 
 const VISIT_TIME_SLOTS = Array.from({ length: 33 }, (_, index) => {
   const totalMinutes = (9 * 60) + (index * 15);
@@ -67,7 +67,7 @@ const KalpavrukshaPage = () => {
     isLoaded: isPickupMapLoaded,
     loadError: pickupMapLoadError
   } = useJsApiLoader({
-    id: 'pickup-address-map',
+    id: MAPS_LOADER_ID,
     googleMapsApiKey: process.env.REACT_APP_MAP_KEY || '',
     libraries: MAP_LIBRARIES
   });

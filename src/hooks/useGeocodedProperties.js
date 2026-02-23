@@ -32,7 +32,8 @@ export default function useGeocodedProperties(properties) {
         });
 
         if (!resp.ok) {
-          console.error('Geocode API error', resp.statusText);
+          const payload = await resp.json().catch(() => null);
+          console.error('Geocode API error', resp.status, payload?.code || resp.statusText, payload?.error || '');
           if (isMounted) setGeoProps([]);
           return;
         }

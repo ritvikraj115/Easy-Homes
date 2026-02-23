@@ -6,7 +6,7 @@ import MapView from '../components/MapView';
 import PropertyCard from '../components/PropertyCard';
 import { mockProperties } from '../data/mockdata';
 import useGeocodedProperties from '../hooks/useGeocodedProperties';
-import { MAP_LIBRARIES } from '../config/googleMaps';
+import { MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 
@@ -30,6 +30,7 @@ export default function SearchResults() {
 
   // Load maps once at parent
   const { isLoaded, loadError } = useJsApiLoader({
+    id: MAPS_LOADER_ID,
     googleMapsApiKey: process.env.REACT_APP_MAP_KEY,
     libraries: MAP_LIBRARIES,
   });
