@@ -135,7 +135,7 @@ const KalpavrukshaPage = () => {
       icon: <MapPin className="w-6 h-6 text-blue-600" />,
       title: "Closer to Everything That Matters",
       description:
-        "7 km from Vijayawada â€¢ 12.5 km from Amaravati's Startup Village & BITS â€¢ Adjacent to Vijayawadaâ€“Nagpur Greenfield Highway",
+        "7 km from Vijayawada | 12.5 km from Amaravati's Startup Village & BITS | Adjacent to Vijayawada-Nagpur Greenfield Highway",
     },
     {
       icon: <Car className="w-6 h-6 text-purple-600" />,
@@ -145,7 +145,7 @@ const KalpavrukshaPage = () => {
     {
       icon: <Zap className="w-6 h-6 text-yellow-600" />,
       title: "Seamless Systems Beneath the Surface",
-      description: "Underground networks for power, water, fiber, and sewage â€” silent, secure, and future-ready.",
+      description: "Underground networks for power, water, fiber, and sewage - silent, secure, and future-ready.",
     },
     {
       icon: <Waves className="w-6 h-6 text-cyan-600" />,
@@ -159,7 +159,7 @@ const KalpavrukshaPage = () => {
     },
     {
       icon: <Users className="w-6 h-6 text-pink-600" />,
-      title: "Play Isn't Just for Kids â€” It's for Community",
+      title: "Play Isn't Just for Kids - It's for Community",
       description: "Basketball, net cricket, multi-purpose court, children's play zone, and indoor games.",
     },
     {
@@ -174,8 +174,8 @@ const KalpavrukshaPage = () => {
     },
     {
       icon: <Heart className="w-6 h-6 text-rose-600" />,
-      title: "Designed Not Just to Last â€” But to Mean Something",
-      description: "More than a layout â€” a vision grounded in values for your family's legacy.",
+      title: "Designed Not Just to Last - But to Mean Something",
+      description: "More than a layout - a vision grounded in values for your family's legacy.",
     },
   ]
 
@@ -196,7 +196,7 @@ const KalpavrukshaPage = () => {
       }
   `;
 
-    // ðŸ‘‰ If link exists, render <a>
+    // If link exists, render <a>
     if (href) {
       return (
         <a
@@ -211,7 +211,7 @@ const KalpavrukshaPage = () => {
       );
     }
 
-    // ðŸ‘‰ Default: button
+    // Default: button
     return (
       <button onClick={onClick} className={classes}>
         {icon}
@@ -580,11 +580,11 @@ const KalpavrukshaPage = () => {
 
             <h1 className="text-4xl md:text-6xl font-bold text-[#fbfaf9] mb-6 leading-tight">
               Where You Don't Just <br />
-              Arrive â€” <span className='text-[#f2e5c0]'>You Belong</span>
+              Arrive - <span className='text-[#f2e5c0]'>You Belong</span>
             </h1>
 
             <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed max-w-3xl mx-auto">
-              It's not just the feeling of arriving somewhere new â€” but somewhere<br />
+              It's not just the feeling of arriving somewhere new - but somewhere<br />
               right, where your heart belongs. Just 12 mins from Amaravati.
             </p>
 
@@ -636,13 +636,13 @@ const KalpavrukshaPage = () => {
 
             <div className="prose prose-lg md:prose-xl mx-auto text-gray-700 leading-relaxed">
               <p className="mb-6">
-                Some journeys don't begin with a destination. They begin with a feeling â€”
+                Some journeys don't begin with a destination. They begin with a feeling -
                 and some places bring a stillness so true, your heart remembers it.
               </p>
 
               <p className="mb-6">
                 Kalpavruksha was shaped by that search. Not just to be seen, but to be felt.
-                And when you stand here â€” with hills behind you and the creek beside you â€”
+                And when you stand here - with hills behind you and the creek beside you -
                 something in you softens.
               </p>
 
@@ -661,7 +661,7 @@ const KalpavrukshaPage = () => {
                 A Glimpse of What <span className="text-emerald-400">Belonging</span> Looks Like
               </h2>
               <p className="text-xl text-gray-300">
-                Let Kalpavruksha reveal itself â€” in motion, in flow, in feeling.
+                Let Kalpavruksha reveal itself - in motion, in flow, in feeling.
               </p>
               <p className="text-gray-400 mt-2">
                 Watch the vision unfold before your visit
@@ -696,7 +696,7 @@ const KalpavrukshaPage = () => {
                 Picture the Life That <span className="text-emerald-600">Awaits</span>
               </h2>
               <p className="text-xl text-gray-600">
-                Every space rendered with care â€” so you can feel it before it's real.
+                Every space rendered with care - so you can feel it before it's real.
               </p>
             </div>
 
@@ -767,7 +767,7 @@ const KalpavrukshaPage = () => {
                 What Sets <span className="text-emerald-600">Kalpavruksha</span> Apart
               </h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Some places are where you stay â€” but some places stay with you.
+                Some places are where you stay - but some places stay with you.
                 Kalpavruksha is built with quiet assurances that go beyond the sale.
               </p>
             </div>
@@ -859,7 +859,7 @@ const KalpavrukshaPage = () => {
                     Master Plan Layout
                   </h4>
                   <p className="text-gray-600 mb-6">
-                    Every plot and pathway â€” drawn with care, not just to optimize space,
+                    Every plot and pathway - drawn with care, not just to optimize space,
                     but to cultivate a lifestyle.
                   </p>
 
