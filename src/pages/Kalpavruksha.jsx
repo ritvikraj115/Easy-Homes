@@ -1108,7 +1108,7 @@ const KalpavrukshaPage = () => {
                   Reviews
                 </p>
                 <ReviewsSection />
-                <div className="max-w-5xl mx-auto mt-10 px-4 text-left">
+                <div className="max-w-4xl mx-auto mt-10 px-4 text-left">
                   <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-white via-emerald-50/35 to-slate-50 p-6 md:p-8 shadow-lg">
                     <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase bg-emerald-50 border border-emerald-100 text-emerald-700 mb-4">
                       Buyer Decision Guide
@@ -1117,39 +1117,34 @@ const KalpavrukshaPage = () => {
                     <h3 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4">
                       Why Kalpavruksha Is a Preferred Choice for Plot Buyers
                     </h3>
-                    <p className="text-slate-700 leading-relaxed mb-6">
-                      Serious plot buyers usually compare three things before deciding: legal clarity, location practicality, and
-                      on-ground infrastructure. In the Vijayawada-Amaravati region, Kalpavruksha stands out because these three points
-                      can be verified clearly during due diligence and site visit.
+                    <p className="text-slate-700 leading-relaxed mb-6 max-w-3xl">
+                      Plot buyers usually evaluate three things first: legal clarity, daily convenience, and on-ground readiness.
+                      Kalpavruksha performs strongly on all three.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                       <div className="rounded-xl border border-slate-200 border-t-2 border-t-emerald-400/70 bg-white p-5 shadow-sm hover:shadow-md hover:border-emerald-200 hover:bg-emerald-50/40 transition-all duration-300">
-                        <h4 className="font-semibold text-slate-900 mb-2">1. Clarity in Approvals and Documentation</h4>
+                        <h4 className="font-semibold text-slate-900 mb-2">1. Clear Approvals</h4>
                         <p className="text-sm text-slate-600 leading-relaxed">
-                          Buyers prefer projects where approvals, plot boundaries, and registration documents are straightforward to review.
-                          This reduces ambiguity and supports confident decision-making.
+                          CRDA approvals, boundaries, and registration details are easier to verify.
                         </p>
                       </div>
                       <div className="rounded-xl border border-slate-200 border-t-2 border-t-emerald-400/70 bg-white p-5 shadow-sm hover:shadow-md hover:border-emerald-200 hover:bg-emerald-50/40 transition-all duration-300">
-                        <h4 className="font-semibold text-slate-900 mb-2">2. Location with Daily Utility</h4>
+                        <h4 className="font-semibold text-slate-900 mb-2">2. Practical Location</h4>
                         <p className="text-sm text-slate-600 leading-relaxed">
-                          Connectivity to Vijayawada, Amaravati growth corridors, and key roads matters for both end-use and long-term value.
-                          Kalpavruksha is preferred because this access is practical, not just promotional.
+                          The site connects well to Vijayawada, Amaravati corridors, and major roads.
                         </p>
                       </div>
                       <div className="rounded-xl border border-slate-200 border-t-2 border-t-emerald-400/70 bg-white p-5 shadow-sm hover:shadow-md hover:border-emerald-200 hover:bg-emerald-50/40 transition-all duration-300">
-                        <h4 className="font-semibold text-slate-900 mb-2">3. Infrastructure Buyers Can Inspect</h4>
+                        <h4 className="font-semibold text-slate-900 mb-2">3. Visible Infrastructure</h4>
                         <p className="text-sm text-slate-600 leading-relaxed">
-                          Internal roads, utility planning, drainage, and community development are visible indicators of project readiness.
-                          Buyers can evaluate these points on-site before commitment.
+                          Roads, utilities, and drainage planning are visible during site inspection.
                         </p>
                       </div>
                     </div>
 
-                    <p className="text-slate-700 leading-relaxed">
-                      For anyone comparing CRDA-approved plots near Vijayawada and Amaravati, the best approach is simple: review the brochure,
-                      verify the layout, and assess the site in person. That practical process is why Kalpavruksha remains a preferred option.
+                    <p className="text-slate-700 leading-relaxed font-medium">
+                      Compare documents, check the layout, and visit the site to decide with confidence.
                     </p>
                   </div>
                 </div>
