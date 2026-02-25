@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import SearchResults from './pages/SearchProperties';  // make sure this exists
 import Favourites from './pages/Favourites';
 import Login from './pages/Login';
@@ -68,7 +68,8 @@ function App() {
           <Route path="/compare" element={<Compare />} />
           <Route path="/profile" element={<ProfilePage />} />
           {/* Kalpavruksha page */}
-          <Route path="/projects" element={<KalpavrukshaPage />} />
+          <Route path="/kalpavruksha" element={<KalpavrukshaPage />} />
+          <Route path="/projects" element={<Navigate to="/kalpavruksha" replace />} />
           {/* Thankyou page */}
           <Route path="/thank-you" element={<ThankYouPage />} />
           <Route path="/admin" element={<AdminPanel />} />

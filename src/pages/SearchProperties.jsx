@@ -246,7 +246,7 @@ export default function SearchResults() {
     </Helmet>
     <h1 className="sr-only">
       Search CRDA Approved Plots in Vijayawada and Amaravati
-      <Link to="/projects">View All Projects</Link>
+      <Link to="/kalpavruksha">View All Projects</Link>
     </h1>
     <div className="search-page">
       <div className="search-main">

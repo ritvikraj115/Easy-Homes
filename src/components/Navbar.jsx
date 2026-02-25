@@ -10,7 +10,7 @@ import {
 import { Phone } from 'lucide-react';
 
 const MENU_ITEMS = [
-  { label: 'Featured Projects', to: '/projects' },
+  { label: 'Featured Projects', to: '/kalpavruksha' },
   { label: 'Search Properties', to: '/searchProperties' },
   { label: 'About', to: '/about', isStub: true },
   { label: 'Contact', to: '/contact', isStub: true },
@@ -85,7 +85,7 @@ export default function Navbar() {
                       if (window.location.pathname === '/') {
                         if (item.label === 'About' && window.scrollToAbout) window.scrollToAbout();
                         if (item.label === 'Contact' && window.scrollToContact) window.scrollToContact();
-                      } else if (window.location.pathname.includes('projects')) {
+                      } else if (window.location.pathname.toLowerCase().includes('kalpavruksha')) {
                         if (item.label === 'About' && window.scrollToAmenities) window.scrollToAmenities();
                         if (item.label === 'Contact' && window.scrollToContact) window.scrollToContact();
                       }
@@ -190,7 +190,7 @@ export default function Navbar() {
                         if (window.location.pathname === '/') {
                           if (item.label === 'About' && window.scrollToAbout) window.scrollToAbout();
                           if (item.label === 'Contact' && window.scrollToContact) window.scrollToContact();
-                        } else if (window.location.pathname.includes('Kalpavruksha')) {
+                        } else if (window.location.pathname.toLowerCase().includes('kalpavruksha')) {
                           if (item.label === 'About' && window.scrollToAmenities) window.scrollToAmenities();
                           if (item.label === 'Contact' && window.scrollToContact) window.scrollToContact();
                         }

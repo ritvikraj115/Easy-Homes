@@ -62,7 +62,7 @@ function FeaturedProjects({ cref }) {
               </div>
 
               <Link
-                to="/projects"
+                to="/kalpavruksha"
                 aria-label="View Kalpavruksha CRDA Approved Plots Project Details"
                 className="group bg-[#3868B2] text-white px-8 py-4 rounded-lg text-lg font-poppins font-medium shadow-md hover:bg-[#38689F] hover:shadow-lg transition-all flex items-center gap-3 min-w-[12rem]"
               >

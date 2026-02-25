@@ -6,7 +6,7 @@ const path = require('path');
 (async () => {
   const routes = [
     { url: '/', changefreq: 'daily', priority: 1.0 },
-    { url: '/projects', changefreq: 'weekly', priority: 0.8 },
+    { url: '/kalpavruksha', changefreq: 'weekly', priority: 0.8 },
     { url: '/searchProperties', changefreq: 'weekly', priority: 0.8 },
     // …add other static or dynamic routes here…
   ];

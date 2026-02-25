@@ -40,7 +40,7 @@ const Footer = ({ onAboutClick, onContactClick, onTermsClick, onPrivacyClick }) 
           <div className="sm:ml-4">
             <h4 className="text-lg font-semibold mb-6 font-poppins">Quick Links</h4>
             <ul className="flex flex-col gap-3">
-              <li><Link to="/projects" className="text-gray-300 hover:text-white font-inter">Projects</Link></li>
+              <li><Link to="/kalpavruksha" className="text-gray-300 hover:text-white font-inter">Projects</Link></li>
               <li><Link to="/searchProperties" className="text-gray-300 hover:text-white font-inter">Buy a Plot</Link></li>
               <li><button onClick={onAboutClick} className="text-left text-gray-300 hover:text-white font-inter bg-transparent border-none outline-none cursor-pointer">About Us</button></li>
               <li><button onClick={onContactClick} className="text-left text-gray-300 hover:text-white font-inter bg-transparent border-none outline-none cursor-pointer">Contact</button></li>

@@ -22,7 +22,7 @@ import {
 import { GoogleMap, MarkerF, useJsApiLoader } from '@react-google-maps/api';
 import card, { Card, CardContent } from '../components/card';
 import Navbar from '../components/Navbar'
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ReviewsSection from '../components/ReviewProject';
 import api from '../api';
 import { MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
@@ -41,12 +41,33 @@ const VISIT_TIME_SLOTS = Array.from({ length: 33 }, (_, index) => {
 
 const PICKUP_MAP_DEFAULT_CENTER = { lat: 16.553755, lng: 80.570832 };
 const PICKUP_MAP_CONTAINER_STYLE = { width: '100%', height: '220px' };
+const DOWNLOAD_ASSET_CONFIG = {
+  layout: {
+    url: '/Kalpavruksha Master Layout.pdf',
+    fileName: 'Kalpavruksha Master Layout.pdf',
+    title: 'Download Master Layout PDF',
+    description: 'Share your details to access the Kalpavruksha master layout.',
+    source: 'Website',
+    leadStatus: 'Downloaded Layout'
+  },
+  brochure: {
+    url: '/mainBrouche.pdf',
+    fileName: 'Kalpavruksha Project Brochure.pdf',
+    title: 'Download Project Brochure',
+    description: 'Share your details to access the Kalpavruksha project brochure.',
+    source: 'Website',
+    leadStatus: 'Downloaded Brochure'
+  }
+};
 
 const KalpavrukshaPage = () => {
   // ...existing code...
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showVisitModal, setShowVisitModal] = useState(false);
+  const [downloadAssetKey, setDownloadAssetKey] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [downloadSubmitting, setDownloadSubmitting] = useState(false);
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -59,6 +80,12 @@ const KalpavrukshaPage = () => {
     pickupLat: '',
     pickupLng: ''
   });
+  const [layoutLeadForm, setLayoutLeadForm] = useState({
+    name: '',
+    phone: '',
+    email: ''
+  });
+  const activeDownloadAsset = downloadAssetKey ? DOWNLOAD_ASSET_CONFIG[downloadAssetKey] : null;
   const [toast, setToast] = useState(null);
   const todayDate = new Date().toISOString().split('T')[0];
   const [pickupMapCenter, setPickupMapCenter] = useState(PICKUP_MAP_DEFAULT_CENTER);
@@ -111,7 +138,7 @@ const KalpavrukshaPage = () => {
     "name": "Kalpavruksha Open Plots",
     "description":
       "CRDA-approved residential open plots near Vijayawada and Amaravati by Easy Homes. Premium gated community with clubhouse, infrastructure, and clear title.",
-    "url": "https://easyhomess.com/projects",
+    "url": "https://easyhomess.com/kalpavruksha",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Vijayawada",
@@ -186,6 +213,7 @@ const KalpavrukshaPage = () => {
     onClick,
     href,
     target,
+    className = '',
   }) => {
     const classes = `
     inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold 
@@ -194,6 +222,7 @@ const KalpavrukshaPage = () => {
         ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700'
         : 'bg-white text-gray-800 border border-gray-300 hover:bg-gray-50'
       }
+    ${className}
   `;
 
     // If link exists, render <a>
@@ -247,6 +276,26 @@ const KalpavrukshaPage = () => {
 
   const openVisitModal = () => setShowVisitModal(true);
   const closeVisitModal = () => setShowVisitModal(false);
+  const openDownloadLeadModal = (assetKey) => {
+    setLayoutLeadForm({ name: '', phone: '', email: '' });
+    setDownloadAssetKey(assetKey);
+  };
+  const closeDownloadLeadModal = () => setDownloadAssetKey(null);
+
+  const onLayoutLeadChange = (e) => {
+    const { name, value } = e.target;
+    setLayoutLeadForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const triggerAssetDownload = (assetConfig) => {
+    if (!assetConfig?.url) return;
+    const link = document.createElement('a');
+    link.href = assetConfig.url;
+    link.download = assetConfig.fileName || 'download.pdf';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
 
   const reverseGeocodePickup = (lat, lng) => {
     const requestId = Date.now();
@@ -327,6 +376,7 @@ const KalpavrukshaPage = () => {
     e?.preventDefault?.();
     if (!form.name || !form.phone || !form.preferredDate || !form.preferredTime || !form.pickupAddress.trim()) {
       setToast({ type: 'error', msg: 'Please fill name, phone, date, time slot and pickup address.' });
+      setTimeout(() => setToast(null), 4000);
       return;
     }
     try {
@@ -344,7 +394,6 @@ const KalpavrukshaPage = () => {
         pickupLat: form.pickupLat || undefined,
         pickupLng: form.pickupLng || undefined
       });
-      setToast({ type: 'success', msg: 'Request received. We will confirm shortly.' });
       setShowVisitModal(false);
       setForm({
         name: '',
@@ -358,13 +407,52 @@ const KalpavrukshaPage = () => {
         pickupLat: '',
         pickupLng: ''
       });
+      navigate('/thank-you');
     } catch (err) {
       console.error(err);
       const msg = err.response?.data?.message || 'Failed to submit. Please try again.';
       setToast({ type: 'error', msg });
+      setTimeout(() => setToast(null), 4000);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const submitLayoutLead = async (e) => {
+    e?.preventDefault?.();
+    if (!layoutLeadForm.name.trim() || !layoutLeadForm.phone.trim()) {
+      setToast({ type: 'error', msg: 'Please enter your name and phone number to continue.' });
       setTimeout(() => setToast(null), 4000);
+      return;
+    }
+    if (!activeDownloadAsset) {
+      setToast({ type: 'error', msg: 'Please select a valid download option.' });
+      setTimeout(() => setToast(null), 4000);
+      return;
+    }
+
+    try {
+      setDownloadSubmitting(true);
+      await api.post('/api/leads/layout-download', {
+        project: 'Kalpavruksha',
+        source: activeDownloadAsset.source,
+        leadStatus: activeDownloadAsset.leadStatus,
+        name: layoutLeadForm.name.trim(),
+        phone: layoutLeadForm.phone.trim(),
+        email: layoutLeadForm.email.trim() || undefined,
+      });
+
+      closeDownloadLeadModal();
+      setLayoutLeadForm({ name: '', phone: '', email: '' });
+      triggerAssetDownload(activeDownloadAsset);
+      navigate('/thank-you');
+    } catch (err) {
+      console.error(err);
+      const msg = err.response?.data?.message || 'Failed to submit. Please try again.';
+      setToast({ type: 'error', msg });
+      setTimeout(() => setToast(null), 4000);
+    } finally {
+      setDownloadSubmitting(false);
     }
   };
   return (
@@ -384,7 +472,7 @@ const KalpavrukshaPage = () => {
           content="Kalpavruksha plots, CRDA approved plots Vijayawada, open plots near Amaravati, Easy Homes projects, gated community plots Andhra Pradesh"
         />
 
-        <link rel="canonical" href="https://easyhomess.com/projects" />
+        <link rel="canonical" href="https://easyhomess.com/kalpavruksha" />
         <meta name="robots" content="index,follow" />
 
         <script type="application/ld+json">
@@ -541,6 +629,72 @@ const KalpavrukshaPage = () => {
           </div>
         </div>
       )}
+      {/* Layout Download Lead Modal */}
+      {downloadAssetKey && activeDownloadAsset && (
+        <div
+          className="fixed inset-0 z-40 flex items-start md:items-center justify-center bg-black/50 overflow-y-auto p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) closeDownloadLeadModal(); }}
+        >
+          <div className="bg-white rounded-2xl w-full max-w-xl shadow-xl my-6 max-h-[calc(100vh-3rem)] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-teal-50">
+              <h3 className="text-xl font-bold text-gray-900">{activeDownloadAsset.title}</h3>
+              <button onClick={closeDownloadLeadModal} className="p-2 rounded hover:bg-white/80" type="button">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={submitLayoutLead} className="space-y-4 overflow-y-auto px-6 py-4">
+              <p className="text-sm text-gray-600 leading-relaxed">
+                {activeDownloadAsset.description}
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <input
+                    name="name"
+                    value={layoutLeadForm.name}
+                    onChange={onLayoutLeadChange}
+                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="Your name"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <input
+                    name="phone"
+                    value={layoutLeadForm.phone}
+                    onChange={onLayoutLeadChange}
+                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="e.g., 9898899666"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email (optional)</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={layoutLeadForm.email}
+                  onChange={onLayoutLeadChange}
+                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  placeholder="you@example.com"
+                />
+              </div>
+              <p className="text-xs text-gray-500">By continuing, you agree to be contacted by Easy Homes regarding this project.</p>
+              <div className="sticky bottom-0 bg-white pt-2 pb-1">
+                <button
+                  type="submit"
+                  disabled={downloadSubmitting}
+                  className="w-full bg-emerald-600 text-white py-2.5 rounded-lg hover:bg-emerald-700 disabled:opacity-60"
+                >
+                  {downloadSubmitting ? 'Submitting...' : 'Submit & Download'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       <h1 className="sr-only">
         Kalpavruksha Project
         <Link to="/searchProperties">View All Projects</Link>
@@ -589,17 +743,13 @@ const KalpavrukshaPage = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-              <a
-                href="/mainBrouche.pdf"
-                download
-                className="inline-flex items-center h-fit w-fit  text-white rounded-full transition duration-200"
-              >
-                <CTAButton
-                  icon={<Download className="w-5 h-5" />}
-                  text="Get Brochure"
-                  primary
-                  className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-gray-900"
-                /></a>
+              <CTAButton
+                icon={<Download className="w-5 h-5" />}
+                text="Get Brochure"
+                primary
+                onClick={() => openDownloadLeadModal('brochure')}
+                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-gray-900"
+              />
               {/* <CTAButton
                 icon={<MapPin className="w-5 h-5" />}
                 text="Schedule Site Visit"
@@ -613,7 +763,7 @@ const KalpavrukshaPage = () => {
                 <CTAButton
                   icon={<MessageCircle className="w-5 h-5" />}
                   text="Talk to Us on WhatsApp"
-                  className="bg-yellow-500 text-gray-900 hover:bg-yellow-400"
+                  className="bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-800 border border-emerald-200/80 hover:from-white hover:to-emerald-50"
                 />
               </a>
             </div>
@@ -826,16 +976,12 @@ const KalpavrukshaPage = () => {
                 </div>
 
                 <div className="mt-8 space-y-4">
-                  <a
-                    href="/Kalpavruksha Master Layout.pdf"
-                    download
-                    className="inline-flex items-center h-fit w-fit  text-white rounded-full transition duration-200"
-                  >
-                    <CTAButton
-                      icon={<Download className="w-5 h-5" />}
-                      text="Download Layout PDF"
-                      primary
-                    /></a>
+                  <CTAButton
+                    icon={<Download className="w-5 h-5" />}
+                    text="Download Layout PDF"
+                    primary
+                    onClick={() => openDownloadLeadModal('layout')}
+                  />
                   <div className="flex flex-col sm:flex-row gap-4">
                     <CTAButton
                       icon={<MapPin className="w-5 h-5" />}
@@ -930,15 +1076,11 @@ const KalpavrukshaPage = () => {
                   text="Request a Callback"
                   onClick={goToHomeCallToAction}
                 />
-                <a
-                  href="/mainBrouche.pdf"
-                  download
-                  className="inline-flex items-center h-fit w-fit  text-white rounded-full transition duration-200"
-                >
-                  <CTAButton
-                    icon={<Download className="w-5 h-5" />}
-                    text="Download Project Brochure"
-                  /></a>
+                <CTAButton
+                  icon={<Download className="w-5 h-5" />}
+                  text="Download Project Brochure"
+                  onClick={() => openDownloadLeadModal('brochure')}
+                />
               </div>
             </div>
           </div>
@@ -966,6 +1108,51 @@ const KalpavrukshaPage = () => {
                   Reviews
                 </p>
                 <ReviewsSection />
+                <div className="max-w-5xl mx-auto mt-10 px-4 text-left">
+                  <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-white via-emerald-50/35 to-slate-50 p-6 md:p-8 shadow-lg">
+                    <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase bg-emerald-50 border border-emerald-100 text-emerald-700 mb-4">
+                      Buyer Decision Guide
+                    </div>
+                    <div className="h-px w-24 bg-gradient-to-r from-emerald-500/80 via-teal-500/50 to-transparent mb-5" />
+                    <h3 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4">
+                      Why Kalpavruksha Is a Preferred Choice for Plot Buyers
+                    </h3>
+                    <p className="text-slate-700 leading-relaxed mb-6">
+                      Serious plot buyers usually compare three things before deciding: legal clarity, location practicality, and
+                      on-ground infrastructure. In the Vijayawada-Amaravati region, Kalpavruksha stands out because these three points
+                      can be verified clearly during due diligence and site visit.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <div className="rounded-xl border border-slate-200 border-t-2 border-t-emerald-400/70 bg-white p-5 shadow-sm hover:shadow-md hover:border-emerald-200 hover:bg-emerald-50/40 transition-all duration-300">
+                        <h4 className="font-semibold text-slate-900 mb-2">1. Clarity in Approvals and Documentation</h4>
+                        <p className="text-sm text-slate-600 leading-relaxed">
+                          Buyers prefer projects where approvals, plot boundaries, and registration documents are straightforward to review.
+                          This reduces ambiguity and supports confident decision-making.
+                        </p>
+                      </div>
+                      <div className="rounded-xl border border-slate-200 border-t-2 border-t-emerald-400/70 bg-white p-5 shadow-sm hover:shadow-md hover:border-emerald-200 hover:bg-emerald-50/40 transition-all duration-300">
+                        <h4 className="font-semibold text-slate-900 mb-2">2. Location with Daily Utility</h4>
+                        <p className="text-sm text-slate-600 leading-relaxed">
+                          Connectivity to Vijayawada, Amaravati growth corridors, and key roads matters for both end-use and long-term value.
+                          Kalpavruksha is preferred because this access is practical, not just promotional.
+                        </p>
+                      </div>
+                      <div className="rounded-xl border border-slate-200 border-t-2 border-t-emerald-400/70 bg-white p-5 shadow-sm hover:shadow-md hover:border-emerald-200 hover:bg-emerald-50/40 transition-all duration-300">
+                        <h4 className="font-semibold text-slate-900 mb-2">3. Infrastructure Buyers Can Inspect</h4>
+                        <p className="text-sm text-slate-600 leading-relaxed">
+                          Internal roads, utility planning, drainage, and community development are visible indicators of project readiness.
+                          Buyers can evaluate these points on-site before commitment.
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="text-slate-700 leading-relaxed">
+                      For anyone comparing CRDA-approved plots near Vijayawada and Amaravati, the best approach is simple: review the brochure,
+                      verify the layout, and assess the site in person. That practical process is why Kalpavruksha remains a preferred option.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
