@@ -79,6 +79,28 @@ export default function PropertyDetails() {
   const workingImages = explicitWorkingImages.length > 0 ? explicitWorkingImages : galleryImages;
 
   useEffect(() => {
+    if (!decodedRouteMlsNumber || location.pathname.endsWith('/')) {
+      return;
+    }
+
+    navigate(
+      {
+        pathname: `${location.pathname}/`,
+        search: location.search,
+        hash: location.hash,
+      },
+      { replace: true, state: location.state },
+    );
+  }, [
+    decodedRouteMlsNumber,
+    location.hash,
+    location.pathname,
+    location.search,
+    location.state,
+    navigate,
+  ]);
+
+  useEffect(() => {
     let isCancelled = false;
 
     if (!decodedRouteMlsNumber) {
