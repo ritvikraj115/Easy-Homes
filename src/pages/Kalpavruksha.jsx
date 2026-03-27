@@ -164,14 +164,14 @@ const KalpavrukshaPage = () => {
   const projectTitle =
     'Kalpavruksha Open Plots in Vijayawada | CRDA Approved Plots Near Amaravati | Easy Homes';
   const projectDescription =
-    'Explore Kalpavruksha by Easy Homes, a CRDA-approved residential plotted community with 105 open plots across 9.03 acres near Vijayawada and Amaravati, with premium infrastructure and clubhouse amenities.';
+    'Explore Kalpavruksha by Easy Homes, a CRDA-approved residential plotted community with 105 open plots across 9.03 acres near Vijayawada and Amaravati, with plot sizes from 174 to 525 square yards, premium infrastructure, and clubhouse amenities.';
   const projectKeywords =
     'Kalpavruksha, Kalpavruksha plots, CRDA approved plots Vijayawada, open plots near Amaravati, Easy Homes projects, residential plots Andhra Pradesh';
   const projectCanonicalUrl = 'https://easyhomess.com/kalpavruksha';
   const projectImageUrl = 'https://easyhomess.com/kalpPcImg.webp';
   const projectShareTitle = 'Kalpavruksha Open Plots in Vijayawada | Easy Homes';
   const projectShareDescription =
-    'CRDA-approved plotted development near Vijayawada and Amaravati with 105 residential plots across 9.03 acres, premium amenities, and strong connectivity.';
+    'CRDA-approved plotted development near Vijayawada and Amaravati with 105 residential plots across 9.03 acres, plot sizes from 174 to 525 square yards, premium amenities, and strong connectivity.';
   const projectLocationTitle = 'Kalpavruksha, near Vijayawada Nagpur Greenfield Highway, Vemavaram';
   const projectLocationAddress = 'Kalpavruksha, near Vijayawada Nagpur Greenfield Highway, Vemavaram, Vijayawada, Andhra Pradesh';
   const projectMapEmbedUrl = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3823.5114526053485!2d80.59797237418302!3d16.60108128415813!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a35ef003f891535%3A0xdb8f6ca60fc5d3fe!2sKalpavruksha!5e0!3m2!1sen!2sus!4v1774516140803!5m2!1sen!2sus';
@@ -257,7 +257,7 @@ const KalpavrukshaPage = () => {
     {
       question: 'What plot sizes are available?',
       answer:
-        'The current plot size range is 157.56 to 767 square yards, covering both compact and larger residential plot requirements.',
+        'The current plot size range is 174 to 525 square yards, covering both compact and larger residential plot requirements.',
     },
     {
       question: 'What is the configuration in Kalpavruksha?',
@@ -398,7 +398,7 @@ const KalpavrukshaPage = () => {
     },
     {
       label: "Sizes",
-      value: "157.56-767",
+      value: "174-525",
       unit: "Sq.yd.",
       detail: "Available plot-size range."
     }
