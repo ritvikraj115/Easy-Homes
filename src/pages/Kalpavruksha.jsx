@@ -1019,12 +1019,12 @@ const KalpavrukshaPage = () => {
           <picture className="absolute inset-0 w-full h-full z-0 block">
             <source
               media="(min-width: 768px)"
-              srcSet="kalpPcImg.webp"
+              srcSet="/kalpPcImg.webp"
               type="image/webp"
             />
             <source
               media="(max-width: 767px)"
-              srcSet="kalpPhImg.webp"
+              srcSet="/kalpPhImg.webp"
               type="image/webp"
             />
             <img
