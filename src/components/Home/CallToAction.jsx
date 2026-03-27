@@ -233,6 +233,7 @@ import React, { useState } from "react";
 import { Phone, Mail, User } from "lucide-react";
 import emailjs from "@emailjs/browser";
 import { useNavigate } from "react-router-dom";
+import { trackGenerateLead } from "../../utils/analytics";
 
 const CallToAction = () => {
   const navigate = useNavigate();
@@ -273,6 +274,14 @@ const CallToAction = () => {
         templateParams,
         PUBLIC_KEY
       );
+
+      trackGenerateLead({
+        form_name: "home_callback_form",
+        lead_type: "callback_request",
+        project: "General Inquiry",
+        source: "home_contact_section",
+        contact_method: "emailjs_form",
+      });
 
       // ✅ Reset form
       setFormData({

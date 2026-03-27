@@ -27,6 +27,12 @@ import ReviewsSection from '../components/ReviewProject';
 import api from '../api';
 import { MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
 import { FaWhatsapp } from 'react-icons/fa';
+import {
+  trackFileDownload,
+  trackGenerateLead,
+  trackScheduleVisit,
+  trackWhatsAppClick,
+} from '../utils/analytics';
 
 const VISIT_TIME_SLOTS = Array.from({ length: 33 }, (_, index) => {
   const totalMinutes = (9 * 60) + (index * 15);
@@ -455,6 +461,7 @@ const KalpavrukshaPage = () => {
           href={href}
           target={target}
           rel={target === "_blank" ? "noopener noreferrer" : undefined}
+          onClick={onClick}
           className={classes}
         >
           {icon}
@@ -518,6 +525,14 @@ const KalpavrukshaPage = () => {
     document.body.appendChild(link);
     link.click();
     link.remove();
+  };
+
+  const trackKalpavrukshaWhatsAppClick = (placement) => {
+    trackWhatsAppClick({
+      project: 'Kalpavruksha',
+      source: 'kalpavruksha',
+      placement,
+    });
   };
 
   const reverseGeocodePickup = (lat, lng) => {
@@ -617,6 +632,23 @@ const KalpavrukshaPage = () => {
         pickupLat: form.pickupLat || undefined,
         pickupLng: form.pickupLng || undefined
       });
+      trackGenerateLead({
+        form_name: 'kalpavruksha_site_visit_form',
+        lead_type: 'site_visit',
+        project: 'Kalpavruksha',
+        source: 'kalpavruksha_site_visit_modal',
+        transport_required: form.transportRequired,
+        pickup_mode: form.pickupMode,
+      });
+      trackScheduleVisit({
+        form_name: 'kalpavruksha_site_visit_form',
+        project: 'Kalpavruksha',
+        source: 'kalpavruksha_site_visit_modal',
+        preferred_date: form.preferredDate,
+        preferred_time: form.preferredTime,
+        transport_required: form.transportRequired,
+        pickup_mode: form.pickupMode,
+      });
       setShowVisitModal(false);
       setForm({
         name: '',
@@ -663,6 +695,24 @@ const KalpavrukshaPage = () => {
         name: layoutLeadForm.name.trim(),
         phone: layoutLeadForm.phone.trim(),
         email: layoutLeadForm.email.trim() || undefined,
+      });
+
+      const assetType = downloadAssetKey === 'layout' ? 'master_layout' : 'brochure';
+      trackGenerateLead({
+        form_name: 'kalpavruksha_download_form',
+        lead_type: `${assetType}_download`,
+        project: 'Kalpavruksha',
+        source: activeDownloadAsset.source || 'Website',
+        asset_type: assetType,
+        lead_status: activeDownloadAsset.leadStatus,
+      });
+      trackFileDownload({
+        project: 'Kalpavruksha',
+        source: 'kalpavruksha_download_form',
+        asset_type: assetType,
+        file_name: activeDownloadAsset.fileName,
+        file_extension: 'pdf',
+        link_url: activeDownloadAsset.url,
       });
 
       closeDownloadLeadModal();
@@ -1005,6 +1055,7 @@ const KalpavrukshaPage = () => {
                 href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20Kalpavruksha%20project."
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackKalpavrukshaWhatsAppClick('hero_cta')}
               >
                 <CTAButton
                   icon={<MessageCircle className="w-5 h-5" />}
@@ -1244,6 +1295,7 @@ const KalpavrukshaPage = () => {
                     <CTAButton
                       icon={<MessageCircle className="w-5 h-5" />}
                       text="Chat on WhatsApp"
+                      onClick={() => trackKalpavrukshaWhatsAppClick('master_plan_section')}
                       href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20I%20want%20to%20book%20a%20site%20visit%20for%20Kalpavruksha."
                       target="_blank"
                     />
@@ -1472,6 +1524,7 @@ const KalpavrukshaPage = () => {
                   href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20Kalpavruksha."
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => trackKalpavrukshaWhatsAppClick('journey_home')}
                 >
                   <CTAButton
                     icon={<MessageCircle className="w-5 h-5" />}
@@ -1585,6 +1638,7 @@ const KalpavrukshaPage = () => {
               href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20please%20contact%20me%20regarding%20Kalpavruksha."
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackKalpavrukshaWhatsAppClick('floating_button')}
               className="group inline-flex h-11 w-[8.75rem] items-center gap-2.5 rounded-full border border-white/70 bg-white/75 px-3.5 text-slate-700 shadow-[0_10px_24px_rgba(15,23,42,0.12)] backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-100 hover:bg-white/85 hover:text-emerald-700 hover:shadow-[0_14px_30px_rgba(15,23,42,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
               aria-label="Chat on WhatsApp"
               title="Chat on WhatsApp"
@@ -1635,6 +1689,7 @@ const KalpavrukshaPage = () => {
                       href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20please%20contact%20me%20regarding%20Kalpavruksha."
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => trackKalpavrukshaWhatsAppClick('footer_contact')}
                     >
                       <CTAButton
                         icon={<MessageCircle className="w-4 h-4" />}

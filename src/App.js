@@ -21,17 +21,18 @@ import ThankYouPage from './pages/ThankYouPage';
 import AdminPanel from './pages/AdminPanel';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import { trackPageView } from './utils/analytics';
 
 function App() {
   function ScrollToTop() {
     const { pathname } = useLocation();
 
   useEffect(() => {
-    if (window.gtag) {
-      window.gtag('config', 'G-PS0CKM6BCZ', {
-        page_path: pathname,
-      });
-    }
+    trackPageView({
+      page_path: pathname,
+      page_location: typeof window !== 'undefined' ? window.location.href : undefined,
+      page_title: typeof document !== 'undefined' ? document.title : undefined,
+    });
   }, [pathname]);
 
     useEffect(() => {
