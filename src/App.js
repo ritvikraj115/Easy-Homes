@@ -74,7 +74,7 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           {/* Kalpavruksha page */}
           <Route path="/kalpavruksha" element={<KalpavrukshaPage />} />
-          <Route path="/projects" element={<Navigate to="/kalpavruksha" replace />} />
+          <Route path="/projects" element={<Navigate to="/kalpavruksha/" replace />} />
           {/* Thankyou page */}
           <Route path="/thank-you" element={<ThankYouPage />} />
           <Route path="/admin" element={<AdminPanel />} />

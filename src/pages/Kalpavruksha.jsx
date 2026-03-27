@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
   Download,
@@ -22,7 +22,7 @@ import {
 import { GoogleMap, MarkerF, useJsApiLoader } from '@react-google-maps/api';
 import { Card, CardContent } from '../components/card';
 import Navbar from '../components/Navbar'
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ReviewsSection from '../components/ReviewProject';
 import api from '../api';
 import { MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
@@ -70,6 +70,7 @@ const DOWNLOAD_ASSET_CONFIG = {
 const KalpavrukshaPage = () => {
   // ...existing code...
   const navigate = useNavigate();
+  const location = useLocation();
   const [showVisitModal, setShowVisitModal] = useState(false);
   const [downloadAssetKey, setDownloadAssetKey] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -167,7 +168,7 @@ const KalpavrukshaPage = () => {
     'Explore Kalpavruksha by Easy Homes, a CRDA-approved residential plotted community with 105 open plots across 9.03 acres near Vijayawada and Amaravati, with plot sizes from 174 to 525 square yards, premium infrastructure, and clubhouse amenities.';
   const projectKeywords =
     'Kalpavruksha, Kalpavruksha plots, CRDA approved plots Vijayawada, open plots near Amaravati, Easy Homes projects, residential plots Andhra Pradesh';
-  const projectCanonicalUrl = 'https://easyhomess.com/kalpavruksha';
+  const projectCanonicalUrl = 'https://easyhomess.com/kalpavruksha/';
   const projectImageUrl = 'https://easyhomess.com/kalpPcImg.webp';
   const projectShareTitle = 'Kalpavruksha Open Plots in Vijayawada | Easy Homes';
   const projectShareDescription =
@@ -176,6 +177,21 @@ const KalpavrukshaPage = () => {
   const projectLocationAddress = 'Kalpavruksha, near Vijayawada Nagpur Greenfield Highway, Vemavaram, Vijayawada, Andhra Pradesh';
   const projectMapEmbedUrl = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3823.5114526053485!2d80.59797237418302!3d16.60108128415813!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a35ef003f891535%3A0xdb8f6ca60fc5d3fe!2sKalpavruksha!5e0!3m2!1sen!2sus!4v1774516140803!5m2!1sen!2sus';
   const projectDirectionsUrl = 'https://www.google.com/maps/search/?api=1&query=16.60108128415813,80.59797237418302';
+
+  useEffect(() => {
+    if (location.pathname.endsWith('/')) {
+      return;
+    }
+
+    navigate(
+      {
+        pathname: `${location.pathname}/`,
+        search: location.search,
+        hash: location.hash,
+      },
+      { replace: true, state: location.state },
+    );
+  }, [location.hash, location.pathname, location.search, location.state, navigate]);
 
   const breadcrumbData = {
     "@context": "https://schema.org",

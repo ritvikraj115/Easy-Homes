@@ -8,7 +8,7 @@ const PUBLIC_SITEMAP_PATH = path.resolve(__dirname, '../public/sitemap.xml');
 async function generateSitemap() {
   const staticRoutes = [
     { url: '/', changefreq: 'daily', priority: 1.0 },
-    { url: '/kalpavruksha', changefreq: 'weekly', priority: 0.9 },
+    { url: '/kalpavruksha/', changefreq: 'weekly', priority: 0.9 },
     { url: '/about', changefreq: 'monthly', priority: 0.6 },
     { url: '/contact', changefreq: 'monthly', priority: 0.6 },
   ];

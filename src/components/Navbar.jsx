@@ -10,7 +10,7 @@ import {
 import { Phone } from 'lucide-react';
 
 const MENU_ITEMS = [
-  { label: 'Featured Projects', to: '/kalpavruksha' },
+  { label: 'Featured Projects', to: '/kalpavruksha/' },
   { label: 'Search Properties', to: '/searchProperties' },
   { label: 'About', to: '/about', isStub: true },
   { label: 'Contact', to: '/contact', isStub: true },
