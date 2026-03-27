@@ -15,17 +15,18 @@ import {
   CheckCircle,
   Users,
   TreePine,
-  Menu,
   X,
-  Star
+  ArrowUpRight,
+  ChevronDown
 } from 'lucide-react';
 import { GoogleMap, MarkerF, useJsApiLoader } from '@react-google-maps/api';
-import card, { Card, CardContent } from '../components/card';
+import { Card, CardContent } from '../components/card';
 import Navbar from '../components/Navbar'
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import ReviewsSection from '../components/ReviewProject';
 import api from '../api';
 import { MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
+import { FaWhatsapp } from 'react-icons/fa';
 
 const VISIT_TIME_SLOTS = Array.from({ length: 33 }, (_, index) => {
   const totalMinutes = (9 * 60) + (index * 15);
@@ -63,11 +64,12 @@ const DOWNLOAD_ASSET_CONFIG = {
 const KalpavrukshaPage = () => {
   // ...existing code...
   const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showVisitModal, setShowVisitModal] = useState(false);
   const [downloadAssetKey, setDownloadAssetKey] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [downloadSubmitting, setDownloadSubmitting] = useState(false);
+  const [showFloatingActions, setShowFloatingActions] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -104,6 +106,7 @@ const KalpavrukshaPage = () => {
   const locationRef = React.useRef(null);
   const amenitiesRef = React.useRef(null);
   const galleryRef = React.useRef(null);
+  const heroPrimaryCtaRef = React.useRef(null);
   // For Home page CallToAction scroll (no reload)
   const goToHomeCallToAction = () => {
     window.location.href = "/#contact";
@@ -130,26 +133,194 @@ const KalpavrukshaPage = () => {
       if (footer) footer.scrollIntoView({ behavior: 'smooth' });
     };
   }
+
+  React.useEffect(() => {
+    const target = heroPrimaryCtaRef.current;
+    if (!target || typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowFloatingActions(!entry.isIntersecting);
+      },
+      {
+        threshold: 0.01,
+      }
+    );
+
+    observer.observe(target);
+
+    return () => observer.disconnect();
+  }, []);
   /* ---------------- SEO STRUCTURED DATA ---------------- */
+
+  const projectTitle =
+    'Kalpavruksha Open Plots in Vijayawada | CRDA Approved Plots Near Amaravati | Easy Homes';
+  const projectDescription =
+    'Explore Kalpavruksha by Easy Homes, a CRDA-approved residential plotted community with 105 open plots across 9.03 acres near Vijayawada and Amaravati, with premium infrastructure and clubhouse amenities.';
+  const projectKeywords =
+    'Kalpavruksha, Kalpavruksha plots, CRDA approved plots Vijayawada, open plots near Amaravati, Easy Homes projects, residential plots Andhra Pradesh';
+  const projectCanonicalUrl = 'https://easyhomess.com/kalpavruksha';
+  const projectImageUrl = 'https://easyhomess.com/kalpPcImg.webp';
+  const projectShareTitle = 'Kalpavruksha Open Plots in Vijayawada | Easy Homes';
+  const projectShareDescription =
+    'CRDA-approved plotted development near Vijayawada and Amaravati with 105 residential plots across 9.03 acres, premium amenities, and strong connectivity.';
+  const projectLocationTitle = 'Kalpavruksha, near Vijayawada Nagpur Greenfield Highway, Vemavaram';
+  const projectLocationAddress = 'Kalpavruksha, near Vijayawada Nagpur Greenfield Highway, Vemavaram, Vijayawada, Andhra Pradesh';
+  const projectMapEmbedUrl = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3823.5114526053485!2d80.59797237418302!3d16.60108128415813!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a35ef003f891535%3A0xdb8f6ca60fc5d3fe!2sKalpavruksha!5e0!3m2!1sen!2sus!4v1774516140803!5m2!1sen!2sus';
+  const projectDirectionsUrl = 'https://www.google.com/maps/search/?api=1&query=16.60108128415813,80.59797237418302';
+
+  const breadcrumbData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "@id": `${projectCanonicalUrl}#breadcrumb`,
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://easyhomess.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Kalpavruksha",
+        "item": projectCanonicalUrl
+      }
+    ]
+  };
+
+  const realEstateAgentData = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateAgent",
+    "@id": `${projectCanonicalUrl}#agent`,
+    "name": "Easy Homes",
+    "image": "https://easyhomess.com/logo.png",
+    "telephone": "+918988896666",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "4th Floor, adjacent to GIG International School, Gollapudi",
+      "addressLocality": "Vijayawada",
+      "addressRegion": "Andhra Pradesh",
+      "postalCode": "521225",
+      "addressCountry": "IN"
+    },
+    "url": "https://easyhomess.com/",
+    "areaServed": ["Vijayawada", "Amaravati"]
+  };
+
+  const webPageData = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${projectCanonicalUrl}#webpage`,
+    "url": projectCanonicalUrl,
+    "name": projectTitle,
+    "description": projectDescription,
+    "inLanguage": "en-IN",
+    "breadcrumb": { "@id": `${projectCanonicalUrl}#breadcrumb` },
+    "mainEntity": { "@id": `${projectCanonicalUrl}#listing` },
+    "primaryImageOfPage": {
+      "@type": "ImageObject",
+      "url": projectImageUrl
+    },
+    "isPartOf": {
+      "@type": "WebSite",
+      "@id": "https://easyhomess.com/#website",
+      "url": "https://easyhomess.com/",
+      "name": "Easy Homes"
+    }
+  };
+
+  const faqItems = [
+    {
+      question: 'Is Kalpavruksha a CRDA-approved project?',
+      answer:
+        'Yes. Kalpavruksha is presented as a CRDA-approved plotted development by Easy Homes. Buyers should still review the latest approvals, layout documents, and registration details during the booking process.',
+    },
+    {
+      question: 'What is the total size of the project?',
+      answer:
+        'The project spans 9.03 acres and is planned as a gated residential plotted community.',
+    },
+    {
+      question: 'How many plots are available in Kalpavruksha?',
+      answer:
+        'Kalpavruksha has 105 residential plot units in the current project overview.',
+    },
+    {
+      question: 'What plot sizes are available?',
+      answer:
+        'The current plot size range is 157.56 to 767 square yards, covering both compact and larger residential plot requirements.',
+    },
+    {
+      question: 'What is the configuration in Kalpavruksha?',
+      answer:
+        'Kalpavruksha is planned as a residential plots project, suitable for buyers looking at open plot investment or future home construction.',
+    },
+    {
+      question: 'What is the average price in Kalpavruksha?',
+      answer:
+        'The current overview shows an average price of around Rs 15.5 K per square yard. Final pricing can vary by plot size, facing, and location within the layout.',
+    },
+    {
+      question: 'When does possession start?',
+      answer:
+        'The current project overview indicates possession from June 2028.',
+    },
+    {
+      question: 'What is the RERA ID of Kalpavruksha?',
+      answer:
+        'The RERA ID shown for Kalpavruksha is P06160035909. Buyers should verify the latest status from the official RERA portal before booking.',
+    },
+    {
+      question: 'Is Kalpavruksha a gated community?',
+      answer:
+        'Yes. The project is positioned as a gated residential layout with internal roads, utility planning, security features, and community amenities.',
+    },
+    {
+      question: 'Where is Kalpavruksha located?',
+      answer:
+        'The project is near the Vijayawada Nagpur Greenfield Highway in Vemavaram, with connectivity to Vijayawada, Western Bypass, Hyderabad Highway (NH 65), and Amaravati-side destinations.',
+    },
+    {
+      question: 'How can I get the brochure or schedule a visit?',
+      answer:
+        'You can download the brochure directly from this page or submit a site visit request to connect with the Easy Homes team for the next steps.',
+    },
+  ];
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map((item) => ({
+      "@type": "Question",
+      "name": item.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": item.answer
+      }
+    }))
+  };
 
   const projectSchema = {
     "@context": "https://schema.org",
     "@type": "RealEstateListing",
+    "@id": `${projectCanonicalUrl}#listing`,
     "name": "Kalpavruksha Open Plots",
-    "description":
-      "CRDA-approved residential open plots near Vijayawada and Amaravati by Easy Homes. Premium gated community with clubhouse, infrastructure, and clear title.",
-    "url": "https://easyhomess.com/kalpavruksha",
+    "description": projectDescription,
+    "url": projectCanonicalUrl,
+    "mainEntityOfPage": { "@id": `${projectCanonicalUrl}#webpage` },
+    "image": [projectImageUrl],
+    "identifier": "P06160035909",
+    "category": "Residential Plots",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Vijayawada",
       "addressRegion": "Andhra Pradesh",
       "addressCountry": "IN"
     },
-    "provider": {
-      "@type": "RealEstateAgent",
-      "name": "Easy Homes",
-      "telephone": "+918988896666"
-    }
+    "provider": { "@id": `${projectCanonicalUrl}#agent` }
   };
 
   const features = [
@@ -162,7 +333,7 @@ const KalpavrukshaPage = () => {
       icon: <MapPin className="w-6 h-6 text-blue-600" />,
       title: "Closer to Everything That Matters",
       description:
-        "7 km from Vijayawada | 12.5 km from Amaravati's Startup Village & BITS | Adjacent to Vijayawada-Nagpur Greenfield Highway",
+        "7.5 km from Vijayawada | 13.5 km from Amaravati Start-up Village & BITS | Near Vijayawada-Nagpur Greenfield Highway",
     },
     {
       icon: <Car className="w-6 h-6 text-purple-600" />,
@@ -205,6 +376,58 @@ const KalpavrukshaPage = () => {
       description: "More than a layout - a vision grounded in values for your family's legacy.",
     },
   ]
+
+  const projectSnapshotStats = [
+    {
+      label: "Project Units",
+      value: "105",
+      unit: "Units",
+      detail: "Registered residential plot inventory."
+    },
+    {
+      label: "Project Area",
+      value: "9.03",
+      unit: "Acres",
+      detail: "Overall layout spread across the project site."
+    },
+    {
+      label: "Sizes",
+      value: "157.56-767",
+      unit: "Sq.yd.",
+      detail: "Available plot-size range."
+    }
+  ];
+
+  const locationHighlights = [
+    {
+      icon: <MapPin className="h-4 w-4" />,
+      title: "Near Vijayawada-Nagpur Greenfield Highway"
+    },
+    {
+      icon: <Car className="h-4 w-4" />,
+      title: "5 km from Western Bypass"
+    },
+    {
+      icon: <MapPin className="h-4 w-4" />,
+      title: "7.5 km from Vijayawada"
+    },
+    {
+      icon: <Car className="h-4 w-4" />,
+      title: "9 km from Hyderabad Highway (NH 65), Milk factory, Gollapudi"
+    },
+    {
+      icon: <Building className="h-4 w-4" />,
+      title: "13.5 km from Amaravati Start-up Village & BITS Amaravati"
+    },
+    {
+      icon: <Building className="h-4 w-4" />,
+      title: "14 km from Vijayawada Railway Station"
+    },
+    {
+      icon: <MapPin className="h-4 w-4" />,
+      title: "15 km from Vijayawada Bus Stand"
+    }
+  ];
 
   const CTAButton = ({
     icon,
@@ -458,25 +681,49 @@ const KalpavrukshaPage = () => {
   return (
     <>
       <Helmet>
-        <title>
-          Kalpavruksha Open Plots in Vijayawada | CRDA Approved Plots Near Amaravati
-        </title>
+        <title>{projectTitle}</title>
 
         <meta
           name="description"
-          content="Kalpavruksha by Easy Homes offers CRDA-approved open plots near Vijayawada & Amaravati. Premium gated layout with clubhouse, infrastructure & clear title."
+          content={projectDescription}
         />
 
         <meta
           name="keywords"
-          content="Kalpavruksha plots, CRDA approved plots Vijayawada, open plots near Amaravati, Easy Homes projects, gated community plots Andhra Pradesh"
+          content={projectKeywords}
         />
 
-        <link rel="canonical" href="https://easyhomess.com/kalpavruksha" />
+        <link rel="canonical" href={projectCanonicalUrl} />
         <meta name="robots" content="index,follow" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Easy Homes" />
+        <meta property="og:locale" content="en_IN" />
+        <meta property="og:title" content={projectShareTitle} />
+        <meta property="og:description" content={projectShareDescription} />
+        <meta property="og:url" content={projectCanonicalUrl} />
+        <meta property="og:image" content={projectImageUrl} />
+        <meta property="og:image:alt" content="Kalpavruksha open plots by Easy Homes in Vijayawada" />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={projectShareTitle} />
+        <meta name="twitter:description" content={projectShareDescription} />
+        <meta name="twitter:image" content={projectImageUrl} />
+        <meta name="twitter:image:alt" content="Kalpavruksha open plots by Easy Homes in Vijayawada" />
 
         <script type="application/ld+json">
+          {JSON.stringify(breadcrumbData)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(realEstateAgentData)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(webPageData)}
+        </script>
+        <script type="application/ld+json">
           {JSON.stringify(projectSchema)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(faqSchema)}
         </script>
       </Helmet>
       {/* Toast */}
@@ -696,8 +943,7 @@ const KalpavrukshaPage = () => {
         </div>
       )}
       <h1 className="sr-only">
-        Kalpavruksha Project
-        <Link to="/searchProperties">View All Projects</Link>
+        Kalpavruksha open plots in Vijayawada by Easy Homes
       </h1>
       <Navbar />
       <div className="min-h-screen bg-white overflow-hidden">
@@ -742,7 +988,7 @@ const KalpavrukshaPage = () => {
               right, where your heart belongs. Just 12 mins from Amaravati.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+            <div ref={heroPrimaryCtaRef} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
               <CTAButton
                 icon={<Download className="w-5 h-5" />}
                 text="Get Brochure"
@@ -962,15 +1208,22 @@ const KalpavrukshaPage = () => {
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-8">Project Snapshot</h3>
 
-                <div className="space-y-6">
-                  {[
-                    { label: "Total Area", value: "9 Acres" },
-                    { label: "Number of Plots", value: "101 Plots" },
-                    { label: "Plot Size Range", value: "162 to 525 Sq Yards" }
-                  ].map((item, index) => (
-                    <div key={index} className="flex justify-between items-center py-4 border-b border-gray-200">
-                      <span className="text-gray-600 font-medium">{item.label}</span>
-                      <span className="text-xl font-bold text-emerald-600">{item.value}</span>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {projectSnapshotStats.map((item) => (
+                    <div
+                      key={item.label}
+                      className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-white via-emerald-50/40 to-teal-50/40 p-5 shadow-sm"
+                    >
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                        {item.label}
+                      </p>
+                      <div className="mt-3 flex items-baseline gap-1.5">
+                        <span className="text-2xl font-bold text-slate-900">{item.value}</span>
+                        <span className="text-sm font-semibold text-emerald-600">{item.unit}</span>
+                      </div>
+                      <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                        {item.detail}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -1029,20 +1282,174 @@ const KalpavrukshaPage = () => {
 
         {/* Section 7: Location */}
         <div ref={locationRef} />
-        <section id="location" className="py-20 bg-gradient-to-br from-emerald-900 to-teal-900 text-white">
-          <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl md:text-5xl font-bold mb-8">
-              Moments from the City. <br />
-              <span className="text-emerald-300">Miles from the Noise.</span>
-            </h2>
-            <p className="text-xl text-emerald-100">
-              Between Vijayawada's pulse and Amaravati's promise,
-              Kalpavruksha finds the perfect pause.
-            </p>
+        <section id="location" className="py-20 bg-slate-50">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto text-center">
+              <div className="inline-flex items-center rounded-full border border-emerald-100 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-700 shadow-sm">
+                Property Location
+              </div>
+              <h2 className="mt-5 text-3xl md:text-5xl font-bold text-slate-900">
+                Connected to Vijayawada. <br />
+                <span className="text-emerald-600">Positioned for everyday convenience.</span>
+              </h2>
+              <p className="mt-5 text-lg md:text-xl text-slate-600">
+                A project location that keeps daily access practical while preserving a quieter plotted community setting.
+              </p>
+            </div>
+
+            <div className="mt-14 overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.08)]">
+              <div className="grid grid-cols-1 lg:grid-cols-[0.92fr,1.08fr]">
+                <div className="border-b border-slate-200 p-6 md:p-8 lg:border-b-0 lg:border-r">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
+                      <MapPin className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-500">Property Location</p>
+                      <h3 className="mt-1 text-2xl font-bold leading-tight text-slate-900">
+                        {projectLocationTitle}
+                      </h3>
+                      <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                        The project sits on a well-connected corridor near Vijayawada, with practical access to highway links, city infrastructure, and Amaravati-side growth zones.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Address Summary</p>
+                    <p className="mt-2 text-base font-semibold text-slate-900">
+                      {projectLocationAddress}
+                    </p>
+                  </div>
+
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                    <a
+                      href={projectDirectionsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:from-emerald-700 hover:to-teal-700 hover:shadow-md"
+                    >
+                      Get Directions
+                      <ArrowUpRight className="h-4 w-4" />
+                    </a>
+                    <button
+                      type="button"
+                      onClick={openVisitModal}
+                      className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-800 transition-all duration-300 hover:border-emerald-300 hover:bg-white hover:text-emerald-700 hover:shadow-sm"
+                    >
+                      <MapPin className="h-4 w-4" />
+                      Book Site Visit
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-slate-100">
+                  <div className="h-full min-h-[340px] lg:min-h-[100%]">
+                    <iframe
+                      title="Kalpavruksha location map"
+                      src={projectMapEmbedUrl}
+                      className="h-full min-h-[340px] w-full"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 rounded-[28px] border border-slate-200 bg-white p-6 md:p-8 shadow-[0_24px_60px_rgba(15,23,42,0.06)]">
+              <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                    Location Highlights
+                  </p>
+                  <h3 className="mt-3 text-2xl font-bold text-slate-900">
+                    Key distance markers from the project
+                  </h3>
+                </div>
+                <p className="max-w-xl text-sm leading-relaxed text-slate-600">
+                  These markers help buyers quickly understand how Kalpavruksha connects to Vijayawada, major road links, and Amaravati-side destinations.
+                </p>
+              </div>
+
+              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {locationHighlights.map((item) => (
+                  <div
+                    key={item.title}
+                    className="flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-white hover:shadow-md"
+                  >
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-emerald-700 ring-1 ring-slate-200">
+                      {item.icon}
+                    </div>
+                    <div>
+                      <h3 className="text-base font-semibold leading-snug text-slate-900">{item.title}</h3>
+                      {item.detail && (
+                        <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                          {item.detail}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* Section 8: Journey Home */}
+        {/* Section 8: FAQ */}
+        <section className="py-20 bg-white">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <div className="inline-flex items-center rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                Frequently Asked Questions
+              </div>
+              <h2 className="mt-5 text-3xl md:text-5xl font-bold text-slate-900">
+                Questions buyers usually ask before the first visit
+              </h2>
+              <p className="mt-5 text-lg text-slate-600">
+                Tap a question to view the answer. The section stays clean until someone wants the detail.
+              </p>
+            </div>
+
+            <div className="mt-12 space-y-4">
+              {faqItems.map((item, index) => {
+                const isOpen = openFaqIndex === index;
+
+                return (
+                  <div
+                    key={item.question}
+                    className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300"
+                  >
+                    <button
+                      type="button"
+                      className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left md:px-6"
+                      onClick={() => setOpenFaqIndex(isOpen ? null : index)}
+                      aria-expanded={isOpen}
+                    >
+                      <span className="text-base md:text-lg font-semibold leading-snug text-slate-900">
+                        {item.question}
+                      </span>
+                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-500 transition-transform duration-300 ${isOpen ? 'rotate-180 border-emerald-200 bg-emerald-50 text-emerald-700' : ''}`}>
+                        <ChevronDown className="h-5 w-5" />
+                      </span>
+                    </button>
+                    <div className={`grid transition-all duration-300 ease-out ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+                      <div className="overflow-hidden">
+                        <div className="border-t border-slate-100 px-5 py-4 md:px-6">
+                          <p className="max-w-3xl text-sm md:text-base leading-relaxed text-slate-600">
+                            {item.answer}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Section 9: Journey Home */}
         <section className="py-20 bg-gradient-to-b from-white to-gray-50">
           <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
@@ -1086,7 +1493,7 @@ const KalpavrukshaPage = () => {
           </div>
         </section>
 
-        {/* Section 9: Testimonials */}
+        {/* Section 10: Testimonials */}
         <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-9">
@@ -1152,6 +1559,44 @@ const KalpavrukshaPage = () => {
             </div>
           </div>
         </section>
+        <div
+          className={`pointer-events-none fixed bottom-3 right-3 z-30 flex flex-col items-end gap-2.5 transition-all duration-500 sm:bottom-6 sm:right-6 ${
+            showFloatingActions ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+          }`}
+          aria-hidden={!showFloatingActions}
+        >
+          <div className="pointer-events-auto">
+            <button
+              type="button"
+              onClick={() => openDownloadLeadModal('brochure')}
+              className="group inline-flex h-11 w-[8.75rem] items-center gap-2.5 rounded-full border border-white/70 bg-white/75 px-3.5 text-slate-700 shadow-[0_10px_24px_rgba(15,23,42,0.12)] backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-100 hover:bg-white/85 hover:text-emerald-700 hover:shadow-[0_14px_30px_rgba(15,23,42,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+              aria-label="Download project brochure"
+              title="Download project brochure"
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
+                <Download className="h-4 w-4" />
+              </span>
+              <span className="text-sm font-medium tracking-[0.01em]">Brochure</span>
+            </button>
+          </div>
+
+          <div className="pointer-events-auto">
+            <a
+              href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20please%20contact%20me%20regarding%20Kalpavruksha."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex h-11 w-[8.75rem] items-center gap-2.5 rounded-full border border-white/70 bg-white/75 px-3.5 text-slate-700 shadow-[0_10px_24px_rgba(15,23,42,0.12)] backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-100 hover:bg-white/85 hover:text-emerald-700 hover:shadow-[0_14px_30px_rgba(15,23,42,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+              aria-label="Chat on WhatsApp"
+              title="Chat on WhatsApp"
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
+                <FaWhatsapp className="h-4 w-4" />
+              </span>
+              <span className="text-sm font-medium tracking-[0.01em]">WhatsApp</span>
+            </a>
+          </div>
+        </div>
+
         {/* Footer */}
         <footer className="bg-gray-900 text-white py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

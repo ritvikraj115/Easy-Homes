@@ -84,7 +84,7 @@ export default function Home() {
     "url": "https://easyhomess.com/",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://easyhomess.com/searchProperties?q={search_term_string}",
+      "target": "https://easyhomess.com/searchProperties?location={search_term_string}",
       "query-input": "required name=search_term_string"
     }
   };

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { buildPropertyPath } from "../../utils/propertySeo";
 
 const PropCard = ({ property }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -23,7 +24,7 @@ const PropCard = ({ property }) => {
   };
 
   const handleClick = () =>
-    navigate("/PropertyDetails", { state: { property } });
+    navigate(buildPropertyPath(property), { state: { property } });
 
   return (
     <div

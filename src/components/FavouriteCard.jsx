@@ -3,6 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X } from 'react-feather';
 import '../assets/favourites.css';
+import { buildPropertyPath } from '../utils/propertySeo';
 
 export default function FavouriteCard({
   property,
@@ -15,7 +16,7 @@ export default function FavouriteCard({
 
   return (
     <div className="fav-card">
-      <div className="fav-image-wrapper" onClick={() => navigate(`/property/${property.mlsNumber}`)}>
+      <div className="fav-image-wrapper" onClick={() => navigate(buildPropertyPath(property), { state: { property } })}>
         <img
           src={imgSrc}
           alt={property.name}
@@ -44,7 +45,7 @@ export default function FavouriteCard({
           </button>
         </div>
         
-        <h3 className="fav-title" onClick={() => navigate(`/PropertyDetails`, { state: { property } })}>
+        <h3 className="fav-title" onClick={() => navigate(buildPropertyPath(property), { state: { property } })}>
           {property.name}
         </h3>
         <p className="fav-location">{property.location}</p>
@@ -59,7 +60,7 @@ export default function FavouriteCard({
 
         <button
           className="fav-view"
-          onClick={() => navigate(`/property/${property.mlsNumber}`)}
+          onClick={() => navigate(buildPropertyPath(property), { state: { property } })}
         >
           View Details
         </button>

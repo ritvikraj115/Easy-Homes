@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react"
+import { Helmet } from "react-helmet-async";
 import {
   ArrowLeft,
   Heart,
@@ -24,9 +25,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Input } from "../components/ui/input"
 import { Textarea } from "../components/ui/textarea"
 import logo from '../assets/logo.png';
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import PropertyLocationMap from "../components/PropertyLocationMap";
 import apiClient from "../api";
+import {
+  buildPropertyBreadcrumbSchema,
+  buildPropertyCanonical,
+  buildPropertyDescription,
+  buildPropertyKeywords,
+  buildPropertyPath,
+  buildPropertySchema,
+  buildPropertyTitle,
+  getPrimaryPropertyImage,
+} from "../utils/propertySeo";
 
 function normalizeImageList(value) {
   if (Array.isArray(value)) {
@@ -49,16 +60,83 @@ export default function PropertyDetails() {
   const [showAllWorkingImages, setShowAllWorkingImages] = useState(false)
   const [selectedWorkingImage, setSelectedWorkingImage] = useState(null)
   const navigate = useNavigate();
-  const { state } = useLocation();
-  const { property } = state || {};
+  const location = useLocation();
+  const { mlsNumber: routeMlsNumber } = useParams();
+  const stateProperty = location.state?.property ?? null;
+  const decodedRouteMlsNumber =
+    typeof routeMlsNumber === "string" ? decodeURIComponent(routeMlsNumber).trim() : "";
+  const [property, setProperty] = useState(() => {
+    if (stateProperty && (!decodedRouteMlsNumber || stateProperty.mlsNumber === decodedRouteMlsNumber)) {
+      return stateProperty;
+    }
+    return null;
+  });
+  const [propertyLoading, setPropertyLoading] = useState(Boolean(decodedRouteMlsNumber && !stateProperty));
+  const [propertyError, setPropertyError] = useState("");
   const [isFavorited, setIsFavorited] = useState(false);
   const galleryImages = normalizeImageList(property?.media?.images);
   const explicitWorkingImages = normalizeImageList(property?.media?.workingImages);
   const workingImages = explicitWorkingImages.length > 0 ? explicitWorkingImages : galleryImages;
 
   useEffect(() => {
+    let isCancelled = false;
+
+    if (!decodedRouteMlsNumber) {
+      setProperty(stateProperty);
+      setPropertyLoading(false);
+      setPropertyError(stateProperty ? "" : "Property details are unavailable.");
+      return undefined;
+    }
+
+    if (stateProperty?.mlsNumber === decodedRouteMlsNumber) {
+      setProperty(stateProperty);
+      setPropertyLoading(false);
+      setPropertyError("");
+      return undefined;
+    }
+
+    setPropertyLoading(true);
+    setPropertyError("");
+
+    apiClient
+      .get(`/api/properties/${encodeURIComponent(decodedRouteMlsNumber)}`)
+      .then((res) => {
+        if (isCancelled) return;
+        const resolvedProperty = res.data?.data || null;
+        setProperty(resolvedProperty);
+        setPropertyError(resolvedProperty ? "" : "Property not found.");
+      })
+      .catch((err) => {
+        if (isCancelled) return;
+        console.error("Error fetching property details", err);
+        setProperty(null);
+        setPropertyError("Property not found or unavailable.");
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setPropertyLoading(false);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [decodedRouteMlsNumber, stateProperty]);
+
+  useEffect(() => {
+    if (!property?.mlsNumber) {
+      return;
+    }
+
+    const canonicalPath = buildPropertyPath(property);
+    if (location.pathname !== canonicalPath) {
+      navigate(canonicalPath, { replace: true, state: { property } });
+    }
+  }, [location.pathname, navigate, property]);
+
+  useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) {
+    if (!token || !property?.mlsNumber) {
       setIsFavorited(false);
       return;
     }
@@ -73,8 +151,12 @@ export default function PropertyDetails() {
         console.error('Error fetching favourites', err);
         setIsFavorited(false);
       });
-  }, [property.mlsNumber]);  // re-run if the property changes
+  }, [property?.mlsNumber]);  // re-run if the property changes
   const toggleFav = () => {
+    if (!property?.mlsNumber) {
+      return;
+    }
+
     // flip UI first for snappy response
     setIsFavorited(fav => !fav);
 
@@ -160,8 +242,86 @@ export default function PropertyDetails() {
     { id: "contact", label: "Contact Info" },
   ]
 
+  const keyFeatures = Array.isArray(property?.keyFeatures) ? property.keyFeatures : [];
+  const exteriorFeatures = Array.isArray(property?.exteriorFeatures) ? property.exteriorFeatures : [];
+  const nearbyLandmarks = Array.isArray(property?.neighborhoodDetails?.nearbyLandmarks)
+    ? property.neighborhoodDetails.nearbyLandmarks
+    : [];
+  const amenities = Array.isArray(property?.additionalInfo?.amenities) ? property.additionalInfo.amenities : [];
+  const utilities = property?.utilities || {};
+
+  if (propertyLoading) {
+    return (
+      <>
+        <Helmet>
+          <title>Loading Property | Easy Homes</title>
+          <meta name="robots" content="noindex,nofollow" />
+        </Helmet>
+        <div className="min-h-screen bg-white flex items-center justify-center px-4">
+          <div className="text-center">
+            <p className="text-xl font-semibold text-gray-900">Loading property details...</p>
+            <p className="mt-2 text-gray-600">Fetching the latest listing information.</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (!property) {
+    return (
+      <>
+        <Helmet>
+          <title>Property Not Found | Easy Homes</title>
+          <meta name="robots" content="noindex,nofollow" />
+        </Helmet>
+        <div className="min-h-screen bg-white flex items-center justify-center px-4">
+          <div className="max-w-lg text-center">
+            <p className="text-2xl font-semibold text-gray-900">Property not found</p>
+            <p className="mt-3 text-gray-600">
+              {propertyError || "This listing may have been removed or the URL may be incorrect."}
+            </p>
+            <Button className="mt-6 bg-[#3868B2] text-white" onClick={() => navigate('/searchProperties')}>
+              Back to Search
+            </Button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  const propertyTitle = buildPropertyTitle(property);
+  const propertyDescription = buildPropertyDescription(property);
+  const propertyCanonical = buildPropertyCanonical(property);
+  const propertyKeywords = buildPropertyKeywords(property);
+  const propertyImage = getPrimaryPropertyImage(property);
+  const propertySchema = buildPropertySchema(property);
+  const breadcrumbSchema = buildPropertyBreadcrumbSchema(property);
+
   return (
-    <div className="min-h-screen bg-white pb-20">
+    <>
+      <Helmet>
+        <title>{propertyTitle}</title>
+        <meta name="description" content={propertyDescription} />
+        <meta name="keywords" content={propertyKeywords} />
+        <meta name="robots" content="index,follow" />
+        <link rel="canonical" href={propertyCanonical} />
+
+        <meta property="og:type" content="product" />
+        <meta property="og:site_name" content="Easy Homes" />
+        <meta property="og:title" content={propertyTitle} />
+        <meta property="og:description" content={propertyDescription} />
+        <meta property="og:url" content={propertyCanonical} />
+        <meta property="og:image" content={propertyImage} />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={propertyTitle} />
+        <meta name="twitter:description" content={propertyDescription} />
+        <meta name="twitter:image" content={propertyImage} />
+
+        <script type="application/ld+json">{JSON.stringify(propertySchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
+      </Helmet>
+      <div className="min-h-screen bg-white pb-20">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -369,7 +529,7 @@ export default function PropertyDetails() {
                     </CardHeader>
                     <CardContent>
                       <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {property.keyFeatures.map((feature, index) => (
+                        {keyFeatures.map((feature, index) => (
                           <li key={index} className="flex items-center gap-2">
                             <CheckCircle className="h-4 w-4 text-green-500" />
                             <span>{feature}</span>
@@ -386,7 +546,7 @@ export default function PropertyDetails() {
                       </CardHeader>
                       <CardContent>
                         <ul className="space-y-2">
-                          {property.exteriorFeatures.map((feature, index) => (
+                          {exteriorFeatures.map((feature, index) => (
                             <li key={index} className="flex items-center gap-2">
                               <CheckCircle className="h-4 w-4 text-green-500" />
                               <span>{feature}</span>
@@ -425,7 +585,7 @@ export default function PropertyDetails() {
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {Object.entries(property.utilities).map(([key, value]) => (
+                        {Object.entries(utilities).map(([key, value]) => (
                           <div key={key} className="flex justify-between items-center py-2 border-b border-gray-100">
                             <span className="text-gray-600 capitalize">{key.replace(/([A-Z])/g, " $1")}</span>
                             <span className="font-medium">{value}</span>
@@ -501,7 +661,7 @@ export default function PropertyDetails() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        {property.neighborhoodDetails.nearbyLandmarks.map((landmark, index) => (
+                        {nearbyLandmarks.map((landmark, index) => (
                           <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                             <MapPin className="h-4 w-4 text-blue-500" />
                             <span>{landmark}</span>
@@ -690,7 +850,7 @@ export default function PropertyDetails() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {property.additionalInfo.amenities.map((amenity, index) => (
+                      {amenities.map((amenity, index) => (
                         <div key={index} className="flex items-center gap-2">
                           <CheckCircle className="h-4 w-4 text-green-500" />
                           <span className="text-sm">{amenity}</span>
@@ -809,6 +969,7 @@ export default function PropertyDetails() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }

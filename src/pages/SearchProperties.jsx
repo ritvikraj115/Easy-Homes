@@ -8,7 +8,7 @@ import useGeocodedProperties from '../hooks/useGeocodedProperties';
 import useProperties from '../hooks/useProperties';
 import { MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 export default function SearchResults() {
     const searchSchema = {
@@ -20,13 +20,14 @@ export default function SearchResults() {
       "Search and filter CRDA-approved plots in Vijayawada and Amaravati. Compare verified properties, locations, prices, and amenities.",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://easyhomess.com/PropertyDetails",
+      "target": "https://easyhomess.com/searchProperties?location={search_term_string}",
     }
   };
   // -------------------------
   // All hooks / state (stable order)
   // -------------------------
   const [hoveredListingId, setHoveredListingId] = useState(null);
+  const location = useLocation();
   const { properties, loading: propertiesLoading, error: propertiesError } = useProperties();
 
   // Load maps once at parent
@@ -87,6 +88,16 @@ export default function SearchResults() {
       setHasSearched(false);
     }
   }, [locationQuery]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const initialLocation = params.get('location')?.trim();
+    if (!initialLocation) return;
+
+    setSearchLocation(initialLocation);
+    setLocationQuery(initialLocation);
+    setHasSearched(true);
+  }, [location.search]);
 
   useEffect(() => {
     if (!isLoaded) return;

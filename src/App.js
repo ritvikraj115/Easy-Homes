@@ -19,6 +19,8 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import ThankYouPage from './pages/ThankYouPage';
 import AdminPanel from './pages/AdminPanel';
+import About from './pages/About';
+import Contact from './pages/Contact';
 
 function App() {
   function ScrollToTop() {
@@ -49,8 +51,8 @@ function App() {
             <Route path="/searchProperties" element={<SearchResults />} />
             {/* You can stub out the other pages for now */}
             <Route path="/" element={<Home />} />
-            <Route path="/about" element={<div style={{padding: '80px 0', textAlign: 'center', fontSize: '1.25rem'}}>About page is under development.</div>} />
-            <Route path="/contact" element={<div style={{padding: '80px 0', textAlign: 'center', fontSize: '1.25rem'}}>Contact page is under development.</div>} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="/enquire" element={<div>Enquire Page</div>} />
             <Route path="/favourites" element={<Favourites />} />
             <Route path="/login" element={<Login />} />
@@ -62,6 +64,8 @@ function App() {
           {/* Routes WITHOUT Navbar */}
           <Route element={<PlainLayout />}>
             <Route path="/PropertyDetails" element={<PropertyDetails />} />
+            <Route path="/property/:mlsNumber" element={<PropertyDetails />} />
+            <Route path="/property/:mlsNumber/:slug" element={<PropertyDetails />} />
             {/* You can add property detail page here too */}
           </Route>
           <Route path="/favourites" element={<Favourites />} />

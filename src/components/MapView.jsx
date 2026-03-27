@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { GoogleMap, MarkerF, InfoWindowF } from '@react-google-maps/api';
 import { useNavigate } from 'react-router-dom';
+import { buildPropertyPath } from '../utils/propertySeo';
 
 export default function MapView({
   isLoaded,
@@ -204,7 +205,9 @@ export default function MapView({
                 onCloseClick={() => setActiveId(null)}
               >
                 <div
-                  onClick={() => navigate('/PropertyDetails', { state: { property: activeListing } })}
+                  onClick={() =>
+                    navigate(buildPropertyPath(activeListing), { state: { property: activeListing } })
+                  }
                   style={{
                     width: 220,
                     borderRadius: 12,
