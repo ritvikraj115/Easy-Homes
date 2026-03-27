@@ -34,7 +34,7 @@ export function buildPropertyPath(property) {
     return '/searchProperties';
   }
 
-  return `/property/${encodeURIComponent(mlsNumber)}/${slugifyPropertyName(property?.name || mlsNumber)}`;
+  return `/property/${encodeURIComponent(mlsNumber)}/${slugifyPropertyName(property?.name || mlsNumber)}/`;
 }
 
 export function buildPropertyCanonical(property) {

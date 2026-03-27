@@ -44,7 +44,7 @@ function buildPropertyPath(property) {
     return null;
   }
 
-  return `/property/${encodeURIComponent(mlsNumber)}/${slugifyPropertyName(property?.name || mlsNumber)}`;
+  return `/property/${encodeURIComponent(mlsNumber)}/${slugifyPropertyName(property?.name || mlsNumber)}/`;
 }
 
 function buildLegacyPropertyPath(property) {
@@ -53,7 +53,7 @@ function buildLegacyPropertyPath(property) {
     return null;
   }
 
-  return `/property/${encodeURIComponent(mlsNumber)}`;
+  return `/property/${encodeURIComponent(mlsNumber)}/`;
 }
 
 function buildPropertyCanonical(property) {
