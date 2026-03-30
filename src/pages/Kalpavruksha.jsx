@@ -1014,53 +1014,75 @@ const KalpavrukshaPage = () => {
       <Navbar />
       <div className="min-h-screen bg-white overflow-hidden">
         {/* Section 1: Hero Section */}
-        <section className="relative min-h-screen flex items-center justify-center pt-16">
-          <div className="absolute inset-0 bg-gradient-to-b from-[#1b3b26]/80 via-[#295638]/60  to-transparent"></div>
-          <picture className="absolute inset-0 w-full h-full z-0 block">
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 bg-slate-950">
+          <picture className="absolute inset-0 z-0 block h-full w-full">
             <source
               media="(min-width: 768px)"
-              srcSet="/kalpPcImg.webp"
+              srcSet="/kalpabg2.webp"
               type="image/webp"
             />
             <source
               media="(max-width: 767px)"
-              srcSet="/kalpPhImg.webp"
+              srcSet="/kalpabg2.webp"
               type="image/webp"
             />
             <img
-              src="/kalpPcImg.webp"
-              alt="Kalpavruksha Hero"
-              className="w-full h-full object-cover opacity-80 aspect-[16/9]"
+              src="/kalpabg2.webp"
+              alt=""
+              aria-hidden="true"
+              className="h-full w-full object-cover object-center"
+              style={{ filter: 'brightness(0.42) contrast(1.12) saturate(0.92)' }}
               fetchPriority="high"
               decoding="async"
+              loading="eager"
+              width="1920"
+              height="1080"
             />
           </picture>
+          <div className="absolute inset-0 bg-black/28"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#030604]/82 via-[#07110c]/70 to-[#102118]/56"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(242,229,192,0.08),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.12),_transparent_20%)]"></div>
+          <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent via-[#030604]/32 to-[#030604]/80"></div>
 
-
-          <div className="relative z-10 max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-            <div className='rounded-full shadow  px-3 md:px-4 py-0 max-h-fit bg-[#dbba5733] max-w-fit mx-auto border border-[#f2e5c0] mb-4 lg:mb-12'>
-              <p className="text-sm md:text-base text-[#f2e5c0]  font-medium tracking-wide ">
+          <div className="relative z-10 mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
+            <div className='mx-auto mb-4 max-h-fit max-w-fit rounded-full border border-[#f2e5c0]/70 bg-[#dbba5733] px-3 py-0 shadow md:px-4 lg:mb-10'>
+              <p className="text-sm font-medium uppercase tracking-[0.2em] text-[#f2e5c0] md:text-base">
                 CRDA-Approved Open Plots in Vijayawada
               </p>
             </div>
 
-            <h1 className="text-4xl md:text-6xl font-bold text-[#fbfaf9] mb-6 leading-tight">
-              Where You Don't Just <br />
+            <h1 className="text-4xl font-bold leading-[1.08] text-white md:text-6xl lg:text-7xl">
+              Where You Don't Just <br className="hidden sm:block" />
               Arrive - <span className='text-[#f2e5c0]'>You Belong</span>
             </h1>
 
-            <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed max-w-3xl mx-auto">
-              It's not just the feeling of arriving somewhere new - but somewhere<br />
+            <p className="mx-auto mb-8 mt-6 max-w-3xl text-lg leading-relaxed text-white/85 md:text-xl">
+              It's not just the feeling of arriving somewhere new, but somewhere
               right, where your heart belongs. Just 12 mins from Amaravati.
             </p>
 
-            <div ref={heroPrimaryCtaRef} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+            <div className="mx-auto mb-10 flex max-w-3xl flex-wrap items-center justify-center gap-3 text-sm font-medium text-white/90">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 shadow-sm shadow-black/10 backdrop-blur-sm">
+                <CheckCircle className="h-4 w-4 text-emerald-300" />
+                CRDA Approved
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 shadow-sm shadow-black/10 backdrop-blur-sm">
+                <MapPin className="h-4 w-4 text-emerald-300" />
+                12 mins from Amaravati
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 shadow-sm shadow-black/10 backdrop-blur-sm">
+                <Trees className="h-4 w-4 text-[#f2e5c0]" />
+                105 Open Plots
+              </div>
+            </div>
+
+            <div ref={heroPrimaryCtaRef} className="mb-4 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <CTAButton
                 icon={<Download className="w-5 h-5" />}
                 text="Get Brochure"
                 primary
                 onClick={() => openDownloadLeadModal('brochure')}
-                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-gray-900"
+                className="border border-emerald-300/20 shadow-xl shadow-black/20"
               />
               {/* <CTAButton
                 icon={<MapPin className="w-5 h-5" />}
@@ -1076,7 +1098,7 @@ const KalpavrukshaPage = () => {
                 <CTAButton
                   icon={<MessageCircle className="w-5 h-5" />}
                   text="Talk to Us on WhatsApp"
-                  className="bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-800 border border-emerald-200/80 hover:from-white hover:to-emerald-50"
+                  className="border border-white/20 bg-white/10 text-white shadow-lg shadow-black/10 backdrop-blur-sm hover:bg-white/15"
                 />
               </a>
             </div>
