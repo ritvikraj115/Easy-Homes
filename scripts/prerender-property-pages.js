@@ -7,11 +7,15 @@ const {
   buildLegacyPropertyPath,
   buildPropertyPath,
   buildPropertyCanonical,
+  buildRobotsContent,
+  buildPropertyImageSchema,
   getPrimaryPropertyImage,
   buildPropertyTitle,
+  buildPropertyOverview,
   buildPropertyDescription,
   buildPropertyKeywords,
   buildPropertySchema,
+  buildPropertyWebPageSchema,
   buildPropertyBreadcrumbSchema,
   loadProperties,
 } = require('./property-build-utils');
@@ -406,7 +410,7 @@ function buildPropertyPreviewMarkup(property, canonicalUrl, legacyUrl, isIndexab
   const propertyDescription = buildPropertyDescription(property);
   const locationParts = splitLocation(property?.location);
   const primaryImage = getPrimaryPropertyImage(property);
-  const overview = cleanText(property?.propertyDescription) || propertyDescription;
+  const overview = buildPropertyOverview(property);
   const features = Array.isArray(property?.keyFeatures) ? property.keyFeatures.filter(Boolean) : [];
   const nearbyLandmarks = Array.isArray(property?.neighborhoodDetails?.nearbyLandmarks)
     ? property.neighborhoodDetails.nearbyLandmarks.filter(Boolean)
@@ -758,8 +762,10 @@ function buildPrerenderedPage(templateHtml, property, { indexable }) {
   const legacyPath = buildLegacyPropertyPath(property);
   const legacyUrl = legacyPath ? `${SITE_URL}${legacyPath}` : '';
   const primaryImage = getPrimaryPropertyImage(property);
-  const robots = indexable ? 'index,follow' : 'noindex,follow';
+  const robots = buildRobotsContent({ indexable });
   const propertySchema = buildPropertySchema(property);
+  const propertyImageSchema = buildPropertyImageSchema(property);
+  const propertyWebPageSchema = buildPropertyWebPageSchema(property);
   const breadcrumbSchema = buildPropertyBreadcrumbSchema(property);
 
   let html = templateHtml;
@@ -771,13 +777,31 @@ function buildPrerenderedPage(templateHtml, property, { indexable }) {
   html = upsertMetaByProperty(html, 'og:description', description);
   html = upsertMetaByProperty(html, 'og:url', canonicalUrl);
   html = upsertMetaByProperty(html, 'og:image', primaryImage);
+  html = upsertMetaByProperty(html, 'og:image:secure_url', primaryImage);
+  html = upsertMetaByProperty(
+    html,
+    'og:image:alt',
+    `${cleanText(property?.name) || 'Property'} property image`,
+  );
   html = upsertMetaByName(html, 'twitter:title', title);
   html = upsertMetaByName(html, 'twitter:description', description);
   html = upsertMetaByName(html, 'twitter:image', primaryImage);
+  html = upsertMetaByName(
+    html,
+    'twitter:image:alt',
+    `${cleanText(property?.name) || 'Property'} property image`,
+  );
   html = upsertCanonicalLink(html, canonicalUrl);
   html = appendToHead(
     html,
-    `<script type="application/ld+json">${escapeJsonForHtml(propertySchema)}</script><script type="application/ld+json">${escapeJsonForHtml(breadcrumbSchema)}</script>`,
+    [
+      `<script type="application/ld+json">${escapeJsonForHtml(propertySchema)}</script>`,
+      propertyImageSchema
+        ? `<script type="application/ld+json">${escapeJsonForHtml(propertyImageSchema)}</script>`
+        : '',
+      `<script type="application/ld+json">${escapeJsonForHtml(propertyWebPageSchema)}</script>`,
+      `<script type="application/ld+json">${escapeJsonForHtml(breadcrumbSchema)}</script>`,
+    ].join(''),
   );
   html = injectRootContent(html, buildPropertyPreviewMarkup(property, canonicalUrl, legacyUrl, indexable));
   return html;

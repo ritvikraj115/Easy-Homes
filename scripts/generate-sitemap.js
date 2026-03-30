@@ -1,7 +1,12 @@
 const { SitemapStream, streamToPromise } = require('sitemap');
 const fs = require('fs/promises');
 const path = require('path');
-const { SITE_URL, buildPropertyPath, loadProperties } = require('./property-build-utils');
+const {
+  SITE_URL,
+  buildPropertyPath,
+  getPropertyImageUrls,
+  loadProperties,
+} = require('./property-build-utils');
 
 const PUBLIC_SITEMAP_PATH = path.resolve(__dirname, '../public/sitemap.xml');
 
@@ -15,13 +20,22 @@ async function generateSitemap() {
 
   const properties = await loadProperties();
   const propertyRoutes = properties
-    .map((property) => buildPropertyPath(property))
-    .filter(Boolean)
-    .map((url) => ({
-      url,
-      changefreq: 'weekly',
-      priority: 0.7,
-    }));
+    .map((property) => {
+      const url = buildPropertyPath(property);
+      if (!url) {
+        return null;
+      }
+
+      const images = getPropertyImageUrls(property).slice(0, 3);
+
+      return {
+        url,
+        changefreq: 'weekly',
+        priority: 0.7,
+        ...(images.length > 0 ? { img: images } : {}),
+      };
+    })
+    .filter(Boolean);
 
   const dedupedRoutes = Array.from(
     new Map([...staticRoutes, ...propertyRoutes].map((route) => [route.url, route])).values(),

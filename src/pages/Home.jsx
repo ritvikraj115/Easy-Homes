@@ -114,7 +114,7 @@ export default function Home() {
         <title>Easy Homes | CRDA-Approved Plots in Amaravati & Vijayawada</title>
         <meta name="description" content="View details and compare CRDA-approved residential plots in Andhra Pradesh. Find your ideal plot in Amaravati, Vijayawada, and more. Explore plot listings, view amenities, and get all details with Easy Homes." />
         <meta name="keywords" content="plot, andhra, pradesh, view, details, plots in Andhra Pradesh, plot view, plot details, buy plot Andhra Pradesh, Amaravati, Vijayawada" />
-        <meta name="robots" content="index,follow" />
+        <meta name="robots" content="index,follow,max-image-preview:large" />
         <link rel="canonical" href="https://easyhomess.com/" />
 
         {/* Open Graph */}

@@ -9,7 +9,7 @@ export default function About() {
       <Helmet>
         <title>About Us | Easy Homes</title>
         <meta name="description" content="Learn about Easy Homes, your trusted partner for CRDA-approved plots in Amaravati and Vijayawada. Discover our mission, values, and commitment to transparency and trust." />
-        <meta name="robots" content="index,follow" />
+        <meta name="robots" content="index,follow,max-image-preview:large" />
         <link rel="canonical" href="https://easyhomess.com/about" />
       </Helmet>
       <section className="relative py-24 bg-gradient-to-br from-[#f8fafc] to-[#e0e7ef] min-h-[80vh] overflow-hidden">

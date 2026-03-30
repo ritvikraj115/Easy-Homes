@@ -41,17 +41,168 @@ export function buildPropertyCanonical(property) {
   return `${SITE_URL}${buildPropertyPath(property)}`;
 }
 
+export function getPropertyImageUrls(property) {
+  return Array.isArray(property?.media?.images)
+    ? property.media.images.map((image) => cleanText(image)).filter(Boolean)
+    : [];
+}
+
 export function getPrimaryPropertyImage(property) {
-  const firstImage = Array.isArray(property?.media?.images) ? property.media.images[0] : '';
-  return cleanText(firstImage) || FALLBACK_OG_IMAGE;
+  return getPropertyImageUrls(property)[0] || FALLBACK_OG_IMAGE;
+}
+
+export function hasPropertyImage(property) {
+  return getPropertyImageUrls(property).length > 0;
+}
+
+export function buildRobotsContent({ indexable = true } = {}) {
+  return `${indexable ? 'index,follow' : 'noindex,follow'},max-image-preview:large`;
+}
+
+function cleanDisplayText(value) {
+  return cleanText(value)
+    .replace(/Â/g, '')
+    .replace(/â‚¹|₹/g, 'Rs. ')
+    .replace(/_/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function dedupeValues(values) {
+  const seen = new Set();
+  const deduped = [];
+
+  values.forEach((value) => {
+    const cleaned = cleanDisplayText(value);
+    const key = cleaned.toLowerCase();
+
+    if (!cleaned || seen.has(key)) {
+      return;
+    }
+
+    seen.add(key);
+    deduped.push(cleaned);
+  });
+
+  return deduped;
+}
+
+function joinList(values) {
+  if (values.length === 0) {
+    return '';
+  }
+
+  if (values.length === 1) {
+    return values[0];
+  }
+
+  if (values.length === 2) {
+    return `${values[0]} and ${values[1]}`;
+  }
+
+  return `${values.slice(0, -1).join(', ')}, and ${values[values.length - 1]}`;
+}
+
+function capitalize(value) {
+  return value ? value.charAt(0).toUpperCase() + value.slice(1) : '';
+}
+
+function truncateText(value, maxLength) {
+  if (!value || value.length <= maxLength) {
+    return value;
+  }
+
+  const shortened = value.slice(0, maxLength - 1);
+  const boundary = shortened.lastIndexOf(' ');
+  const trimmed = boundary > maxLength * 0.6 ? shortened.slice(0, boundary) : shortened;
+
+  return `${trimmed.replace(/[,\s;:-]+$/, '')}.`;
+}
+
+function normalizePropertyDescription(description) {
+  return cleanDisplayText(description).replace(/[.]+$/, '');
+}
+
+function isWeakPropertyDescription(description) {
+  const normalized = normalizePropertyDescription(description).toLowerCase();
+
+  if (!normalized) {
+    return true;
+  }
+
+  return new Set([
+    'villa',
+    'plot',
+    'villa project',
+    'villa projects',
+    'plot project',
+    'plot projects',
+    'resale only',
+    'resale 20k',
+    'old layout no maintenance',
+  ]).has(normalized);
+}
+
+function getLocationSummary(property) {
+  const locationParts = splitLocation(property?.location);
+
+  return {
+    locality:
+      cleanDisplayText(property?.neighborhoodDetails?.district) ||
+      cleanDisplayText(locationParts.locality),
+    region:
+      cleanDisplayText(property?.neighborhoodDetails?.state) ||
+      cleanDisplayText(locationParts.region),
+  };
+}
+
+function getAreaRange(property) {
+  return cleanDisplayText(property?.areaRange) || cleanDisplayText(property?.basicInformation?.lotSize);
+}
+
+function getPriceText(property) {
+  return cleanDisplayText(property?.priceRange) || cleanDisplayText(property?.marketValue?.pricePerSqYd);
+}
+
+function getPropertyHighlights(property) {
+  const combinedFeatures = [
+    ...(Array.isArray(property?.keyFeatures) ? property.keyFeatures : []),
+    ...(Array.isArray(property?.additionalInfo?.amenities) ? property.additionalInfo.amenities : []),
+    ...(Array.isArray(property?.exteriorFeatures) ? property.exteriorFeatures : []),
+  ];
+
+  return dedupeValues(combinedFeatures)
+    .filter((item) => item.length > 2 && !/^\d+$/.test(item))
+    .slice(0, 3);
+}
+
+function getApprovalSummary(property) {
+  const approvals = cleanDisplayText(property?.constructionDetails?.approvals);
+  const permissions = cleanText(property?.constructionDetails?.permissions).toLowerCase();
+
+  if (permissions === 'yes' && approvals) {
+    return `approval reference ${approvals}`;
+  }
+
+  if (permissions === 'yes') {
+    return 'available approval details';
+  }
+
+  if (permissions === 'no' && approvals) {
+    return `approval reference ${approvals} to review`;
+  }
+
+  if (permissions === 'no') {
+    return 'approval details to review';
+  }
+
+  return approvals ? `approval reference ${approvals}` : '';
 }
 
 export function buildPropertyTitle(property) {
-  const name = cleanText(property?.name) || 'Property';
-  const propertyType = cleanText(property?.propertyType);
-  const locality =
-    cleanText(property?.neighborhoodDetails?.district) ||
-    splitLocation(property?.location).locality;
+  const name = cleanDisplayText(property?.name) || 'Property';
+  const propertyType = cleanDisplayText(property?.propertyType);
+  const { locality } = getLocationSummary(property);
 
   const titleParts = [
     name,
@@ -62,62 +213,161 @@ export function buildPropertyTitle(property) {
   return titleParts.join(' | ');
 }
 
-export function buildPropertyDescription(property) {
-  const name = cleanText(property?.name) || 'property';
-  const propertyType = cleanText(property?.propertyType) || 'property';
-  const location = cleanText(property?.location);
-  const areaRange = cleanText(property?.areaRange);
-  const status = cleanText(property?.status);
-  const price = cleanText(property?.priceRange) || cleanText(property?.marketValue?.pricePerSqYd);
-  const description = cleanText(property?.propertyDescription);
+export function buildPropertyOverview(property) {
+  const name = cleanDisplayText(property?.name) || 'This property';
+  const propertyType = cleanDisplayText(property?.propertyType) || 'Property';
+  const { locality, region } = getLocationSummary(property);
+  const areaRange = getAreaRange(property);
+  const status = cleanDisplayText(property?.status).toLowerCase();
+  const price = getPriceText(property);
+  const description = normalizePropertyDescription(property?.propertyDescription);
+  const highlights = getPropertyHighlights(property);
+  const company = cleanDisplayText(property?.ownerAgent?.company);
+  const approvalSummary = getApprovalSummary(property);
+  const isGated = Boolean(property?.additionalInfo?.gated);
+  const sentences = [];
 
-  if (description) {
-    return `${description} Explore ${name}${location ? ` in ${location}` : ''}${price ? ` with pricing details starting from ${price}` : ''}.`;
+  let baseSentence = `${name} is a ${propertyType.toLowerCase()} listing`;
+
+  if (locality) {
+    baseSentence += ` in ${locality}`;
   }
 
-  const segments = [
-    `Explore ${name}`,
-    propertyType ? `${propertyType.toLowerCase()} listing` : '',
-    location ? `in ${location}` : '',
-    areaRange ? `with ${areaRange} area range` : '',
-    price ? `and ${price} pricing` : '',
-    status ? `currently ${status.toLowerCase()}` : '',
-  ].filter(Boolean);
+  if (region && !baseSentence.toLowerCase().includes(region.toLowerCase())) {
+    baseSentence += `, ${region}`;
+  }
 
-  return `${segments.join(' ')}. View photos, features, approvals, and neighbourhood details on Easy Homes.`;
+  if (areaRange) {
+    baseSentence += ` with ${areaRange}`;
+  }
+
+  if (price) {
+    baseSentence += ` and pricing around ${price}`;
+  }
+
+  if (status) {
+    baseSentence += `, currently marked ${status}`;
+  }
+
+  sentences.push(`${baseSentence}.`);
+
+  if (description && !isWeakPropertyDescription(description)) {
+    sentences.push(`${description}.`);
+  }
+
+  const supportingDetails = [];
+
+  if (highlights.length > 0) {
+    supportingDetails.push(`highlights include ${joinList(highlights)}`);
+  }
+
+  if (isGated) {
+    supportingDetails.push('set within a gated community');
+  }
+
+  if (company) {
+    supportingDetails.push(`listed by ${company}`);
+  }
+
+  if (approvalSummary) {
+    supportingDetails.push(`with ${approvalSummary}`);
+  }
+
+  if (supportingDetails.length > 0) {
+    sentences.push(`${capitalize(supportingDetails.join(', '))}.`);
+  }
+
+  sentences.push('View photos, features, approvals, and neighbourhood details on Easy Homes.');
+
+  return sentences.join(' ');
+}
+
+export function buildPropertyDescription(property) {
+  const name = cleanDisplayText(property?.name) || 'This property';
+  const propertyType = cleanDisplayText(property?.propertyType) || 'Property';
+  const { locality, region } = getLocationSummary(property);
+  const areaRange = getAreaRange(property);
+  const price = getPriceText(property);
+  const highlights = getPropertyHighlights(property).slice(0, 2);
+  const sentences = [];
+
+  let baseSentence = `${name} is a ${propertyType.toLowerCase()} listing`;
+
+  if (locality) {
+    baseSentence += ` in ${locality}`;
+  }
+
+  if (region && !baseSentence.toLowerCase().includes(region.toLowerCase())) {
+    baseSentence += `, ${region}`;
+  }
+
+  if (areaRange) {
+    baseSentence += ` with ${areaRange}`;
+  }
+
+  if (price) {
+    baseSentence += ` and pricing around ${price}`;
+  }
+
+  sentences.push(`${baseSentence}.`);
+
+  if (highlights.length > 0) {
+    sentences.push(`Highlights include ${joinList(highlights)}.`);
+  }
+
+  sentences.push('View photos and details on Easy Homes.');
+
+  let description = '';
+
+  sentences.forEach((sentence) => {
+    const candidate = description ? `${description} ${sentence}` : sentence;
+    if (candidate.length <= 220) {
+      description = candidate;
+    }
+  });
+
+  return description || truncateText(sentences.join(' '), 220);
 }
 
 export function buildPropertyKeywords(property) {
-  const name = cleanText(property?.name);
-  const propertyType = cleanText(property?.propertyType);
-  const locality = cleanText(property?.neighborhoodDetails?.district);
-  const state = cleanText(property?.neighborhoodDetails?.state);
+  const { locality, region } = getLocationSummary(property);
+  const highlights = getPropertyHighlights(property);
 
-  return [name, propertyType, locality, state, 'Easy Homes', 'property listing']
-    .filter(Boolean)
+  return dedupeValues([
+    property?.name,
+    property?.mlsNumber,
+    property?.propertyType,
+    locality,
+    region,
+    property?.ownerAgent?.company,
+    property?.constructionDetails?.approvals,
+    property?.additionalInfo?.gated ? 'gated community' : '',
+    ...highlights,
+    'Easy Homes',
+    'property listing',
+  ])
+    .slice(0, 12)
     .join(', ');
 }
 
 export function buildPropertySchema(property) {
-  const images = Array.isArray(property?.media?.images)
-    ? property.media.images.filter(Boolean).slice(0, 8)
-    : [];
+  const images = getPropertyImageUrls(property).slice(0, 8);
   const locationParts = splitLocation(property?.location);
-  const locality = cleanText(property?.neighborhoodDetails?.district) || locationParts.locality;
-  const region = cleanText(property?.neighborhoodDetails?.state) || locationParts.region;
+  const { locality, region } = getLocationSummary(property);
   const addressCountry = locationParts.country || 'India';
-  const areaRange = cleanText(property?.areaRange);
-  const pricePerSqYd = cleanText(property?.marketValue?.pricePerSqYd);
-  const priceRange = cleanText(property?.priceRange);
-  const status = cleanText(property?.status).toLowerCase();
+  const areaRange = getAreaRange(property);
+  const pricePerSqYd = getPriceText({ marketValue: property?.marketValue });
+  const priceRange = cleanDisplayText(property?.priceRange);
+  const status = cleanDisplayText(property?.status).toLowerCase();
 
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'RealEstateListing',
-    name: cleanText(property?.name),
-    description: buildPropertyDescription(property),
+    name: cleanDisplayText(property?.name),
+    description: buildPropertyOverview(property),
     url: buildPropertyCanonical(property),
     image: images.length > 0 ? images : [getPrimaryPropertyImage(property)],
+    thumbnailUrl: getPrimaryPropertyImage(property),
     identifier: cleanText(property?.mlsNumber),
     address: {
       '@type': 'PostalAddress',
@@ -167,10 +417,52 @@ export function buildPropertySchema(property) {
   return schema;
 }
 
+export function buildPropertyImageSchema(property) {
+  if (!hasPropertyImage(property)) {
+    return null;
+  }
+
+  const primaryImage = getPrimaryPropertyImage(property);
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ImageObject',
+    '@id': `${buildPropertyCanonical(property)}#primaryimage`,
+    url: primaryImage,
+    contentUrl: primaryImage,
+    name: `${cleanDisplayText(property?.name) || 'Property'} image`,
+    caption: `${cleanDisplayText(property?.name) || 'Property'} on Easy Homes`,
+  };
+}
+
+export function buildPropertyWebPageSchema(property) {
+  const canonicalUrl = buildPropertyCanonical(property);
+  const imageSchema = buildPropertyImageSchema(property);
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': `${canonicalUrl}#webpage`,
+    url: canonicalUrl,
+    name: buildPropertyTitle(property),
+    description: buildPropertyDescription(property),
+    primaryImageOfPage: imageSchema ? { '@id': imageSchema['@id'] } : undefined,
+    mainEntity: { '@id': `${canonicalUrl}#listing` },
+    breadcrumb: { '@id': `${canonicalUrl}#breadcrumb` },
+    isPartOf: {
+      '@type': 'WebSite',
+      '@id': `${SITE_URL}/#website`,
+      url: `${SITE_URL}/`,
+      name: 'Easy Homes',
+    },
+  };
+}
+
 export function buildPropertyBreadcrumbSchema(property) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    '@id': `${buildPropertyCanonical(property)}#breadcrumb`,
     itemListElement: [
       {
         '@type': 'ListItem',
@@ -187,7 +479,7 @@ export function buildPropertyBreadcrumbSchema(property) {
       {
         '@type': 'ListItem',
         position: 3,
-        name: cleanText(property?.name) || 'Property',
+        name: cleanDisplayText(property?.name) || 'Property',
         item: buildPropertyCanonical(property),
       },
     ],

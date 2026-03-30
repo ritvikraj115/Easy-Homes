@@ -29,10 +29,14 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import PropertyLocationMap from "../components/PropertyLocationMap";
 import apiClient from "../api";
 import {
+  buildRobotsContent,
   buildPropertyBreadcrumbSchema,
   buildPropertyCanonical,
   buildPropertyDescription,
+  buildPropertyImageSchema,
   buildPropertyKeywords,
+  buildPropertyWebPageSchema,
+  buildPropertyOverview,
   buildPropertyPath,
   buildPropertySchema,
   buildPropertyTitle,
@@ -313,10 +317,13 @@ export default function PropertyDetails() {
 
   const propertyTitle = buildPropertyTitle(property);
   const propertyDescription = buildPropertyDescription(property);
+  const propertyOverview = buildPropertyOverview(property);
   const propertyCanonical = buildPropertyCanonical(property);
   const propertyKeywords = buildPropertyKeywords(property);
   const propertyImage = getPrimaryPropertyImage(property);
   const propertySchema = buildPropertySchema(property);
+  const propertyImageSchema = buildPropertyImageSchema(property);
+  const propertyWebPageSchema = buildPropertyWebPageSchema(property);
   const breadcrumbSchema = buildPropertyBreadcrumbSchema(property);
 
   return (
@@ -325,7 +332,7 @@ export default function PropertyDetails() {
         <title>{propertyTitle}</title>
         <meta name="description" content={propertyDescription} />
         <meta name="keywords" content={propertyKeywords} />
-        <meta name="robots" content="index,follow" />
+        <meta name="robots" content={buildRobotsContent({ indexable: true })} />
         <link rel="canonical" href={propertyCanonical} />
 
         <meta property="og:type" content="product" />
@@ -334,13 +341,20 @@ export default function PropertyDetails() {
         <meta property="og:description" content={propertyDescription} />
         <meta property="og:url" content={propertyCanonical} />
         <meta property="og:image" content={propertyImage} />
+        <meta property="og:image:secure_url" content={propertyImage} />
+        <meta property="og:image:alt" content={`${property.name} property image`} />
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={propertyTitle} />
         <meta name="twitter:description" content={propertyDescription} />
         <meta name="twitter:image" content={propertyImage} />
+        <meta name="twitter:image:alt" content={`${property.name} property image`} />
 
         <script type="application/ld+json">{JSON.stringify(propertySchema)}</script>
+        {propertyImageSchema && (
+          <script type="application/ld+json">{JSON.stringify(propertyImageSchema)}</script>
+        )}
+        <script type="application/ld+json">{JSON.stringify(propertyWebPageSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
       </Helmet>
       <div className="min-h-screen bg-white pb-20">
@@ -510,7 +524,7 @@ export default function PropertyDetails() {
                       <CardTitle>Property Description</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-gray-700 leading-relaxed">{property.propertyDescription}</p>
+                      <p className="text-gray-700 leading-relaxed">{propertyOverview}</p>
                     </CardContent>
                   </Card>
 

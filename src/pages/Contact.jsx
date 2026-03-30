@@ -9,7 +9,7 @@ export default function Contact() {
       <Helmet>
         <title>Contact Us | Easy Homes</title>
         <meta name="description" content="Contact Easy Homes for CRDA-approved plots, site visits, and real estate queries in Amaravati and Vijayawada. We're here to help you move forward." />
-        <meta name="robots" content="index,follow" />
+        <meta name="robots" content="index,follow,max-image-preview:large" />
         <link rel="canonical" href="https://easyhomess.com/contact" />
       </Helmet>
       <section className="relative py-24 bg-gradient-to-br from-[#e0e7ef] to-[#f8fafc] min-h-[80vh] overflow-hidden">
