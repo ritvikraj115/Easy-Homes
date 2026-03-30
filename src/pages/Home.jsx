@@ -140,12 +140,6 @@ export default function Home() {
         <script type="application/ld+json">{JSON.stringify(localBusinessData)}</script>
       </Helmet>
 
-        {/* SEO Headings for keyword coverage */}
-        <h1 style={{display:'none'}}>Andhra Pradesh Plot View Details</h1>
-        <h2 style={{display:'none'}}>Plot Listings in Andhra Pradesh</h2>
-        <h2 style={{display:'none'}}>View Plot Details in Andhra Pradesh</h2>
-        <h2 style={{display:'none'}}>Andhra Pradesh Plot Amenities and Features</h2>
-        <h2 style={{display:'none'}}>Compare Plots in Andhra Pradesh</h2>
       {toast && (
         <div style={{position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 9999}}>
           <div className="bg-[#3868B2] text-white px-6 py-3 rounded-lg shadow-lg font-poppins text-base animate-fade-in">

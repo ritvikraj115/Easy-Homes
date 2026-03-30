@@ -9,6 +9,8 @@ export default function About() {
       <Helmet>
         <title>About Us | Easy Homes</title>
         <meta name="description" content="Learn about Easy Homes, your trusted partner for CRDA-approved plots in Amaravati and Vijayawada. Discover our mission, values, and commitment to transparency and trust." />
+        <meta name="robots" content="index,follow" />
+        <link rel="canonical" href="https://easyhomess.com/about" />
       </Helmet>
       <section className="relative py-24 bg-gradient-to-br from-[#f8fafc] to-[#e0e7ef] min-h-[80vh] overflow-hidden">
         <div className="absolute inset-0 pointer-events-none select-none opacity-30 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-[#3868B2]/20 via-white/0 to-transparent" />
