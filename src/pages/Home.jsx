@@ -1,7 +1,6 @@
 // client/src/pages/Home.jsx
 import React, { useRef, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-
 import Projects from "../components/Home/Projects";
 import Features from "../components/Home/Features";
 import Hero from "../components/Home/Hero";

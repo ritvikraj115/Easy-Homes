@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
   Download,
@@ -17,13 +17,14 @@ import {
   TreePine,
   X,
   ArrowUpRight,
-  ChevronDown
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
-import { GoogleMap, MarkerF, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, LoadScriptNext, MarkerF } from '@react-google-maps/api';
 import { Card, CardContent } from '../components/card';
 import Navbar from '../components/Navbar'
 import { useLocation, useNavigate } from 'react-router-dom';
-import ReviewsSection from '../components/ReviewProject';
 import api from '../api';
 import { MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
 import { FaWhatsapp } from 'react-icons/fa';
@@ -67,6 +68,12 @@ const DOWNLOAD_ASSET_CONFIG = {
   }
 };
 
+const ReviewsSection = React.lazy(() => import('../components/ReviewProject'));
+const DEFERRED_SECTION_STYLE = {
+  contentVisibility: 'auto',
+  containIntrinsicSize: '1px 960px',
+};
+
 const KalpavrukshaPage = () => {
   // ...existing code...
   const navigate = useNavigate();
@@ -76,6 +83,7 @@ const KalpavrukshaPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [downloadSubmitting, setDownloadSubmitting] = useState(false);
   const [showFloatingActions, setShowFloatingActions] = useState(false);
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
   const [form, setForm] = useState({
     name: '',
@@ -96,24 +104,19 @@ const KalpavrukshaPage = () => {
   });
   const activeDownloadAsset = downloadAssetKey ? DOWNLOAD_ASSET_CONFIG[downloadAssetKey] : null;
   const [toast, setToast] = useState(null);
+  const [activeHeroSlideIndex, setActiveHeroSlideIndex] = useState(0);
   const todayDate = new Date().toISOString().split('T')[0];
   const [pickupMapCenter, setPickupMapCenter] = useState(PICKUP_MAP_DEFAULT_CENTER);
+  const [pickupMapLoadError, setPickupMapLoadError] = useState(false);
+  const pickupMapApiKey = process.env.REACT_APP_MAP_KEY || '';
   const pickupGeocodeRequestRef = React.useRef(0);
-  const {
-    isLoaded: isPickupMapLoaded,
-    loadError: pickupMapLoadError
-  } = useJsApiLoader({
-    id: MAPS_LOADER_ID,
-    googleMapsApiKey: process.env.REACT_APP_MAP_KEY || '',
-    libraries: MAP_LIBRARIES
-  });
 
   // Footer quick link refs and scroll handlers (like Home page)
   const aboutRef = React.useRef(null);
   const locationRef = React.useRef(null);
   const amenitiesRef = React.useRef(null);
   const galleryRef = React.useRef(null);
-  const heroPrimaryCtaRef = React.useRef(null);
+  const heroSectionRef = React.useRef(null);
   // For Home page CallToAction scroll (no reload)
   const goToHomeCallToAction = () => {
     window.location.href = "/#contact";
@@ -142,7 +145,7 @@ const KalpavrukshaPage = () => {
   }
 
   React.useEffect(() => {
-    const target = heroPrimaryCtaRef.current;
+    const target = heroSectionRef.current;
     if (!target || typeof window === 'undefined' || !('IntersectionObserver' in window)) {
       return undefined;
     }
@@ -160,6 +163,18 @@ const KalpavrukshaPage = () => {
 
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (!showVisitModal || form.pickupMode !== 'map') {
+      setPickupMapLoadError(false);
+    }
+  }, [form.pickupMode, showVisitModal]);
+
+  useEffect(() => {
+    if (!showFloatingActions) {
+      setIsQuickActionsOpen(false);
+    }
+  }, [showFloatingActions]);
   /* ---------------- SEO STRUCTURED DATA ---------------- */
 
   const projectTitle =
@@ -505,6 +520,182 @@ const KalpavrukshaPage = () => {
     { title: "Lotus Pond Retreat", image: require("../assets/kalpavruksha/lotus pond 2.webp"), alt: "Kalpavruksha Lotus Pond - Serene Water Feature" },
     { title: "Seating Area", image: require("../assets/kalpavruksha/seating area.webp"), alt: "Kalpavruksha Seating Area - Relaxing Outdoor Space" }
   ]
+  const heroSlides = [
+    {
+      id: 'overview',
+      navLabel: 'Overview',
+      eyebrow: 'CRDA-approved open plots in Vijayawada',
+      title: "Where You Don't Just Arrive - You Belong",
+      description:
+        "It's not just the feeling of arriving somewhere new, but somewhere right, where your heart belongs. Just 12 mins from Amaravati.",
+      image: '/kalpabg2.webp',
+      alt: 'Kalpavruksha plotted community overview',
+      imagePosition: 'center center',
+      imageScale: 1,
+      facts: [
+        'CRDA Approved',
+        '12 mins from Amaravati',
+        '105 Open Plots',
+      ],
+      summaryLabel: 'Project snapshot',
+      summaryTitle: 'Verified overview',
+      summaryText:
+        'CRDA-approved residential plotted development near Vijayawada-Nagpur Greenfield Highway with clubhouse amenities and internal infrastructure.',
+    },
+    {
+      id: 'security',
+      navLabel: 'Security',
+      eyebrow: 'Security',
+      title: '24x7 gated entry and perimeter security',
+      description:
+        "8' compound wall with 2' solar fencing, 24x7 gated entry with CCTV, and solar lighting.",
+      image: demoImg[0].image,
+      alt: demoImg[0].alt,
+      imagePosition: 'center 18%',
+      imageScale: 1.12,
+      facts: [
+        '24x7 gated entry',
+        'CCTV',
+        'Solar lighting',
+      ],
+      summaryLabel: 'Facility view',
+      summaryTitle: demoImg[0].title,
+      summaryText:
+        "Grand entrance view supported by the project's gated access, boundary wall, CCTV coverage, and solar lighting.",
+    },
+    {
+      id: 'clubhouse',
+      navLabel: 'Clubhouse',
+      eyebrow: 'Clubhouse amenities',
+      title: 'Clubhouse amenities for everyday living',
+      description:
+        'Infinity pool, yoga room, gym, party lawn, convention hall, private theatre, and guest rooms.',
+      image: demoImg[1].image,
+      alt: demoImg[1].alt,
+      imagePosition: 'center 15%',
+      imageScale: 1.22,
+      facts: [
+        'Infinity pool',
+        'Yoga room & gym',
+        'Guest rooms',
+      ],
+      summaryLabel: 'Facility view',
+      summaryTitle: demoImg[1].title,
+      summaryText:
+        'Clubhouse planning includes wellness, recreation, celebration, and guest stay spaces within the project.',
+    },
+    {
+      id: 'landscape',
+      navLabel: 'Landscape',
+      eyebrow: 'Landscape',
+      title: 'Landscape planning within the layout',
+      description:
+        'Central rivulet garden beside the creek, landscaped arrival court, and edge gardens.',
+      image: demoImg[2].image,
+      alt: demoImg[2].alt,
+      imagePosition: 'center 14%',
+      imageScale: 1.24,
+      facts: [
+        'Rivulet garden',
+        'Arrival court',
+        'Edge gardens',
+      ],
+      summaryLabel: 'Facility view',
+      summaryTitle: demoImg[2].title,
+      summaryText:
+        'Green spaces are planned across the arrival and internal landscape zones of the community.',
+    },
+    {
+      id: 'connectivity',
+      navLabel: 'Connectivity',
+      eyebrow: 'Roads and access',
+      title: 'Wide internal roads and regional access',
+      description:
+        "60', 40', and 33' wide internal CC roads, walkways, avenue plantations, and stormwater drains.",
+      image: demoImg[3].image,
+      alt: demoImg[3].alt,
+      imagePosition: 'center 12%',
+      imageScale: 1.24,
+      facts: [
+        'Near Greenfield Highway',
+        '7.5 km from Vijayawada',
+        '13.5 km from BITS Amaravati',
+      ],
+      summaryLabel: 'Facility view',
+      summaryTitle: demoImg[3].title,
+      summaryText:
+        'Near Vijayawada-Nagpur Greenfield Highway, with connectivity to Vijayawada and Amaravati-side destinations.',
+    },
+    {
+      id: 'water',
+      navLabel: 'Water',
+      eyebrow: 'Water and utilities',
+      title: 'Water and utility systems below the surface',
+      description:
+        'Overhead tank with underground supply, STP-connected drainage, and drip irrigation.',
+      image: demoImg[4].image,
+      alt: demoImg[4].alt,
+      imagePosition: 'center 10%',
+      imageScale: 1.26,
+      facts: [
+        'Underground supply',
+        'STP drainage',
+        'Drip irrigation',
+      ],
+      summaryLabel: 'Facility view',
+      summaryTitle: demoImg[4].title,
+      summaryText:
+        'Underground networks are planned for power, water, fiber, and sewage, alongside the project water systems.',
+    },
+  ];
+  const activeHeroSlide = heroSlides[activeHeroSlideIndex] || heroSlides[0];
+  const heroTouchStartXRef = React.useRef(null);
+  const goToNextHeroSlide = () => {
+    setActiveHeroSlideIndex((current) => (current + 1) % heroSlides.length);
+  };
+  const goToPreviousHeroSlide = () => {
+    setActiveHeroSlideIndex((current) => (current - 1 + heroSlides.length) % heroSlides.length);
+  };
+  const handleHeroTouchStart = (event) => {
+    heroTouchStartXRef.current = event.changedTouches[0]?.clientX ?? null;
+  };
+  const handleHeroTouchEnd = (event) => {
+    if (heroTouchStartXRef.current === null) {
+      return;
+    }
+
+    const touchEndX = event.changedTouches[0]?.clientX ?? heroTouchStartXRef.current;
+    const deltaX = touchEndX - heroTouchStartXRef.current;
+    heroTouchStartXRef.current = null;
+
+    if (Math.abs(deltaX) < 48) {
+      return;
+    }
+
+    if (deltaX < 0) {
+      goToNextHeroSlide();
+      return;
+    }
+
+    goToPreviousHeroSlide();
+  };
+  useEffect(() => {
+    if (typeof window === 'undefined' || heroSlides.length <= 1 || !window.matchMedia) {
+      return undefined;
+    }
+
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const mobileQuery = window.matchMedia('(max-width: 767px)');
+    if (reducedMotionQuery.matches || mobileQuery.matches) {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setActiveHeroSlideIndex((current) => (current + 1) % heroSlides.length);
+    }, 9000);
+
+    return () => window.clearInterval(intervalId);
+  }, [heroSlides.length]);
   const [selectedImage, setSelectedImage] = useState(null);
   const openModal = (item) => {
     setSelectedImage(item);
@@ -893,28 +1084,39 @@ const KalpavrukshaPage = () => {
 
                 {form.pickupMode === 'map' && (
                   <div className="rounded-lg overflow-hidden border border-gray-200 mb-2">
-                    {pickupMapLoadError ? (
+                    {!pickupMapApiKey ? (
+                      <div className="p-3 text-xs text-gray-600">
+                        Map is unavailable right now. Enter the pickup address manually below.
+                      </div>
+                    ) : pickupMapLoadError ? (
                       <div className="p-3 text-xs text-red-600">
                         Map failed to load. Enter the pickup address manually below.
                       </div>
-                    ) : !isPickupMapLoaded ? (
-                      <div className="p-3 text-xs text-gray-600">Loading map...</div>
                     ) : (
-                      <GoogleMap
-                        mapContainerStyle={PICKUP_MAP_CONTAINER_STYLE}
-                        center={pickupMapCenter}
-                        zoom={14}
-                        onClick={onPickupMapClick}
-                        options={{ streetViewControl: false, mapTypeControl: false, fullscreenControl: false }}
+                      <LoadScriptNext
+                        id={MAPS_LOADER_ID}
+                        googleMapsApiKey={pickupMapApiKey}
+                        libraries={MAP_LIBRARIES}
+                        preventGoogleFontsLoading
+                        onError={() => setPickupMapLoadError(true)}
+                        loadingElement={<div className="p-3 text-xs text-gray-600">Loading map...</div>}
                       >
-                        {form.pickupLat && form.pickupLng && (
-                          <MarkerF
-                            position={{ lat: Number(form.pickupLat), lng: Number(form.pickupLng) }}
-                            draggable
-                            onDragEnd={onPickupMarkerDragEnd}
-                          />
-                        )}
-                      </GoogleMap>
+                        <GoogleMap
+                          mapContainerStyle={PICKUP_MAP_CONTAINER_STYLE}
+                          center={pickupMapCenter}
+                          zoom={14}
+                          onClick={onPickupMapClick}
+                          options={{ streetViewControl: false, mapTypeControl: false, fullscreenControl: false }}
+                        >
+                          {form.pickupLat && form.pickupLng && (
+                            <MarkerF
+                              position={{ lat: Number(form.pickupLat), lng: Number(form.pickupLng) }}
+                              draggable
+                              onDragEnd={onPickupMarkerDragEnd}
+                            />
+                          )}
+                        </GoogleMap>
+                      </LoadScriptNext>
                     )}
                   </div>
                 )}
@@ -1014,106 +1216,148 @@ const KalpavrukshaPage = () => {
       <Navbar />
       <div className="min-h-screen bg-white overflow-hidden">
         {/* Section 1: Hero Section */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 bg-slate-950">
-          <picture className="absolute inset-0 z-0 block h-full w-full">
-            <source
-              media="(min-width: 768px)"
-              srcSet="/kalpabg2.webp"
-              type="image/webp"
-            />
-            <source
-              media="(max-width: 767px)"
-              srcSet="/kalpabg2.webp"
-              type="image/webp"
-            />
-            <img
-              src="/kalpabg2.webp"
-              alt=""
-              aria-hidden="true"
-              className="h-full w-full object-cover object-center"
-              style={{ filter: 'brightness(0.42) contrast(1.12) saturate(0.92)' }}
-              fetchPriority="high"
-              decoding="async"
-              loading="eager"
-              width="1920"
-              height="1080"
-            />
-          </picture>
-          <div className="absolute inset-0 bg-black/28"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#030604]/82 via-[#07110c]/70 to-[#102118]/56"></div>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(242,229,192,0.08),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.12),_transparent_20%)]"></div>
-          <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent via-[#030604]/32 to-[#030604]/80"></div>
-
-          <div className="relative z-10 mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
-            <div className='mx-auto mb-4 max-h-fit max-w-fit rounded-full border border-[#f2e5c0]/70 bg-[#dbba5733] px-3 py-0 shadow md:px-4 lg:mb-10'>
-              <p className="text-sm font-medium uppercase tracking-[0.2em] text-[#f2e5c0] md:text-base">
-                CRDA-Approved Open Plots in Vijayawada
-              </p>
+        <section ref={heroSectionRef} className="relative overflow-hidden bg-[#faf8f3] pt-4 text-slate-900 sm:pt-6 lg:h-[calc(100vh-64px)] lg:pt-4">
+          <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#fffefb] to-transparent"></div>
+          <div className="relative z-10 mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-6 lg:flex lg:h-full lg:flex-col lg:px-8 lg:py-4">
+            <div className="mb-4 hidden flex-nowrap justify-center gap-2.5 overflow-x-auto pb-1 md:flex lg:mb-4">
+              {heroSlides.map((slide, index) => (
+                <button
+                  key={slide.id}
+                  type="button"
+                  onClick={() => setActiveHeroSlideIndex(index)}
+                  aria-pressed={index === activeHeroSlideIndex}
+                  aria-label={`Show ${slide.navLabel} slide`}
+                  className={`shrink-0 rounded-full border px-4 py-2.5 text-sm font-semibold transition-all duration-300 ${
+                    index === activeHeroSlideIndex
+                      ? 'border-emerald-700 bg-emerald-700 text-white shadow-md shadow-emerald-700/20'
+                      : 'border-[#ece3cf] bg-[#fcfaf4] text-slate-600 hover:border-emerald-200 hover:bg-white hover:text-emerald-800'
+                  }`}
+                >
+                  <span className={`text-[10px] font-semibold uppercase tracking-[0.22em] ${
+                    index === activeHeroSlideIndex ? 'text-white/70' : 'text-emerald-700/60'
+                  }`}>
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <span className="ml-2">
+                    {slide.navLabel}
+                  </span>
+                </button>
+              ))}
             </div>
 
-            <h1 className="text-4xl font-bold leading-[1.08] text-white md:text-6xl lg:text-7xl">
-              Where You Don't Just <br className="hidden sm:block" />
-              Arrive - <span className='text-[#f2e5c0]'>You Belong</span>
-            </h1>
+            <div
+              className="grid items-stretch gap-4 sm:gap-5 lg:flex-1 lg:grid-cols-2 lg:gap-8"
+              onTouchStart={handleHeroTouchStart}
+              onTouchEnd={handleHeroTouchEnd}
+            >
+              <div className="order-3 flex flex-col rounded-[28px] border border-[#e8e1d0] bg-white px-4 py-5 shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:rounded-[32px] sm:px-7 sm:py-7 md:order-2 lg:order-1 lg:min-h-0 lg:h-full lg:px-8 lg:py-8">
+                <div aria-live="polite" className="flex flex-1 flex-col">
+                  <article
+                    key={activeHeroSlide.id}
+                    className="flex flex-1 flex-col"
+                  >
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-emerald-700 sm:text-[11px] sm:tracking-[0.32em]">
+                        {activeHeroSlide.eyebrow}
+                      </p>
+                      <h1 className="mt-3 max-w-[12ch] text-[2.05rem] font-semibold leading-[1.02] tracking-[-0.04em] text-slate-900 sm:mt-4 sm:text-[2.45rem] md:text-[2.8rem] lg:text-[3.35rem]">
+                        {activeHeroSlide.title}
+                      </h1>
+                      <p className="mt-4 max-w-[33rem] text-[15px] leading-7 text-slate-600 sm:mt-5 sm:text-base sm:leading-7 lg:text-lg lg:leading-8">
+                        {activeHeroSlide.description}
+                      </p>
+                    </div>
 
-            <p className="mx-auto mb-8 mt-6 max-w-3xl text-lg leading-relaxed text-white/85 md:text-xl">
-              It's not just the feeling of arriving somewhere new, but somewhere
-              right, where your heart belongs. Just 12 mins from Amaravati.
-            </p>
+                    <div className="mt-6 grid max-w-[33rem] grid-cols-1 gap-2.5 min-[480px]:grid-cols-2 lg:grid-cols-3">
+                      {activeHeroSlide.facts.map((fact) => (
+                        <div
+                          key={fact}
+                          className="rounded-2xl border border-[#ece3cf] bg-[#fcfaf4] px-4 py-3 text-sm font-semibold text-slate-700"
+                        >
+                          {fact}
+                        </div>
+                      ))}
+                    </div>
 
-            <div className="mx-auto mb-10 flex max-w-3xl flex-wrap items-center justify-center gap-3 text-sm font-medium text-white/90">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 shadow-sm shadow-black/10 backdrop-blur-sm">
-                <CheckCircle className="h-4 w-4 text-emerald-300" />
-                CRDA Approved
+                      <div className="mt-7 pt-1 lg:mt-auto lg:pt-8">
+                        <div className="flex flex-col gap-3 sm:flex-row">
+                        <button
+                          type="button"
+                          onClick={() => openDownloadLeadModal('brochure')}
+                          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_28px_rgba(16,185,129,0.22)] transition-all duration-300 hover:from-emerald-700 hover:to-teal-700 hover:shadow-[0_18px_34px_rgba(16,185,129,0.26)] sm:min-h-14 sm:w-auto sm:px-8 sm:py-4 sm:text-base"
+                        >
+                          <Download className="h-4 w-4 sm:h-5 sm:w-5" />
+                          <span>Get Brochure</span>
+                        </button>
+                        <a
+                          href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20Kalpavruksha%20project."
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => trackKalpavrukshaWhatsAppClick('hero_cta')}
+                          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-[#e7d7ac] bg-[#fffaf0] px-6 py-3.5 text-[15px] font-semibold text-emerald-800 shadow-[0_10px_22px_rgba(242,229,192,0.35)] transition-all duration-300 hover:border-[#dcc58a] hover:bg-white hover:shadow-[0_14px_28px_rgba(242,229,192,0.4)] sm:min-h-14 sm:w-auto sm:px-8 sm:py-4 sm:text-base"
+                        >
+                          <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+                          <span>Talk to Us on WhatsApp</span>
+                        </a>
+                      </div>
+                    </div>
+                  </article>
+                </div>
               </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 shadow-sm shadow-black/10 backdrop-blur-sm">
-                <MapPin className="h-4 w-4 text-emerald-300" />
-                12 mins from Amaravati
+
+              <div className="order-1 overflow-hidden rounded-[28px] border border-[#e8e1d0] bg-white shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:rounded-[32px] lg:order-2 lg:min-h-0 lg:h-full">
+                <div className="relative h-[16.5rem] sm:h-[22rem] md:h-[26rem] lg:h-full">
+                  <img
+                    key={activeHeroSlide.id}
+                    src={activeHeroSlide.image}
+                    alt={activeHeroSlide.alt}
+                    className="h-full w-full object-cover transition-transform duration-1000 ease-out"
+                    style={{
+                      objectPosition: activeHeroSlide.imagePosition || 'center center',
+                      transform: `scale(${activeHeroSlide.imageScale || 1})`,
+                    }}
+                    fetchPriority={activeHeroSlideIndex === 0 ? 'high' : 'auto'}
+                    decoding="async"
+                    loading={activeHeroSlideIndex === 0 ? 'eager' : 'lazy'}
+                  />
+                </div>
               </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 shadow-sm shadow-black/10 backdrop-blur-sm">
-                <Trees className="h-4 w-4 text-[#f2e5c0]" />
-                105 Open Plots
+
+              <div className="order-2 flex items-center justify-between gap-3 rounded-[24px] border border-[#e8e1d0] bg-white px-4 py-3 shadow-[0_16px_36px_rgba(15,23,42,0.06)] md:hidden">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
+                    {String(activeHeroSlideIndex + 1).padStart(2, '0')} / {String(heroSlides.length).padStart(2, '0')}
+                  </p>
+                  <p className="mt-1 truncate text-sm font-semibold text-slate-900">
+                    {activeHeroSlide.navLabel}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={goToPreviousHeroSlide}
+                    aria-label="Show previous slide"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#e8e1d0] bg-[#fcfaf4] text-slate-700 transition-all duration-300 hover:border-emerald-200 hover:text-emerald-700"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={goToNextHeroSlide}
+                    aria-label="Show next slide"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#e8e1d0] bg-[#fcfaf4] text-slate-700 transition-all duration-300 hover:border-emerald-200 hover:text-emerald-700"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             </div>
-
-            <div ref={heroPrimaryCtaRef} className="mb-4 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <CTAButton
-                icon={<Download className="w-5 h-5" />}
-                text="Get Brochure"
-                primary
-                onClick={() => openDownloadLeadModal('brochure')}
-                className="border border-emerald-300/20 shadow-xl shadow-black/20"
-              />
-              {/* <CTAButton
-                icon={<MapPin className="w-5 h-5" />}
-                text="Schedule Site Visit"
-                className="bg-yellow-500 text-gray-900 hover:bg-yellow-400"
-              /> */}
-              <a
-                href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20Kalpavruksha%20project."
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => trackKalpavrukshaWhatsAppClick('hero_cta')}
-              >
-                <CTAButton
-                  icon={<MessageCircle className="w-5 h-5" />}
-                  text="Talk to Us on WhatsApp"
-                  className="border border-white/20 bg-white/10 text-white shadow-lg shadow-black/10 backdrop-blur-sm hover:bg-white/15"
-                />
-              </a>
-            </div>
-
-            {/* <CTAButton
-              icon={<Phone className="w-5 h-5" />}
-              text="Request a Callback"
-              className="bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30"
-            /> */}
           </div>
         </section>
 
         {/* Section 2: From Longing to Belonging */}
         <div ref={aboutRef} />
-        <section id="about" className="py-20 bg-gradient-to-b from-white to-gray-50">
+        <section id="about" className="py-20 bg-gradient-to-b from-white to-gray-50" style={DEFERRED_SECTION_STYLE}>
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-8">
               From Longing to <span className="text-emerald-600">Belonging</span>
@@ -1139,7 +1383,7 @@ const KalpavrukshaPage = () => {
         </section>
 
         {/* Section 3: Video Walkthrough */}
-        <section className="py-20 bg-gray-900">
+        <section className="py-20 bg-gray-900" style={DEFERRED_SECTION_STYLE}>
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12 ">
               <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
@@ -1174,7 +1418,7 @@ const KalpavrukshaPage = () => {
 
         {/* Section 4: Project Renderings Gallery */}
         <div ref={galleryRef} />
-        <section id="gallery" className="py-20 bg-white">
+        <section id="gallery" className="py-20 bg-white" style={DEFERRED_SECTION_STYLE}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -1245,7 +1489,7 @@ const KalpavrukshaPage = () => {
 
         {/* Section 5: What Sets Kalpavruksha Apart */}
         <div ref={amenitiesRef} />
-        <section id="amenities" className="py-20 bg-white">
+        <section id="amenities" className="py-20 bg-white" style={DEFERRED_SECTION_STYLE}>
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
@@ -1281,7 +1525,7 @@ const KalpavrukshaPage = () => {
         </section>
 
         {/* Section 6: Community Details */}
-        <section className="py-20 bg-white">
+        <section className="py-20 bg-white" style={DEFERRED_SECTION_STYLE}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
@@ -1372,7 +1616,7 @@ const KalpavrukshaPage = () => {
 
         {/* Section 7: Location */}
         <div ref={locationRef} />
-        <section id="location" className="py-20 bg-slate-50">
+        <section id="location" className="py-20 bg-slate-50" style={DEFERRED_SECTION_STYLE}>
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto text-center">
               <div className="inline-flex items-center rounded-full border border-emerald-100 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-700 shadow-sm">
@@ -1487,7 +1731,7 @@ const KalpavrukshaPage = () => {
         </section>
 
         {/* Section 8: FAQ */}
-        <section className="py-20 bg-white">
+        <section className="py-20 bg-white" style={DEFERRED_SECTION_STYLE}>
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <div className="inline-flex items-center rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-700">
@@ -1540,7 +1784,7 @@ const KalpavrukshaPage = () => {
         </section>
 
         {/* Section 9: Journey Home */}
-        <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+        <section className="py-20 bg-gradient-to-b from-white to-gray-50" style={DEFERRED_SECTION_STYLE}>
           <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
               Your Journey Home <span className="text-emerald-600">Begins Here</span>
@@ -1585,7 +1829,7 @@ const KalpavrukshaPage = () => {
         </section>
 
         {/* Section 10: Testimonials */}
-        <section className="py-20 bg-white">
+        <section className="py-20 bg-white" style={DEFERRED_SECTION_STYLE}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-9">
               <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
@@ -1605,7 +1849,9 @@ const KalpavrukshaPage = () => {
                   </span>
                   Reviews
                 </p>
-                <ReviewsSection />
+                <Suspense fallback={<div className="mt-8 h-24 rounded-2xl bg-slate-100" />}>
+                  <ReviewsSection />
+                </Suspense>
                 <div className="max-w-4xl mx-auto mt-10 px-4 text-left">
                   <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-white via-emerald-50/35 to-slate-50 p-6 md:p-8 shadow-lg">
                     <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase bg-emerald-50 border border-emerald-100 text-emerald-700 mb-4">
@@ -1651,46 +1897,314 @@ const KalpavrukshaPage = () => {
           </div>
         </section>
         <div
-          className={`pointer-events-none fixed bottom-3 right-3 z-30 flex flex-col items-end gap-2.5 transition-all duration-500 sm:bottom-6 sm:right-6 ${
+          className={`pointer-events-none fixed right-0 top-1/2 z-30 hidden -translate-y-1/2 transition-all duration-300 lg:block ${
+            showFloatingActions ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'
+          }`}
+          aria-hidden={!showFloatingActions}
+        >
+          <div className="pointer-events-auto relative flex items-center justify-end">
+            <div
+              id="kalpavruksha-quick-actions"
+              className={`absolute right-[calc(100%+0.65rem)] top-1/2 w-[min(16.5rem,calc(100vw-4.75rem))] -translate-y-1/2 transition-all duration-200 ${
+                isQuickActionsOpen
+                  ? 'visible translate-x-0 opacity-100'
+                  : 'invisible translate-x-6 opacity-0'
+              }`}
+            >
+              <div className="rounded-[28px] border border-[#dfe9d5] bg-white/96 p-3.5 shadow-[0_24px_55px_rgba(15,23,42,0.18)] backdrop-blur-xl">
+                <div className="px-2 pb-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
+                    Quick Actions
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Everything important, one tap away.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsQuickActionsOpen(false);
+                      openVisitModal();
+                    }}
+                    className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                        <MapPin className="h-4 w-4" />
+                      </span>
+                      <span>
+                        <span className="block text-sm font-semibold text-slate-900">Schedule Site Visit</span>
+                        <span className="block text-xs text-slate-500">Pick your preferred day and time</span>
+                      </span>
+                    </span>
+                    <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsQuickActionsOpen(false);
+                      openDownloadLeadModal('layout');
+                    }}
+                    className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                        <Download className="h-4 w-4" />
+                      </span>
+                      <span>
+                        <span className="block text-sm font-semibold text-slate-900">Download Layout PDF</span>
+                        <span className="block text-xs text-slate-500">Get the approved master layout</span>
+                      </span>
+                    </span>
+                    <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsQuickActionsOpen(false);
+                      openDownloadLeadModal('brochure');
+                    }}
+                    className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                        <Download className="h-4 w-4" />
+                      </span>
+                      <span>
+                        <span className="block text-sm font-semibold text-slate-900">Download Brochure</span>
+                        <span className="block text-xs text-slate-500">Get the full project brochure</span>
+                      </span>
+                    </span>
+                    <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                  </button>
+
+                  <a
+                    href={projectDirectionsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setIsQuickActionsOpen(false)}
+                    className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                        <ArrowUpRight className="h-4 w-4" />
+                      </span>
+                      <span>
+                        <span className="block text-sm font-semibold text-slate-900">Get Directions</span>
+                        <span className="block text-xs text-slate-500">Open the route in Google Maps</span>
+                      </span>
+                    </span>
+                    <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                  </a>
+
+                  <a
+                    href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20please%20contact%20me%20regarding%20Kalpavruksha."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => {
+                      setIsQuickActionsOpen(false);
+                      trackKalpavrukshaWhatsAppClick('desktop_quick_actions');
+                    }}
+                    className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                        <FaWhatsapp className="h-4 w-4" />
+                      </span>
+                      <span>
+                        <span className="block text-sm font-semibold text-slate-900">Chat on WhatsApp</span>
+                        <span className="block text-xs text-slate-500">Speak to the sales team directly</span>
+                      </span>
+                    </span>
+                    <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsQuickActionsOpen((current) => !current)}
+              aria-expanded={isQuickActionsOpen}
+              aria-controls="kalpavruksha-quick-actions"
+              className="inline-flex h-14 items-center gap-2 rounded-l-full border border-r-0 border-[#d8c995] bg-gradient-to-r from-[#0f7b63] to-[#0e8f72] pl-4 pr-3 text-sm font-semibold text-white shadow-[0_16px_35px_rgba(15,123,99,0.28)] transition-all duration-200 hover:pr-4 hover:shadow-[0_20px_42px_rgba(15,123,99,0.34)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+            >
+              <Zap className="h-4 w-4" />
+              <span>Quick Actions</span>
+            </button>
+          </div>
+        </div>
+
+        <div
+          className={`pointer-events-none fixed inset-x-0 bottom-4 z-30 px-4 transition-all duration-300 lg:hidden ${
             showFloatingActions ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
           }`}
           aria-hidden={!showFloatingActions}
         >
-          <div className="pointer-events-auto">
+          <div className="pointer-events-auto mx-auto flex max-w-sm justify-center">
             <button
               type="button"
-              onClick={() => openDownloadLeadModal('brochure')}
-              className="group inline-flex h-11 w-[8.75rem] items-center gap-2.5 rounded-full border border-white/70 bg-white/75 px-3.5 text-slate-700 shadow-[0_10px_24px_rgba(15,23,42,0.12)] backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-100 hover:bg-white/85 hover:text-emerald-700 hover:shadow-[0_14px_30px_rgba(15,23,42,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
-              aria-label="Download project brochure"
-              title="Download project brochure"
+              onClick={() => setIsQuickActionsOpen((current) => !current)}
+              aria-expanded={isQuickActionsOpen}
+              aria-controls="kalpavruksha-mobile-quick-actions"
+              className="inline-flex min-h-14 items-center gap-2 rounded-full border border-[#d8c995] bg-white/95 px-5 text-sm font-semibold text-emerald-900 shadow-[0_18px_40px_rgba(15,23,42,0.18)] backdrop-blur-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
             >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
-                <Download className="h-4 w-4" />
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[#0f7b63] to-[#0e8f72] text-white">
+                <Zap className="h-4 w-4" />
               </span>
-              <span className="text-sm font-medium tracking-[0.01em]">Brochure</span>
+              <span>Quick Actions</span>
+              <ChevronDown className={`h-4 w-4 text-emerald-700 transition-transform duration-200 ${isQuickActionsOpen ? 'rotate-180' : ''}`} />
             </button>
-          </div>
-
-          <div className="pointer-events-auto">
-            <a
-              href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20please%20contact%20me%20regarding%20Kalpavruksha."
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => trackKalpavrukshaWhatsAppClick('floating_button')}
-              className="group inline-flex h-11 w-[8.75rem] items-center gap-2.5 rounded-full border border-white/70 bg-white/75 px-3.5 text-slate-700 shadow-[0_10px_24px_rgba(15,23,42,0.12)] backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-100 hover:bg-white/85 hover:text-emerald-700 hover:shadow-[0_14px_30px_rgba(15,23,42,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
-              aria-label="Chat on WhatsApp"
-              title="Chat on WhatsApp"
-            >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
-                <FaWhatsapp className="h-4 w-4" />
-              </span>
-              <span className="text-sm font-medium tracking-[0.01em]">WhatsApp</span>
-            </a>
           </div>
         </div>
 
+        {showFloatingActions && isQuickActionsOpen && (
+          <div className="fixed inset-0 z-40 lg:hidden">
+            <button
+              type="button"
+              className="absolute inset-0 bg-slate-900/28 backdrop-blur-[2px]"
+              aria-label="Close quick actions"
+              onClick={() => setIsQuickActionsOpen(false)}
+            />
+            <div
+              id="kalpavruksha-mobile-quick-actions"
+              className="absolute inset-x-0 bottom-0 rounded-t-[32px] border-t border-[#dfe9d5] bg-white px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-4 shadow-[0_-24px_60px_rgba(15,23,42,0.18)]"
+            >
+              <div className="mx-auto h-1.5 w-12 rounded-full bg-slate-200" />
+              <div className="mt-4 flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
+                    Quick Actions
+                  </p>
+                  <h3 className="mt-2 text-lg font-semibold text-slate-900">
+                    Everything important in one place
+                  </h3>
+                  <p className="mt-1 text-sm leading-6 text-slate-500">
+                    Fast actions for site visit, layout, directions, and direct contact.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsQuickActionsOpen(false)}
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-600 transition-colors duration-200 hover:bg-white hover:text-slate-900"
+                  aria-label="Close quick actions"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="mt-5 space-y-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    openVisitModal();
+                  }}
+                  className="flex w-full items-center justify-between rounded-[24px] border border-[#dfe9d5] bg-[#f7fbf5] px-4 py-4 text-left shadow-sm transition-all duration-200"
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-700 ring-1 ring-emerald-100">
+                      <MapPin className="h-4 w-4" />
+                    </span>
+                    <span>
+                      <span className="block text-sm font-semibold text-slate-900">Schedule Site Visit</span>
+                      <span className="block text-xs leading-5 text-slate-500">Choose a day and time that suits you</span>
+                    </span>
+                  </span>
+                  <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    openDownloadLeadModal('layout');
+                  }}
+                  className="flex w-full items-center justify-between rounded-[24px] border border-[#dfe9d5] bg-[#f7fbf5] px-4 py-4 text-left shadow-sm transition-all duration-200"
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-700 ring-1 ring-emerald-100">
+                      <Download className="h-4 w-4" />
+                    </span>
+                    <span>
+                      <span className="block text-sm font-semibold text-slate-900">Download Layout PDF</span>
+                      <span className="block text-xs leading-5 text-slate-500">Get the approved master layout instantly</span>
+                    </span>
+                  </span>
+                  <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    openDownloadLeadModal('brochure');
+                  }}
+                  className="flex w-full items-center justify-between rounded-[24px] border border-[#dfe9d5] bg-[#f7fbf5] px-4 py-4 text-left shadow-sm transition-all duration-200"
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-700 ring-1 ring-emerald-100">
+                      <Download className="h-4 w-4" />
+                    </span>
+                    <span>
+                      <span className="block text-sm font-semibold text-slate-900">Download Brochure</span>
+                      <span className="block text-xs leading-5 text-slate-500">Get the full project brochure instantly</span>
+                    </span>
+                  </span>
+                  <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                </button>
+
+                <a
+                  href={projectDirectionsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsQuickActionsOpen(false)}
+                  className="flex w-full items-center justify-between rounded-[24px] border border-[#dfe9d5] bg-[#f7fbf5] px-4 py-4 text-left shadow-sm transition-all duration-200"
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-700 ring-1 ring-emerald-100">
+                      <ArrowUpRight className="h-4 w-4" />
+                    </span>
+                    <span>
+                      <span className="block text-sm font-semibold text-slate-900">Get Directions</span>
+                      <span className="block text-xs leading-5 text-slate-500">Open the route directly in Google Maps</span>
+                    </span>
+                  </span>
+                  <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                </a>
+
+                <a
+                  href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20please%20contact%20me%20regarding%20Kalpavruksha."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    trackKalpavrukshaWhatsAppClick('mobile_quick_actions');
+                  }}
+                  className="flex w-full items-center justify-between rounded-[24px] border border-[#dfe9d5] bg-[#f7fbf5] px-4 py-4 text-left shadow-sm transition-all duration-200"
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-700 ring-1 ring-emerald-100">
+                      <FaWhatsapp className="h-4 w-4" />
+                    </span>
+                    <span>
+                      <span className="block text-sm font-semibold text-slate-900">Chat on WhatsApp</span>
+                      <span className="block text-xs leading-5 text-slate-500">Connect with the sales team directly</span>
+                    </span>
+                  </span>
+                  <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Footer */}
-        <footer className="bg-gray-900 text-white py-12">
+        <footer className="bg-gray-900 pb-24 pt-12 text-white lg:pb-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
