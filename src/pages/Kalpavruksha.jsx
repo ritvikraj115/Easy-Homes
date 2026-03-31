@@ -650,11 +650,33 @@ const KalpavrukshaPage = () => {
   ];
   const activeHeroSlide = heroSlides[activeHeroSlideIndex] || heroSlides[0];
   const heroTouchStartXRef = React.useRef(null);
+  const heroSlideTransitionTimeoutRef = React.useRef(null);
+  const [isHeroSlideVisible, setIsHeroSlideVisible] = useState(true);
+  const changeHeroSlide = (nextIndex) => {
+    const normalizedIndex = ((nextIndex % heroSlides.length) + heroSlides.length) % heroSlides.length;
+
+    if (typeof window === 'undefined') {
+      setActiveHeroSlideIndex(normalizedIndex);
+      setIsHeroSlideVisible(true);
+      return;
+    }
+
+    if (heroSlideTransitionTimeoutRef.current) {
+      window.clearTimeout(heroSlideTransitionTimeoutRef.current);
+    }
+
+    setIsHeroSlideVisible(false);
+    heroSlideTransitionTimeoutRef.current = window.setTimeout(() => {
+      setActiveHeroSlideIndex(normalizedIndex);
+      setIsHeroSlideVisible(true);
+      heroSlideTransitionTimeoutRef.current = null;
+    }, 180);
+  };
   const goToNextHeroSlide = () => {
-    setActiveHeroSlideIndex((current) => (current + 1) % heroSlides.length);
+    changeHeroSlide(activeHeroSlideIndex + 1);
   };
   const goToPreviousHeroSlide = () => {
-    setActiveHeroSlideIndex((current) => (current - 1 + heroSlides.length) % heroSlides.length);
+    changeHeroSlide(activeHeroSlideIndex - 1);
   };
   const handleHeroTouchStart = (event) => {
     heroTouchStartXRef.current = event.changedTouches[0]?.clientX ?? null;
@@ -691,11 +713,26 @@ const KalpavrukshaPage = () => {
     }
 
     const intervalId = window.setInterval(() => {
-      setActiveHeroSlideIndex((current) => (current + 1) % heroSlides.length);
-    }, 9000);
+      setIsHeroSlideVisible(false);
+
+      if (heroSlideTransitionTimeoutRef.current) {
+        window.clearTimeout(heroSlideTransitionTimeoutRef.current);
+      }
+
+      heroSlideTransitionTimeoutRef.current = window.setTimeout(() => {
+        setActiveHeroSlideIndex((current) => (current + 1) % heroSlides.length);
+        setIsHeroSlideVisible(true);
+        heroSlideTransitionTimeoutRef.current = null;
+      }, 180);
+    }, 3000);
 
     return () => window.clearInterval(intervalId);
-  }, [heroSlides.length]);
+  }, [activeHeroSlideIndex, heroSlides.length]);
+  useEffect(() => () => {
+    if (typeof window !== 'undefined' && heroSlideTransitionTimeoutRef.current) {
+      window.clearTimeout(heroSlideTransitionTimeoutRef.current);
+    }
+  }, []);
   const [selectedImage, setSelectedImage] = useState(null);
   const openModal = (item) => {
     setSelectedImage(item);
@@ -1219,42 +1256,18 @@ const KalpavrukshaPage = () => {
         <section ref={heroSectionRef} className="relative overflow-hidden bg-[#faf8f3] pt-4 text-slate-900 sm:pt-6 lg:h-[calc(100vh-64px)] lg:pt-4">
           <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#fffefb] to-transparent"></div>
           <div className="relative z-10 mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-6 lg:flex lg:h-full lg:flex-col lg:px-8 lg:py-4">
-            <div className="mb-4 hidden flex-nowrap justify-center gap-2.5 overflow-x-auto pb-1 md:flex lg:mb-4">
-              {heroSlides.map((slide, index) => (
-                <button
-                  key={slide.id}
-                  type="button"
-                  onClick={() => setActiveHeroSlideIndex(index)}
-                  aria-pressed={index === activeHeroSlideIndex}
-                  aria-label={`Show ${slide.navLabel} slide`}
-                  className={`shrink-0 rounded-full border px-4 py-2.5 text-sm font-semibold transition-all duration-300 ${
-                    index === activeHeroSlideIndex
-                      ? 'border-emerald-700 bg-emerald-700 text-white shadow-md shadow-emerald-700/20'
-                      : 'border-[#ece3cf] bg-[#fcfaf4] text-slate-600 hover:border-emerald-200 hover:bg-white hover:text-emerald-800'
-                  }`}
-                >
-                  <span className={`text-[10px] font-semibold uppercase tracking-[0.22em] ${
-                    index === activeHeroSlideIndex ? 'text-white/70' : 'text-emerald-700/60'
-                  }`}>
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
-                  <span className="ml-2">
-                    {slide.navLabel}
-                  </span>
-                </button>
-              ))}
-            </div>
-
             <div
               className="grid items-stretch gap-4 sm:gap-5 lg:flex-1 lg:grid-cols-2 lg:gap-8"
               onTouchStart={handleHeroTouchStart}
               onTouchEnd={handleHeroTouchEnd}
             >
-              <div className="order-3 flex flex-col rounded-[28px] border border-[#e8e1d0] bg-white px-4 py-5 shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:rounded-[32px] sm:px-7 sm:py-7 md:order-2 lg:order-1 lg:min-h-0 lg:h-full lg:px-8 lg:py-8">
+              <div className="order-3 flex flex-col rounded-[28px] border border-[#e8e1d0] bg-white px-4 py-5 shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:rounded-[32px] sm:px-7 sm:py-7 md:order-2 lg:order-1 lg:h-full lg:min-h-0 lg:px-8 lg:py-8">
                 <div aria-live="polite" className="flex flex-1 flex-col">
                   <article
                     key={activeHeroSlide.id}
-                    className="flex flex-1 flex-col"
+                    className={`flex flex-1 flex-col transition-all duration-500 ease-in-out ${
+                      isHeroSlideVisible ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
+                    }`}
                   >
                     <div>
                       <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-emerald-700 sm:text-[11px] sm:tracking-[0.32em]">
@@ -1305,21 +1318,27 @@ const KalpavrukshaPage = () => {
                 </div>
               </div>
 
-              <div className="order-1 overflow-hidden rounded-[28px] border border-[#e8e1d0] bg-white shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:rounded-[32px] lg:order-2 lg:min-h-0 lg:h-full">
+              <div className="order-1 overflow-hidden rounded-[28px] border border-[#e8e1d0] bg-white shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:rounded-[32px] lg:order-2 lg:h-full lg:min-h-0">
                 <div className="relative h-[16.5rem] sm:h-[22rem] md:h-[26rem] lg:h-full">
-                  <img
-                    key={activeHeroSlide.id}
-                    src={activeHeroSlide.image}
-                    alt={activeHeroSlide.alt}
-                    className="h-full w-full object-cover transition-transform duration-1000 ease-out"
-                    style={{
-                      objectPosition: activeHeroSlide.imagePosition || 'center center',
-                      transform: `scale(${activeHeroSlide.imageScale || 1})`,
-                    }}
-                    fetchPriority={activeHeroSlideIndex === 0 ? 'high' : 'auto'}
-                    decoding="async"
-                    loading={activeHeroSlideIndex === 0 ? 'eager' : 'lazy'}
-                  />
+                  <div
+                    className={`h-full w-full transition-all duration-500 ease-in-out ${
+                      isHeroSlideVisible ? 'scale-100 opacity-100' : 'scale-[1.02] opacity-0'
+                    }`}
+                  >
+                    <img
+                      key={activeHeroSlide.id}
+                      src={activeHeroSlide.image}
+                      alt={activeHeroSlide.alt}
+                      className="h-full w-full object-cover transition-transform duration-700 ease-out"
+                      style={{
+                        objectPosition: activeHeroSlide.imagePosition || 'center center',
+                        transform: `scale(${activeHeroSlide.imageScale || 1})`,
+                      }}
+                      fetchPriority={activeHeroSlideIndex === 0 ? 'high' : 'auto'}
+                      decoding="async"
+                      loading={activeHeroSlideIndex === 0 ? 'eager' : 'lazy'}
+                    />
+                  </div>
                 </div>
               </div>
 
