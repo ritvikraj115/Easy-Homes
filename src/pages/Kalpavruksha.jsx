@@ -140,6 +140,8 @@ const KalpavrukshaPage = () => {
     email: ''
   });
   const activeDownloadAsset = downloadAssetKey ? DOWNLOAD_ASSET_CONFIG[downloadAssetKey] : null;
+  const isModalOpen = showVisitModal || Boolean(activeDownloadAsset);
+  const shouldShowFloatingActions = showFloatingActions && !isModalOpen;
   const [toast, setToast] = useState(null);
   const [activeHeroSlideIndex, setActiveHeroSlideIndex] = useState(0);
   const todayDate = new Date().toISOString().split('T')[0];
@@ -244,6 +246,28 @@ const KalpavrukshaPage = () => {
       setIsQuickActionsOpen(false);
     }
   }, [showFloatingActions]);
+
+  useEffect(() => {
+    if (isModalOpen) {
+      setIsQuickActionsOpen(false);
+    }
+  }, [isModalOpen]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return undefined;
+    }
+
+    const originalOverflow = document.body.style.overflow;
+
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isModalOpen]);
   /* ---------------- SEO STRUCTURED DATA ---------------- */
 
   const projectTitle =
@@ -1110,142 +1134,144 @@ const KalpavrukshaPage = () => {
 
       {/* Site Visit Modal */}
       {showVisitModal && (
-        <div className="fixed inset-0 z-40 flex items-start md:items-center justify-center bg-black/50 overflow-y-auto p-4" onClick={(e) => { if (e.target === e.currentTarget) closeVisitModal(); }}>
-          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl my-6 max-h-[calc(100vh-3rem)] flex flex-col">
+        <div className="fixed inset-0 z-[120] flex items-start md:items-center justify-center bg-black/50 overflow-y-auto p-4" onClick={(e) => { if (e.target === e.currentTarget) closeVisitModal(); }}>
+          <div className="relative bg-white rounded-2xl w-full max-w-2xl shadow-xl my-6 max-h-[calc(100vh-3rem)] flex flex-col">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
               <h3 className="text-xl font-bold">Book a Site Visit</h3>
               <button onClick={closeVisitModal} className="p-2 rounded hover:bg-gray-100"><X className="w-5 h-5" /></button>
             </div>
-            <form onSubmit={submitSiteVisit} className="space-y-4 overflow-y-auto px-6 py-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input name="name" value={form.name} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Your name" required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                <input name="phone" value={form.phone} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="e.g., 9898899666" required />
-                <p className="text-xs text-gray-500 mt-1">We will also send a WhatsApp update to this number.</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email (optional)</label>
-                <input type="email" name="email" value={form.email} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="you@example.com" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Date</label>
-                <input type="date" name="preferredDate" min={todayDate} value={form.preferredDate} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Time Slot</label>
-                <div className="border rounded-lg p-2 bg-gray-50 max-h-36 overflow-y-auto">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {VISIT_TIME_SLOTS.map((slot) => (
+            <form onSubmit={submitSiteVisit} className="flex flex-1 min-h-0 flex-col">
+              <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <input name="name" value={form.name} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Your name" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <input name="phone" value={form.phone} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="e.g., 9898899666" required />
+                  <p className="text-xs text-gray-500 mt-1">We will also send a WhatsApp update to this number.</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email (optional)</label>
+                  <input type="email" name="email" value={form.email} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="you@example.com" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Date</label>
+                  <input type="date" name="preferredDate" min={todayDate} value={form.preferredDate} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Time Slot</label>
+                  <div className="border rounded-lg p-2 bg-gray-50 max-h-36 overflow-y-auto">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {VISIT_TIME_SLOTS.map((slot) => (
+                        <button
+                          key={slot.value}
+                          type="button"
+                          onClick={() => setForm(prev => ({ ...prev, preferredTime: slot.value }))}
+                          className={`px-3 py-2 rounded-md text-sm font-medium border transition-colors ${
+                            form.preferredTime === slot.value
+                              ? 'bg-emerald-600 text-white border-emerald-600'
+                              : 'bg-white text-gray-700 border-gray-300 hover:border-emerald-500 hover:text-emerald-700'
+                          }`}
+                        >
+                          {slot.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <input type="hidden" name="preferredTime" value={form.preferredTime} required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Transport Required</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['Yes', 'No'].map((value) => (
                       <button
-                        key={slot.value}
+                        key={value}
                         type="button"
-                        onClick={() => setForm(prev => ({ ...prev, preferredTime: slot.value }))}
+                        onClick={() => setForm(prev => ({ ...prev, transportRequired: value }))}
                         className={`px-3 py-2 rounded-md text-sm font-medium border transition-colors ${
-                          form.preferredTime === slot.value
+                          form.transportRequired === value
                             ? 'bg-emerald-600 text-white border-emerald-600'
                             : 'bg-white text-gray-700 border-gray-300 hover:border-emerald-500 hover:text-emerald-700'
                         }`}
                       >
-                        {slot.label}
+                        {value}
                       </button>
                     ))}
                   </div>
                 </div>
-                <input type="hidden" name="preferredTime" value={form.preferredTime} required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Transport Required</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {['Yes', 'No'].map((value) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => setForm(prev => ({ ...prev, transportRequired: value }))}
-                      className={`px-3 py-2 rounded-md text-sm font-medium border transition-colors ${
-                        form.transportRequired === value
-                          ? 'bg-emerald-600 text-white border-emerald-600'
-                          : 'bg-white text-gray-700 border-gray-300 hover:border-emerald-500 hover:text-emerald-700'
-                      }`}
-                    >
-                      {value}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Pickup Address Input</label>
-                <div className="flex items-center gap-4 mb-2">
-                  <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-                    <input
-                      type="radio"
-                      name="pickupMode"
-                      value="manual"
-                      checked={form.pickupMode === 'manual'}
-                      onChange={onChange}
-                    />
-                    Manual
-                  </label>
-                  <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-                    <input
-                      type="radio"
-                      name="pickupMode"
-                      value="map"
-                      checked={form.pickupMode === 'map'}
-                      onChange={onChange}
-                    />
-                    Select on Map
-                  </label>
-                </div>
-
-                {form.pickupMode === 'map' && (
-                  <div className="rounded-lg overflow-hidden border border-gray-200 mb-2">
-                    {!pickupMapApiKey ? (
-                      <div className="p-3 text-xs text-gray-600">
-                        Map is unavailable right now. Enter the pickup address manually below.
-                      </div>
-                    ) : pickupMapLoadError ? (
-                      <div className="p-3 text-xs text-red-600">
-                        Map failed to load. Enter the pickup address manually below.
-                      </div>
-                    ) : (
-                      <Suspense fallback={<div className="p-3 text-xs text-gray-600">Loading map...</div>}>
-                        <PickupLocationMap
-                          apiKey={pickupMapApiKey}
-                          center={pickupMapCenter}
-                          containerStyle={PICKUP_MAP_CONTAINER_STYLE}
-                          libraries={MAP_LIBRARIES}
-                          mapLoaderId={MAPS_LOADER_ID}
-                          onLoadError={() => setPickupMapLoadError(true)}
-                          onMapClick={onPickupMapClick}
-                          onMarkerDragEnd={onPickupMarkerDragEnd}
-                          selectedPosition={
-                            form.pickupLat && form.pickupLng
-                              ? { lat: Number(form.pickupLat), lng: Number(form.pickupLng) }
-                              : null
-                          }
-                        />
-                      </Suspense>
-                    )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Pickup Address Input</label>
+                  <div className="flex items-center gap-4 mb-2">
+                    <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                      <input
+                        type="radio"
+                        name="pickupMode"
+                        value="manual"
+                        checked={form.pickupMode === 'manual'}
+                        onChange={onChange}
+                      />
+                      Manual
+                    </label>
+                    <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                      <input
+                        type="radio"
+                        name="pickupMode"
+                        value="map"
+                        checked={form.pickupMode === 'map'}
+                        onChange={onChange}
+                      />
+                      Select on Map
+                    </label>
                   </div>
-                )}
 
-                <textarea
-                  name="pickupAddress"
-                  value={form.pickupAddress}
-                  onChange={onChange}
-                  rows={3}
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  placeholder={form.pickupMode === 'map' ? 'Click map/drag marker to fill textual address, or type manually' : 'Enter pickup address'}
-                  required
-                />
-                {form.pickupMode === 'map' && (
-                  <p className="text-xs text-gray-500 mt-1">Tap on map or drag marker to auto-fill a textual address.</p>
-                )}
+                  {form.pickupMode === 'map' && (
+                    <div className="rounded-lg overflow-hidden border border-gray-200 mb-2">
+                      {!pickupMapApiKey ? (
+                        <div className="p-3 text-xs text-gray-600">
+                          Map is unavailable right now. Enter the pickup address manually below.
+                        </div>
+                      ) : pickupMapLoadError ? (
+                        <div className="p-3 text-xs text-red-600">
+                          Map failed to load. Enter the pickup address manually below.
+                        </div>
+                      ) : (
+                        <Suspense fallback={<div className="p-3 text-xs text-gray-600">Loading map...</div>}>
+                          <PickupLocationMap
+                            apiKey={pickupMapApiKey}
+                            center={pickupMapCenter}
+                            containerStyle={PICKUP_MAP_CONTAINER_STYLE}
+                            libraries={MAP_LIBRARIES}
+                            mapLoaderId={MAPS_LOADER_ID}
+                            onLoadError={() => setPickupMapLoadError(true)}
+                            onMapClick={onPickupMapClick}
+                            onMarkerDragEnd={onPickupMarkerDragEnd}
+                            selectedPosition={
+                              form.pickupLat && form.pickupLng
+                                ? { lat: Number(form.pickupLat), lng: Number(form.pickupLng) }
+                                : null
+                            }
+                          />
+                        </Suspense>
+                      )}
+                    </div>
+                  )}
+
+                  <textarea
+                    name="pickupAddress"
+                    value={form.pickupAddress}
+                    onChange={onChange}
+                    rows={3}
+                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder={form.pickupMode === 'map' ? 'Click map/drag marker to fill textual address, or type manually' : 'Enter pickup address'}
+                    required
+                  />
+                  {form.pickupMode === 'map' && (
+                    <p className="text-xs text-gray-500 mt-1">Tap on map or drag marker to auto-fill a textual address.</p>
+                  )}
+                </div>
               </div>
-              <div className="sticky bottom-0 bg-white pt-2 pb-1">
+              <div className="shrink-0 border-t border-gray-200 bg-white px-6 pt-3 pb-4 shadow-[0_-10px_24px_rgba(15,23,42,0.08)]">
                 <button type="submit" disabled={submitting} className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-white font-semibold ${submitting ? 'bg-emerald-400' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
                   {submitting ? 'Submitting...' : 'Submit Request'}
                 </button>
@@ -1258,57 +1284,59 @@ const KalpavrukshaPage = () => {
       {/* Layout Download Lead Modal */}
       {downloadAssetKey && activeDownloadAsset && (
         <div
-          className="fixed inset-0 z-40 flex items-start md:items-center justify-center bg-black/50 overflow-y-auto p-4"
+          className="fixed inset-0 z-[120] flex items-start md:items-center justify-center bg-black/50 overflow-y-auto p-4"
           onClick={(e) => { if (e.target === e.currentTarget) closeDownloadLeadModal(); }}
         >
-          <div className="bg-white rounded-2xl w-full max-w-xl shadow-xl my-6 max-h-[calc(100vh-3rem)] flex flex-col">
+          <div className="relative bg-white rounded-2xl w-full max-w-xl shadow-xl my-6 max-h-[calc(100vh-3rem)] flex flex-col">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-teal-50">
               <h3 className="text-xl font-bold text-gray-900">{activeDownloadAsset.title}</h3>
               <button onClick={closeDownloadLeadModal} className="p-2 rounded hover:bg-white/80" type="button">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={submitLayoutLead} className="space-y-4 overflow-y-auto px-6 py-4">
-              <p className="text-sm text-gray-600 leading-relaxed">
-                {activeDownloadAsset.description}
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                  <input
-                    name="name"
-                    value={layoutLeadForm.name}
-                    onChange={onLayoutLeadChange}
-                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="Your name"
-                    required
-                  />
+            <form onSubmit={submitLayoutLead} className="flex flex-1 min-h-0 flex-col">
+              <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {activeDownloadAsset.description}
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input
+                      name="name"
+                      value={layoutLeadForm.name}
+                      onChange={onLayoutLeadChange}
+                      className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Your name"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input
+                      name="phone"
+                      value={layoutLeadForm.phone}
+                      onChange={onLayoutLeadChange}
+                      className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="e.g., 9898899666"
+                      required
+                    />
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email (optional)</label>
                   <input
-                    name="phone"
-                    value={layoutLeadForm.phone}
+                    type="email"
+                    name="email"
+                    value={layoutLeadForm.email}
                     onChange={onLayoutLeadChange}
                     className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="e.g., 9898899666"
-                    required
+                    placeholder="you@example.com"
                   />
                 </div>
+                <p className="text-xs text-gray-500">By continuing, you agree to be contacted by Easy Homes regarding this project.</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email (optional)</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={layoutLeadForm.email}
-                  onChange={onLayoutLeadChange}
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  placeholder="you@example.com"
-                />
-              </div>
-              <p className="text-xs text-gray-500">By continuing, you agree to be contacted by Easy Homes regarding this project.</p>
-              <div className="sticky bottom-0 bg-white pt-2 pb-1">
+              <div className="shrink-0 border-t border-gray-200 bg-white px-6 pt-3 pb-4 shadow-[0_-10px_24px_rgba(15,23,42,0.08)]">
                 <button
                   type="submit"
                   disabled={downloadSubmitting}
@@ -2020,173 +2048,173 @@ const KalpavrukshaPage = () => {
             </div>
           </div>
         </section>
-        <div
-          className={`pointer-events-none fixed right-0 top-1/2 z-30 hidden -translate-y-1/2 transition-all duration-300 lg:block ${
-            showFloatingActions ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'
-          }`}
-          aria-hidden={!showFloatingActions}
-        >
-          <div className="pointer-events-auto relative flex items-center justify-end">
-            <div
-              id="kalpavruksha-quick-actions"
-              className={`absolute right-[calc(100%+0.65rem)] top-1/2 w-[min(16.5rem,calc(100vw-4.75rem))] -translate-y-1/2 transition-all duration-200 ${
-                isQuickActionsOpen
-                  ? 'visible translate-x-0 opacity-100'
-                  : 'invisible translate-x-6 opacity-0'
-              }`}
-            >
-              <div className="rounded-[28px] border border-[#dfe9d5] bg-white/96 p-3.5 shadow-[0_24px_55px_rgba(15,23,42,0.18)] backdrop-blur-xl">
-                <div className="px-2 pb-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
-                    Quick Actions
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Everything important, one tap away.
-                  </p>
-                </div>
+        {shouldShowFloatingActions && (
+          <div
+            className="pointer-events-none fixed right-0 top-1/2 z-30 hidden -translate-y-1/2 transition-all duration-300 lg:block"
+            aria-hidden={!shouldShowFloatingActions}
+          >
+            <div className="pointer-events-auto relative flex items-center justify-end">
+              <div
+                id="kalpavruksha-quick-actions"
+                className={`absolute right-[calc(100%+0.65rem)] top-1/2 w-[min(16.5rem,calc(100vw-4.75rem))] -translate-y-1/2 transition-all duration-200 ${
+                  isQuickActionsOpen
+                    ? 'visible translate-x-0 opacity-100'
+                    : 'invisible translate-x-6 opacity-0'
+                }`}
+              >
+                <div className="rounded-[28px] border border-[#dfe9d5] bg-white/96 p-3.5 shadow-[0_24px_55px_rgba(15,23,42,0.18)] backdrop-blur-xl">
+                  <div className="px-2 pb-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
+                      Quick Actions
+                    </p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Everything important, one tap away.
+                    </p>
+                  </div>
 
-                <div className="space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsQuickActionsOpen(false);
-                      openVisitModal();
-                    }}
-                    className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
-                  >
-                    <span className="flex items-center gap-3">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-                        <MapPin className="h-4 w-4" />
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        openVisitModal();
+                      }}
+                      className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
+                    >
+                      <span className="flex items-center gap-3">
+                        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                          <MapPin className="h-4 w-4" />
+                        </span>
+                        <span>
+                          <span className="block text-sm font-semibold text-slate-900">Schedule Site Visit</span>
+                          <span className="block text-xs text-slate-500">Pick your preferred day and time</span>
+                        </span>
                       </span>
-                      <span>
-                        <span className="block text-sm font-semibold text-slate-900">Schedule Site Visit</span>
-                        <span className="block text-xs text-slate-500">Pick your preferred day and time</span>
-                      </span>
-                    </span>
-                    <ArrowUpRight className="h-4 w-4 text-slate-400" />
-                  </button>
+                      <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsQuickActionsOpen(false);
-                      openDownloadLeadModal('layout');
-                    }}
-                    className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
-                  >
-                    <span className="flex items-center gap-3">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-                        <Download className="h-4 w-4" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        openDownloadLeadModal('layout');
+                      }}
+                      className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
+                    >
+                      <span className="flex items-center gap-3">
+                        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                          <Download className="h-4 w-4" />
+                        </span>
+                        <span>
+                          <span className="block text-sm font-semibold text-slate-900">Download Layout PDF</span>
+                          <span className="block text-xs text-slate-500">Get the approved master layout</span>
+                        </span>
                       </span>
-                      <span>
-                        <span className="block text-sm font-semibold text-slate-900">Download Layout PDF</span>
-                        <span className="block text-xs text-slate-500">Get the approved master layout</span>
-                      </span>
-                    </span>
-                    <ArrowUpRight className="h-4 w-4 text-slate-400" />
-                  </button>
+                      <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsQuickActionsOpen(false);
-                      openDownloadLeadModal('brochure');
-                    }}
-                    className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
-                  >
-                    <span className="flex items-center gap-3">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-                        <Download className="h-4 w-4" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        openDownloadLeadModal('brochure');
+                      }}
+                      className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
+                    >
+                      <span className="flex items-center gap-3">
+                        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                          <Download className="h-4 w-4" />
+                        </span>
+                        <span>
+                          <span className="block text-sm font-semibold text-slate-900">Download Brochure</span>
+                          <span className="block text-xs text-slate-500">Get the full project brochure</span>
+                        </span>
                       </span>
-                      <span>
-                        <span className="block text-sm font-semibold text-slate-900">Download Brochure</span>
-                        <span className="block text-xs text-slate-500">Get the full project brochure</span>
-                      </span>
-                    </span>
-                    <ArrowUpRight className="h-4 w-4 text-slate-400" />
-                  </button>
+                      <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                    </button>
 
-                  <a
-                    href={projectDirectionsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setIsQuickActionsOpen(false)}
-                    className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
-                  >
-                    <span className="flex items-center gap-3">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-                        <ArrowUpRight className="h-4 w-4" />
+                    <a
+                      href={projectDirectionsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setIsQuickActionsOpen(false)}
+                      className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
+                    >
+                      <span className="flex items-center gap-3">
+                        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                          <ArrowUpRight className="h-4 w-4" />
+                        </span>
+                        <span>
+                          <span className="block text-sm font-semibold text-slate-900">Get Directions</span>
+                          <span className="block text-xs text-slate-500">Open the route in Google Maps</span>
+                        </span>
                       </span>
-                      <span>
-                        <span className="block text-sm font-semibold text-slate-900">Get Directions</span>
-                        <span className="block text-xs text-slate-500">Open the route in Google Maps</span>
-                      </span>
-                    </span>
-                    <ArrowUpRight className="h-4 w-4 text-slate-400" />
-                  </a>
+                      <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                    </a>
 
-                  <a
-                    href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20please%20contact%20me%20regarding%20Kalpavruksha."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => {
-                      setIsQuickActionsOpen(false);
-                      trackKalpavrukshaWhatsAppClick('desktop_quick_actions');
-                    }}
-                    className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
-                  >
-                    <span className="flex items-center gap-3">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-                        <FaWhatsapp className="h-4 w-4" />
+                    <a
+                      href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20please%20contact%20me%20regarding%20Kalpavruksha."
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        trackKalpavrukshaWhatsAppClick('desktop_quick_actions');
+                      }}
+                      className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
+                    >
+                      <span className="flex items-center gap-3">
+                        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                          <FaWhatsapp className="h-4 w-4" />
+                        </span>
+                        <span>
+                          <span className="block text-sm font-semibold text-slate-900">Chat on WhatsApp</span>
+                          <span className="block text-xs text-slate-500">Speak to the sales team directly</span>
+                        </span>
                       </span>
-                      <span>
-                        <span className="block text-sm font-semibold text-slate-900">Chat on WhatsApp</span>
-                        <span className="block text-xs text-slate-500">Speak to the sales team directly</span>
-                      </span>
-                    </span>
-                    <ArrowUpRight className="h-4 w-4 text-slate-400" />
-                  </a>
+                      <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                    </a>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <button
-              type="button"
-              onClick={() => setIsQuickActionsOpen((current) => !current)}
-              aria-expanded={isQuickActionsOpen}
-              aria-controls="kalpavruksha-quick-actions"
-              className="inline-flex h-14 items-center gap-2 rounded-l-full border border-r-0 border-[#d8c995] bg-gradient-to-r from-[#0f7b63] to-[#0e8f72] pl-4 pr-3 text-sm font-semibold text-white shadow-[0_16px_35px_rgba(15,123,99,0.28)] transition-all duration-200 hover:pr-4 hover:shadow-[0_20px_42px_rgba(15,123,99,0.34)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
-            >
-              <Zap className="h-4 w-4" />
-              <span>Quick Actions</span>
-            </button>
-          </div>
-        </div>
-
-        <div
-          className={`pointer-events-none fixed inset-x-0 bottom-4 z-30 px-4 transition-all duration-300 lg:hidden ${
-            showFloatingActions ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-          }`}
-          aria-hidden={!showFloatingActions}
-        >
-          <div className="pointer-events-auto mx-auto flex max-w-sm justify-center">
-            <button
-              type="button"
-              onClick={() => setIsQuickActionsOpen((current) => !current)}
-              aria-expanded={isQuickActionsOpen}
-              aria-controls="kalpavruksha-mobile-quick-actions"
-              className="inline-flex min-h-14 items-center gap-2 rounded-full border border-[#d8c995] bg-white/95 px-5 text-sm font-semibold text-emerald-900 shadow-[0_18px_40px_rgba(15,23,42,0.18)] backdrop-blur-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
-            >
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[#0f7b63] to-[#0e8f72] text-white">
+              <button
+                type="button"
+                onClick={() => setIsQuickActionsOpen((current) => !current)}
+                aria-expanded={isQuickActionsOpen}
+                aria-controls="kalpavruksha-quick-actions"
+                className="inline-flex h-14 items-center gap-2 rounded-l-full border border-r-0 border-[#d8c995] bg-gradient-to-r from-[#0f7b63] to-[#0e8f72] pl-4 pr-3 text-sm font-semibold text-white shadow-[0_16px_35px_rgba(15,123,99,0.28)] transition-all duration-200 hover:pr-4 hover:shadow-[0_20px_42px_rgba(15,123,99,0.34)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+              >
                 <Zap className="h-4 w-4" />
-              </span>
-              <span>Quick Actions</span>
-              <ChevronDown className={`h-4 w-4 text-emerald-700 transition-transform duration-200 ${isQuickActionsOpen ? 'rotate-180' : ''}`} />
-            </button>
+                <span>Quick Actions</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
-        {showFloatingActions && isQuickActionsOpen && (
+        {shouldShowFloatingActions && (
+          <div
+            className="pointer-events-none fixed inset-x-0 bottom-4 z-30 px-4 transition-all duration-300 lg:hidden"
+            aria-hidden={!shouldShowFloatingActions}
+          >
+            <div className="pointer-events-auto mx-auto flex max-w-sm justify-center">
+              <button
+                type="button"
+                onClick={() => setIsQuickActionsOpen((current) => !current)}
+                aria-expanded={isQuickActionsOpen}
+                aria-controls="kalpavruksha-mobile-quick-actions"
+                className="inline-flex min-h-14 items-center gap-2 rounded-full border border-[#d8c995] bg-white/95 px-5 text-sm font-semibold text-emerald-900 shadow-[0_18px_40px_rgba(15,23,42,0.18)] backdrop-blur-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[#0f7b63] to-[#0e8f72] text-white">
+                  <Zap className="h-4 w-4" />
+                </span>
+                <span>Quick Actions</span>
+                <ChevronDown className={`h-4 w-4 text-emerald-700 transition-transform duration-200 ${isQuickActionsOpen ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {shouldShowFloatingActions && isQuickActionsOpen && (
           <div className="fixed inset-0 z-40 lg:hidden">
             <button
               type="button"
