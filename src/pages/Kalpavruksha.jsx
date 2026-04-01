@@ -25,7 +25,7 @@ import { Card, CardContent } from '../components/card';
 import Navbar from '../components/Navbar'
 import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../api';
-import { MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
+import { MAPS_LOADER_ID } from '../config/googleMaps';
 import { FaWhatsapp } from 'react-icons/fa';
 import YouTubeLiteEmbed from '../components/YouTubeLiteEmbed';
 import {
@@ -106,6 +106,10 @@ const DEFERRED_SECTION_STYLE = {
   contentVisibility: 'auto',
   containIntrinsicSize: '1px 960px',
 };
+const HERO_IMAGE_SIZES = '(max-width: 1023px) 100vw, 50vw';
+const HERO_IMAGE_SRC_SET = '/kalpabg2-640.webp 640w, /kalpabg2-960.webp 960w';
+const SECURITY_HERO_IMAGE_SRC_SET = '/entry-hero-640.webp 640w, /entry-hero-960.webp 960w';
+const WALKTHROUGH_POSTER_SIZES = '(max-width: 768px) 100vw, 960px';
 
 const KalpavrukshaPage = () => {
   // ...existing code...
@@ -141,6 +145,7 @@ const KalpavrukshaPage = () => {
   const todayDate = new Date().toISOString().split('T')[0];
   const [pickupMapCenter, setPickupMapCenter] = useState(PICKUP_MAP_DEFAULT_CENTER);
   const [pickupMapLoadError, setPickupMapLoadError] = useState(false);
+  const [shouldLoadTravelMap, setShouldLoadTravelMap] = useState(false);
   const pickupMapApiKey = process.env.REACT_APP_MAP_KEY || '';
   const pickupGeocodeRequestRef = React.useRef(0);
 
@@ -196,6 +201,37 @@ const KalpavrukshaPage = () => {
 
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    const target = locationRef.current;
+    if (!target || shouldLoadTravelMap || typeof window === 'undefined') {
+      return undefined;
+    }
+
+    if (!('IntersectionObserver' in window)) {
+      setShouldLoadTravelMap(true);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) {
+          return;
+        }
+
+        setShouldLoadTravelMap(true);
+        observer.disconnect();
+      },
+      {
+        rootMargin: '320px 0px',
+        threshold: 0.01,
+      },
+    );
+
+    observer.observe(target);
+
+    return () => observer.disconnect();
+  }, [shouldLoadTravelMap]);
 
   useEffect(() => {
     if (!showVisitModal || form.pickupMode !== 'map') {
@@ -562,6 +598,8 @@ const KalpavrukshaPage = () => {
       description:
         "It's not just the feeling of arriving somewhere new, but somewhere right, where your heart belongs. Just 12 mins from Amaravati.",
       image: '/kalpabg2.webp',
+      imageSrcSet: HERO_IMAGE_SRC_SET,
+      imageSizes: HERO_IMAGE_SIZES,
       alt: 'Kalpavruksha plotted community overview',
       imagePosition: 'center center',
       imageScale: 1.03,
@@ -583,6 +621,8 @@ const KalpavrukshaPage = () => {
       description:
         "8' compound wall with 2' solar fencing, 24x7 gated entry with CCTV, and solar lighting.",
       image: '/entry-hero.webp',
+      imageSrcSet: SECURITY_HERO_IMAGE_SRC_SET,
+      imageSizes: HERO_IMAGE_SIZES,
       alt: demoImg[0].alt,
       imagePosition: 'center center',
       imageScale: 1.03,
@@ -1019,7 +1059,15 @@ const KalpavrukshaPage = () => {
           content={projectKeywords}
         />
 
-        <link rel="preload" as="image" href="/kalpabg2.webp" type="image/webp" fetchPriority="high" />
+        <link
+          rel="preload"
+          as="image"
+          href="/kalpabg2-960.webp"
+          type="image/webp"
+          imageSrcSet={HERO_IMAGE_SRC_SET}
+          imageSizes={HERO_IMAGE_SIZES}
+          fetchPriority="high"
+        />
         <link rel="canonical" href={projectCanonicalUrl} />
         <meta name="robots" content="index,follow" />
         <meta property="og:type" content="website" />
@@ -1168,7 +1216,6 @@ const KalpavrukshaPage = () => {
                           apiKey={pickupMapApiKey}
                           center={pickupMapCenter}
                           containerStyle={PICKUP_MAP_CONTAINER_STYLE}
-                          libraries={MAP_LIBRARIES}
                           mapLoaderId={MAPS_LOADER_ID}
                           onLoadError={() => setPickupMapLoadError(true)}
                           onMapClick={onPickupMapClick}
@@ -1365,6 +1412,8 @@ const KalpavrukshaPage = () => {
                     <img
                       key={activeHeroSlide.id}
                       src={activeHeroSlide.image}
+                      srcSet={activeHeroSlide.imageSrcSet}
+                      sizes={activeHeroSlide.imageSizes}
                       alt={activeHeroSlide.alt}
                       className="h-full w-full object-cover transition-transform duration-700 ease-out"
                       style={{
@@ -1468,7 +1517,9 @@ const KalpavrukshaPage = () => {
                 videoId="mt-G29uakpQ"
                 title="Project Walkthrough Video"
                 description="Experience Kalpavruksha before you visit"
-                posterSrc="/kalpabg2.webp"
+                posterSrc="/kalpabg2-960.webp"
+                posterSrcSet={HERO_IMAGE_SRC_SET}
+                posterSizes={WALKTHROUGH_POSTER_SIZES}
               />
             </div>
           </div>
@@ -1737,22 +1788,30 @@ const KalpavrukshaPage = () => {
 
                 <div className="bg-slate-100">
                   <div className="h-full min-h-[380px] lg:min-h-[100%]">
-                    <Suspense
-                      fallback={
-                        <div className="flex h-full min-h-[380px] items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.08),_transparent_45%),linear-gradient(180deg,_#f8fafc_0%,_#eef2f7_100%)]">
-                          <div className="rounded-3xl border border-slate-200 bg-white/90 px-5 py-4 text-sm font-medium text-slate-600 shadow-sm backdrop-blur">
-                            Loading live map...
+                    {shouldLoadTravelMap ? (
+                      <Suspense
+                        fallback={
+                          <div className="flex h-full min-h-[380px] items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.08),_transparent_45%),linear-gradient(180deg,_#f8fafc_0%,_#eef2f7_100%)]">
+                            <div className="rounded-3xl border border-slate-200 bg-white/90 px-5 py-4 text-sm font-medium text-slate-600 shadow-sm backdrop-blur">
+                              Loading live map...
+                            </div>
                           </div>
+                        }
+                      >
+                        <TravelTimesLocationMap
+                          propertyPosition={KALPAVRUKSHA_PROPERTY_POSITION}
+                          propertyLabel="Kalpavruksha"
+                          destinations={KALPAVRUKSHA_TRAVEL_DESTINATIONS}
+                          fallbackEmbedUrl={projectMapEmbedUrl}
+                        />
+                      </Suspense>
+                    ) : (
+                      <div className="flex h-full min-h-[380px] items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.08),_transparent_45%),linear-gradient(180deg,_#f8fafc_0%,_#eef2f7_100%)]">
+                        <div className="rounded-3xl border border-slate-200 bg-white/90 px-5 py-4 text-sm font-medium text-slate-600 shadow-sm backdrop-blur">
+                          Preparing interactive map...
                         </div>
-                      }
-                    >
-                      <TravelTimesLocationMap
-                        propertyPosition={KALPAVRUKSHA_PROPERTY_POSITION}
-                        propertyLabel="Kalpavruksha"
-                        destinations={KALPAVRUKSHA_TRAVEL_DESTINATIONS}
-                        fallbackEmbedUrl={projectMapEmbedUrl}
-                      />
-                    </Suspense>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

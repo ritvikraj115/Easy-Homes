@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { GoogleMap, Polyline, useJsApiLoader } from '@react-google-maps/api';
 import AdvancedMarker from './AdvancedMarker';
-import { GOOGLE_MAP_ID, MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
+import { GOOGLE_MAP_ID, MAPS_LOADER_ID } from '../config/googleMaps';
+
+const TRAVEL_MAP_LIBRARIES = ['marker'];
 
 function formatUpdatedTime(date) {
   if (!date) {
@@ -35,8 +37,9 @@ export default function TravelTimesLocationMap({
   const { isLoaded, loadError } = useJsApiLoader({
     id: MAPS_LOADER_ID,
     googleMapsApiKey: apiKey,
-    libraries: MAP_LIBRARIES,
+    libraries: TRAVEL_MAP_LIBRARIES,
     mapIds: [GOOGLE_MAP_ID],
+    preventGoogleFontsLoading: true,
   });
 
   useEffect(() => {

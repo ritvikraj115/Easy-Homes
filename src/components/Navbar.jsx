@@ -50,12 +50,13 @@ export default function Navbar() {
       <div className="navbar__container">
         <Link to="/" className="navbar__logo">
           <img
-            src="/logo-nav.png"
-            width="900"
-            height="149"
+            src="/logo-nav-450.webp"
+            width="450"
+            height="75"
             alt="Easy Homes"
             loading="eager"
             decoding="async"
+            fetchPriority="high"
           />
         </Link>
 

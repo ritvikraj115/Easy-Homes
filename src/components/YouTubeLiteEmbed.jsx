@@ -5,6 +5,8 @@ function YouTubeLiteEmbed({
   className = '',
   description,
   posterSrc,
+  posterSizes,
+  posterSrcSet,
   title,
   videoId,
 }) {
@@ -29,10 +31,13 @@ function YouTubeLiteEmbed({
     <div className={`relative h-full w-full overflow-hidden ${className}`.trim()}>
       <img
         src={posterSrc}
+        srcSet={posterSrcSet}
+        sizes={posterSizes}
         alt={title}
         className="h-full w-full object-cover"
         loading="lazy"
         decoding="async"
+        fetchPriority="low"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
 

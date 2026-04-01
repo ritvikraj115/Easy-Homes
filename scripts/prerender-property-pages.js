@@ -37,7 +37,7 @@ const KALPAVRUKSHA_IMAGE_URL = `${SITE_URL}/kalpPcImg.webp`;
 const HOME_PRELOAD_SNIPPET =
   '<link rel="preload" as="image" href="/hero-dekstop.webp" imagesrcset="/hero-mobile.webp 768w, /hero-dekstop.webp 1920w" imagesizes="100vw" fetchpriority="high"/>';
 const KALPAVRUKSHA_PRELOAD_SNIPPET =
-  '<link rel="preload" as="image" href="/kalpabg2.webp" type="image/webp" fetchpriority="high"/>';
+  '<link rel="preload" as="image" href="/kalpabg2-960.webp" type="image/webp" imagesrcset="/kalpabg2-640.webp 640w, /kalpabg2-960.webp 960w" imagesizes="(max-width: 1023px) 100vw, 50vw" fetchpriority="high"/>';
 const HOME_SEO = {
   title: 'Easy Homes | CRDA-Approved Plots in Amaravati & Vijayawada',
   description:

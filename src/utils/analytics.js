@@ -1,5 +1,6 @@
 const GA_MEASUREMENT_ID = 'G-PS0CKM6BCZ';
 const META_PIXEL_ID = '2391828714581394';
+const THIRD_PARTY_LOAD_DELAY_MS = 6000;
 
 function sanitizeValue(value) {
   if (value === undefined || value === null) {
@@ -135,12 +136,7 @@ export function initializeAnalytics() {
   };
 
   const scheduleDeferredLoad = () => {
-    if (typeof window.requestIdleCallback === 'function') {
-      window.requestIdleCallback(loadThirdPartyScripts, { timeout: 2500 });
-      return;
-    }
-
-    window.setTimeout(loadThirdPartyScripts, 1800);
+    window.setTimeout(loadThirdPartyScripts, THIRD_PARTY_LOAD_DELAY_MS);
   };
 
   const interactionEvents = ['pointerdown', 'keydown', 'touchstart', 'scroll'];
