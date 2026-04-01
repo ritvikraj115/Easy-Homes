@@ -34,6 +34,10 @@ const SEARCH_PROPERTIES_PATH = '/searchProperties';
 const KALPAVRUKSHA_PATH = '/kalpavruksha/';
 const KALPAVRUKSHA_CANONICAL_URL = `${SITE_URL}${KALPAVRUKSHA_PATH}`;
 const KALPAVRUKSHA_IMAGE_URL = `${SITE_URL}/kalpPcImg.webp`;
+const HOME_PRELOAD_SNIPPET =
+  '<link rel="preload" as="image" href="/hero-dekstop.webp" imagesrcset="/hero-mobile.webp 768w, /hero-dekstop.webp 1920w" imagesizes="100vw" fetchpriority="high"/>';
+const KALPAVRUKSHA_PRELOAD_SNIPPET =
+  '<link rel="preload" as="image" href="/kalpabg2.webp" type="image/webp" fetchpriority="high"/>';
 const HOME_SEO = {
   title: 'Easy Homes | CRDA-Approved Plots in Amaravati & Vijayawada',
   description:
@@ -483,7 +487,7 @@ function buildPropertyPreviewMarkup(property, canonicalUrl, legacyUrl, isIndexab
   `;
 }
 
-function buildStaticPage(templateHtml, seo, markup, schemas = []) {
+function buildStaticPage(templateHtml, seo, markup, schemas = [], extraHead = '') {
   let html = templateHtml;
   const shareTitle = seo.shareTitle || seo.title;
   const shareDescription = seo.shareDescription || seo.description;
@@ -507,6 +511,10 @@ function buildStaticPage(templateHtml, seo, markup, schemas = []) {
       html,
       schemas.map((schema) => `<script type="application/ld+json">${escapeJsonForHtml(schema)}</script>`).join(''),
     );
+  }
+
+  if (extraHead) {
+    html = appendToHead(html, extraHead);
   }
 
   return injectRootContent(html, markup);
@@ -828,6 +836,7 @@ function buildKalpavrukshaPrerenderedPage(templateHtml) {
       .map((schema) => `<script type="application/ld+json">${escapeJsonForHtml(schema)}</script>`)
       .join(''),
   );
+  html = appendToHead(html, KALPAVRUKSHA_PRELOAD_SNIPPET);
   html = injectRootContent(html, buildKalpavrukshaPreviewMarkup());
   return html;
 }
@@ -842,6 +851,7 @@ function buildHomePrerenderedPage(templateHtml, properties) {
     },
     buildHomePreviewMarkup(properties),
     buildHomeSchemas(),
+    HOME_PRELOAD_SNIPPET,
   );
 }
 

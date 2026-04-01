@@ -31,9 +31,18 @@
 }
 
 /* Logo */
+.navbar__logo {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 64px;
+}
 .navbar__logo img {
   display: block;
-  height: 110px;
+  width: auto;
+  height: 42px;
+  max-width: min(260px, 34vw);
+  object-fit: contain;
 }
 
 /* Hamburger (mobile) */
@@ -355,6 +364,15 @@
   MOBILE (≤ 768px)
 ==========================*/
 @media (max-width: 768px) {
+  .navbar__container {
+    padding: 0 1rem;
+  }
+
+  .navbar__logo img {
+    height: 36px;
+    max-width: min(220px, 52vw);
+  }
+
   /* Slightly smaller toggle */
   .navbar__toggle {
     width: 40px;

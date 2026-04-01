@@ -6,9 +6,31 @@ import MapView from '../components/MapView';
 import PropertyCard from '../components/PropertyCard';
 import useGeocodedProperties from '../hooks/useGeocodedProperties';
 import useProperties from '../hooks/useProperties';
-import { MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
+import { GOOGLE_MAP_ID, MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
 import { Helmet } from 'react-helmet-async';
 import { Link, useLocation } from 'react-router-dom';
+
+const normalizeAutocompleteSuggestion = (suggestion, index) => {
+  const placePrediction = suggestion?.placePrediction;
+  const description = placePrediction?.text?.toString?.() || '';
+
+  if (!placePrediction || !description) {
+    return null;
+  }
+
+  const fallbackParts = description.split(',');
+  const fallbackMainText = fallbackParts.shift()?.trim() || description;
+  const fallbackSecondaryText = fallbackParts.join(',').trim();
+
+  return {
+    place_id: placePrediction.placeId || `${description}-${index}`,
+    description,
+    structured_formatting: {
+      main_text: placePrediction.mainText?.toString?.() || fallbackMainText,
+      secondary_text: placePrediction.secondaryText?.toString?.() || fallbackSecondaryText,
+    },
+  };
+};
 
 export default function SearchResults() {
     const searchSchema = {
@@ -35,6 +57,7 @@ export default function SearchResults() {
     id: MAPS_LOADER_ID,
     googleMapsApiKey: process.env.REACT_APP_MAP_KEY,
     libraries: MAP_LIBRARIES,
+    mapIds: [GOOGLE_MAP_ID],
   });
 
   // custom hook to geocode properties (always called)
@@ -56,7 +79,10 @@ export default function SearchResults() {
   // Suggestions + keyboard
   const [suggestions, setSuggestions] = useState([]);
   const [activeIndex, setActiveIndex] = useState(-1);
-  const serviceRef = useRef(null);
+  const [autocompleteReady, setAutocompleteReady] = useState(false);
+  const autocompleteRef = useRef(null);
+  const sessionTokenRef = useRef(null);
+  const requestSequenceRef = useRef(0);
   const debounceRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -100,47 +126,104 @@ export default function SearchResults() {
   }, [location.search]);
 
   useEffect(() => {
-    if (!isLoaded) return;
-    if (!window.google || !window.google.maps) return;
-    if (!serviceRef.current) {
-      serviceRef.current = new window.google.maps.places.AutocompleteService();
-    }
+    let isCancelled = false;
+
+    const loadAutocompleteLibrary = async () => {
+      if (!isLoaded || !window.google?.maps?.importLibrary) return;
+
+      const { AutocompleteSessionToken, AutocompleteSuggestion } =
+        await window.google.maps.importLibrary('places');
+
+      if (isCancelled) return;
+
+      autocompleteRef.current = {
+        AutocompleteSessionToken,
+        AutocompleteSuggestion,
+      };
+
+      if (!sessionTokenRef.current && AutocompleteSessionToken) {
+        sessionTokenRef.current = new AutocompleteSessionToken();
+      }
+
+      setAutocompleteReady(true);
+    };
+
+    loadAutocompleteLibrary();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [isLoaded]);
+
+  const refreshAutocompleteSession = () => {
+    const SessionToken = autocompleteRef.current?.AutocompleteSessionToken;
+    if (!SessionToken) return;
+    sessionTokenRef.current = new SessionToken();
+  };
 
   useEffect(() => {
     // If a search was just performed, suppress suggestions until user types again
     if (hasSearched) {
+      requestSequenceRef.current += 1;
       setSuggestions([]);
       setActiveIndex(-1);
       return;
     }
 
-    if (!isLoaded || !serviceRef.current) return;
+    if (!isLoaded || !autocompleteReady || !autocompleteRef.current?.AutocompleteSuggestion) return;
     const q = searchLocation?.trim();
     if (!q) {
+      requestSequenceRef.current += 1;
       setSuggestions([]);
       setActiveIndex(-1);
       return;
     }
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
+    const requestId = ++requestSequenceRef.current;
     debounceRef.current = setTimeout(() => {
-      const request = { input: q };
-      serviceRef.current.getPlacePredictions(request, (preds, status) => {
-        if (status === window.google.maps.places.PlacesServiceStatus.OK && Array.isArray(preds)) {
-          setSuggestions(preds.slice(0, 5));
+      const fetchSuggestions = async () => {
+        try {
+          if (!sessionTokenRef.current && autocompleteRef.current?.AutocompleteSessionToken) {
+            sessionTokenRef.current = new autocompleteRef.current.AutocompleteSessionToken();
+          }
+
+          const { suggestions: nextSuggestions = [] } =
+            await autocompleteRef.current.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+              input: q,
+              language: 'en',
+              region: 'in',
+              sessionToken: sessionTokenRef.current,
+            });
+
+          if (requestId !== requestSequenceRef.current) {
+            return;
+          }
+
+          setSuggestions(
+            nextSuggestions
+              .map((suggestion, index) => normalizeAutocompleteSuggestion(suggestion, index))
+              .filter(Boolean)
+              .slice(0, 5)
+          );
           setActiveIndex(-1);
-        } else {
+        } catch (error) {
+          if (requestId !== requestSequenceRef.current) {
+            return;
+          }
+
           setSuggestions([]);
           setActiveIndex(-1);
         }
-      });
+      };
+
+      fetchSuggestions();
     }, 250);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [searchLocation, isLoaded, hasSearched]);
+  }, [autocompleteReady, hasSearched, isLoaded, searchLocation]);
 
   // Hide suggestions on outside click
   useEffect(() => {
@@ -186,6 +269,7 @@ export default function SearchResults() {
     setSuggestions([]);
     setActiveIndex(-1);
     setHasSearched(true);
+    refreshAutocompleteSession();
     inputRef.current?.blur();
   };
 
@@ -218,6 +302,7 @@ export default function SearchResults() {
       setSuggestions([]);
       setActiveIndex(-1);
       setHasSearched(true);
+      refreshAutocompleteSession();
       inputRef.current?.blur();
     }
   };
@@ -271,6 +356,7 @@ export default function SearchResults() {
               setSuggestions([]);
               setActiveIndex(-1);
               setHasSearched(true);
+              refreshAutocompleteSession();
               inputRef.current?.blur();
             }}
             autoComplete="off"

@@ -21,13 +21,13 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { GoogleMap, LoadScriptNext, MarkerF } from '@react-google-maps/api';
 import { Card, CardContent } from '../components/card';
 import Navbar from '../components/Navbar'
 import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
 import { FaWhatsapp } from 'react-icons/fa';
+import YouTubeLiteEmbed from '../components/YouTubeLiteEmbed';
 import {
   trackFileDownload,
   trackGenerateLead,
@@ -48,7 +48,38 @@ const VISIT_TIME_SLOTS = Array.from({ length: 33 }, (_, index) => {
 });
 
 const PICKUP_MAP_DEFAULT_CENTER = { lat: 16.553755, lng: 80.570832 };
+const KALPAVRUKSHA_PROPERTY_POSITION = { lat: 16.60108128415813, lng: 80.59797237418302 };
 const PICKUP_MAP_CONTAINER_STYLE = { width: '100%', height: '220px' };
+const KALPAVRUKSHA_TRAVEL_DESTINATIONS = [
+  {
+    id: 'airport',
+    label: 'Gannavaram Airport',
+    address: 'Vijayawada International Airport, Gannavaram, Andhra Pradesh, India',
+    emoji: '✈️',
+    fallbackLabel: 'Approx. 22 mins drive',
+    pinOptions: {
+      background: '#d97706',
+      borderColor: '#fde68a',
+      glyph: 'A',
+      glyphColor: '#ffffff',
+      scale: 1.05,
+    },
+  },
+  {
+    id: 'railway-station',
+    label: 'Vijayawada Railway Station',
+    address: 'Vijayawada Junction railway station, Vijayawada, Andhra Pradesh, India',
+    emoji: '🚆',
+    fallbackLabel: 'Approx. 15 mins drive',
+    pinOptions: {
+      background: '#2563eb',
+      borderColor: '#bfdbfe',
+      glyph: 'R',
+      glyphColor: '#ffffff',
+      scale: 1.05,
+    },
+  },
+];
 const DOWNLOAD_ASSET_CONFIG = {
   layout: {
     url: '/Kalpavruksha Master Layout.pdf',
@@ -69,6 +100,8 @@ const DOWNLOAD_ASSET_CONFIG = {
 };
 
 const ReviewsSection = React.lazy(() => import('../components/ReviewProject'));
+const PickupLocationMap = React.lazy(() => import('../components/PickupLocationMap'));
+const TravelTimesLocationMap = React.lazy(() => import('../components/TravelTimesLocationMap'));
 const DEFERRED_SECTION_STYLE = {
   contentVisibility: 'auto',
   containIntrinsicSize: '1px 960px',
@@ -531,7 +564,7 @@ const KalpavrukshaPage = () => {
       image: '/kalpabg2.webp',
       alt: 'Kalpavruksha plotted community overview',
       imagePosition: 'center center',
-      imageScale: 1,
+      imageScale: 1.03,
       facts: [
         'CRDA Approved',
         '12 mins from Amaravati',
@@ -549,10 +582,10 @@ const KalpavrukshaPage = () => {
       title: '24x7 gated entry and perimeter security',
       description:
         "8' compound wall with 2' solar fencing, 24x7 gated entry with CCTV, and solar lighting.",
-      image: demoImg[0].image,
+      image: '/entry-hero.webp',
       alt: demoImg[0].alt,
-      imagePosition: 'center 18%',
-      imageScale: 1.12,
+      imagePosition: 'center center',
+      imageScale: 1.03,
       facts: [
         '24x7 gated entry',
         'CCTV',
@@ -570,10 +603,10 @@ const KalpavrukshaPage = () => {
       title: 'Clubhouse amenities for everyday living',
       description:
         'Infinity pool, yoga room, gym, party lawn, convention hall, private theatre, and guest rooms.',
-      image: demoImg[1].image,
+      image: '/club-house-hero.webp',
       alt: demoImg[1].alt,
-      imagePosition: 'center 15%',
-      imageScale: 1.22,
+      imagePosition: 'center center',
+      imageScale: 1.03,
       facts: [
         'Infinity pool',
         'Yoga room & gym',
@@ -591,10 +624,10 @@ const KalpavrukshaPage = () => {
       title: 'Landscape planning within the layout',
       description:
         'Central rivulet garden beside the creek, landscaped arrival court, and edge gardens.',
-      image: demoImg[2].image,
+      image: '/contour-garden-hero.webp',
       alt: demoImg[2].alt,
-      imagePosition: 'center 14%',
-      imageScale: 1.24,
+      imagePosition: 'center center',
+      imageScale: 1.03,
       facts: [
         'Rivulet garden',
         'Arrival court',
@@ -612,10 +645,10 @@ const KalpavrukshaPage = () => {
       title: 'Wide internal roads and regional access',
       description:
         "60', 40', and 33' wide internal CC roads, walkways, avenue plantations, and stormwater drains.",
-      image: demoImg[3].image,
+      image: '/arrival-court-hero.webp',
       alt: demoImg[3].alt,
-      imagePosition: 'center 12%',
-      imageScale: 1.24,
+      imagePosition: 'center center',
+      imageScale: 1.03,
       facts: [
         'Near Greenfield Highway',
         '7.5 km from Vijayawada',
@@ -633,10 +666,10 @@ const KalpavrukshaPage = () => {
       title: 'Water and utility systems below the surface',
       description:
         'Overhead tank with underground supply, STP-connected drainage, and drip irrigation.',
-      image: demoImg[4].image,
+      image: '/lotus-pond-hero.webp',
       alt: demoImg[4].alt,
-      imagePosition: 'center 10%',
-      imageScale: 1.26,
+      imagePosition: 'center center',
+      imageScale: 1.03,
       facts: [
         'Underground supply',
         'STP drainage',
@@ -707,8 +740,7 @@ const KalpavrukshaPage = () => {
     }
 
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const mobileQuery = window.matchMedia('(max-width: 767px)');
-    if (reducedMotionQuery.matches || mobileQuery.matches) {
+    if (reducedMotionQuery.matches) {
       return undefined;
     }
 
@@ -727,7 +759,7 @@ const KalpavrukshaPage = () => {
     }, 3000);
 
     return () => window.clearInterval(intervalId);
-  }, [activeHeroSlideIndex, heroSlides.length]);
+  }, [heroSlides.length]);
   useEffect(() => () => {
     if (typeof window !== 'undefined' && heroSlideTransitionTimeoutRef.current) {
       window.clearTimeout(heroSlideTransitionTimeoutRef.current);
@@ -987,6 +1019,7 @@ const KalpavrukshaPage = () => {
           content={projectKeywords}
         />
 
+        <link rel="preload" as="image" href="/kalpabg2.webp" type="image/webp" fetchPriority="high" />
         <link rel="canonical" href={projectCanonicalUrl} />
         <meta name="robots" content="index,follow" />
         <meta property="og:type" content="website" />
@@ -1130,30 +1163,23 @@ const KalpavrukshaPage = () => {
                         Map failed to load. Enter the pickup address manually below.
                       </div>
                     ) : (
-                      <LoadScriptNext
-                        id={MAPS_LOADER_ID}
-                        googleMapsApiKey={pickupMapApiKey}
-                        libraries={MAP_LIBRARIES}
-                        preventGoogleFontsLoading
-                        onError={() => setPickupMapLoadError(true)}
-                        loadingElement={<div className="p-3 text-xs text-gray-600">Loading map...</div>}
-                      >
-                        <GoogleMap
-                          mapContainerStyle={PICKUP_MAP_CONTAINER_STYLE}
+                      <Suspense fallback={<div className="p-3 text-xs text-gray-600">Loading map...</div>}>
+                        <PickupLocationMap
+                          apiKey={pickupMapApiKey}
                           center={pickupMapCenter}
-                          zoom={14}
-                          onClick={onPickupMapClick}
-                          options={{ streetViewControl: false, mapTypeControl: false, fullscreenControl: false }}
-                        >
-                          {form.pickupLat && form.pickupLng && (
-                            <MarkerF
-                              position={{ lat: Number(form.pickupLat), lng: Number(form.pickupLng) }}
-                              draggable
-                              onDragEnd={onPickupMarkerDragEnd}
-                            />
-                          )}
-                        </GoogleMap>
-                      </LoadScriptNext>
+                          containerStyle={PICKUP_MAP_CONTAINER_STYLE}
+                          libraries={MAP_LIBRARIES}
+                          mapLoaderId={MAPS_LOADER_ID}
+                          onLoadError={() => setPickupMapLoadError(true)}
+                          onMapClick={onPickupMapClick}
+                          onMarkerDragEnd={onPickupMarkerDragEnd}
+                          selectedPosition={
+                            form.pickupLat && form.pickupLng
+                              ? { lat: Number(form.pickupLat), lng: Number(form.pickupLng) }
+                              : null
+                          }
+                        />
+                      </Suspense>
                     )}
                   </div>
                 )}
@@ -1253,46 +1279,57 @@ const KalpavrukshaPage = () => {
       <Navbar />
       <div className="min-h-screen bg-white overflow-hidden">
         {/* Section 1: Hero Section */}
-        <section ref={heroSectionRef} className="relative overflow-hidden bg-[#faf8f3] pt-4 text-slate-900 sm:pt-6 lg:h-[calc(100vh-64px)] lg:pt-4">
+        <section ref={heroSectionRef} className="relative overflow-hidden bg-[#faf8f3] pt-2 text-slate-900 sm:pt-4 lg:min-h-[calc(100vh-64px)] lg:pt-4">
           <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#fffefb] to-transparent"></div>
-          <div className="relative z-10 mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-6 lg:flex lg:h-full lg:flex-col lg:px-8 lg:py-4">
+          <div className="relative z-10 mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-5 lg:flex lg:min-h-[calc(100vh-96px)] lg:flex-col lg:px-8 lg:py-4">
             <div
-              className="grid items-stretch gap-4 sm:gap-5 lg:flex-1 lg:grid-cols-2 lg:gap-8"
+              className="grid gap-4 sm:gap-5 lg:flex-1 lg:grid-cols-[1.02fr_0.98fr] lg:items-stretch lg:gap-6"
               onTouchStart={handleHeroTouchStart}
               onTouchEnd={handleHeroTouchEnd}
+              style={{ touchAction: 'pan-y' }}
             >
-              <div className="order-3 flex flex-col rounded-[28px] border border-[#e8e1d0] bg-white px-4 py-5 shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:rounded-[32px] sm:px-7 sm:py-7 md:order-2 lg:order-1 lg:h-full lg:min-h-0 lg:px-8 lg:py-8">
-                <div aria-live="polite" className="flex flex-1 flex-col">
+              <div className="order-2 relative overflow-hidden flex flex-col rounded-[28px] border border-[#e7dfcf] bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.08),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(234,179,8,0.08),_transparent_30%),linear-gradient(180deg,_#fffdf8_0%,_#f8f3e8_100%)] px-4 py-5 shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:rounded-[32px] sm:px-6 sm:py-6 lg:order-1 lg:h-full lg:min-h-0 lg:px-8 lg:py-8">
+                <div className="pointer-events-none absolute -left-10 top-10 h-28 w-28 rounded-full bg-emerald-200/25 blur-3xl"></div>
+                <div className="pointer-events-none absolute bottom-0 right-0 h-36 w-36 rounded-full bg-amber-100/40 blur-3xl"></div>
+                <div aria-live="polite" className="relative z-10 flex flex-1 flex-col">
                   <article
                     key={activeHeroSlide.id}
                     className={`flex flex-1 flex-col transition-all duration-500 ease-in-out ${
                       isHeroSlideVisible ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
                     }`}
                   >
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-emerald-700 sm:text-[11px] sm:tracking-[0.32em]">
-                        {activeHeroSlide.eyebrow}
+                    <div className="max-w-[36rem]">
+                      <p className="inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-white/80 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-emerald-800 shadow-[0_10px_24px_rgba(16,185,129,0.08)] backdrop-blur sm:text-[11px]">
+                        <span className="h-2 w-2 rounded-full bg-emerald-600 shadow-[0_0_0_4px_rgba(16,185,129,0.14)]"></span>
+                        <span>{activeHeroSlide.eyebrow}</span>
                       </p>
-                      <h1 className="mt-3 max-w-[12ch] text-[2.05rem] font-semibold leading-[1.02] tracking-[-0.04em] text-slate-900 sm:mt-4 sm:text-[2.45rem] md:text-[2.8rem] lg:text-[3.35rem]">
+                      <h1 className="mt-5 max-w-[12.8ch] text-[2rem] font-semibold leading-[0.96] tracking-[-0.05em] text-slate-900 sm:text-[2.55rem] md:text-[2.9rem] lg:text-[3.2rem]">
                         {activeHeroSlide.title}
                       </h1>
-                      <p className="mt-4 max-w-[33rem] text-[15px] leading-7 text-slate-600 sm:mt-5 sm:text-base sm:leading-7 lg:text-lg lg:leading-8">
+                      <p className="mt-5 max-w-[33rem] text-[15.5px] leading-7 text-slate-600 sm:text-base sm:leading-8 lg:text-[1.05rem] lg:leading-8">
                         {activeHeroSlide.description}
                       </p>
+                      <div className="mt-6 h-px w-full max-w-[34rem] bg-gradient-to-r from-[#dccb9e] via-[#ece3cd] to-transparent"></div>
                     </div>
 
-                    <div className="mt-6 grid max-w-[33rem] grid-cols-1 gap-2.5 min-[480px]:grid-cols-2 lg:grid-cols-3">
+                    <div className="mt-5 grid max-w-[34rem] grid-cols-1 gap-2.5 min-[480px]:grid-cols-3">
                       {activeHeroSlide.facts.map((fact) => (
                         <div
                           key={fact}
-                          className="rounded-2xl border border-[#ece3cf] bg-[#fcfaf4] px-4 py-3 text-sm font-semibold text-slate-700"
+                          className="group relative overflow-hidden rounded-[18px] border border-[#e6dcc7] bg-white/88 px-3.5 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.045)] backdrop-blur-sm transition-transform duration-300"
                         >
-                          {fact}
+                          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-300/80 to-transparent"></div>
+                          <div className="flex items-start gap-2.5">
+                            <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.12)]"></span>
+                            <span className="text-[0.95rem] font-semibold leading-5 text-slate-700">
+                              {fact}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
 
-                      <div className="mt-7 pt-1 lg:mt-auto lg:pt-8">
+                      <div className="mt-8 pt-1 lg:mt-auto lg:pt-8">
                         <div className="flex flex-col gap-3 sm:flex-row">
                         <button
                           type="button"
@@ -1319,7 +1356,7 @@ const KalpavrukshaPage = () => {
               </div>
 
               <div className="order-1 overflow-hidden rounded-[28px] border border-[#e8e1d0] bg-white shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:rounded-[32px] lg:order-2 lg:h-full lg:min-h-0">
-                <div className="relative h-[16.5rem] sm:h-[22rem] md:h-[26rem] lg:h-full">
+                <div className="relative aspect-[16/9] overflow-hidden sm:h-[17rem] sm:aspect-auto md:h-[22rem] lg:h-full">
                   <div
                     className={`h-full w-full transition-all duration-500 ease-in-out ${
                       isHeroSlideVisible ? 'scale-100 opacity-100' : 'scale-[1.02] opacity-0'
@@ -1332,6 +1369,7 @@ const KalpavrukshaPage = () => {
                       className="h-full w-full object-cover transition-transform duration-700 ease-out"
                       style={{
                         objectPosition: activeHeroSlide.imagePosition || 'center center',
+                        transformOrigin: 'center center',
                         transform: `scale(${activeHeroSlide.imageScale || 1})`,
                       }}
                       fetchPriority={activeHeroSlideIndex === 0 ? 'high' : 'auto'}
@@ -1340,34 +1378,43 @@ const KalpavrukshaPage = () => {
                     />
                   </div>
                 </div>
-              </div>
-
-              <div className="order-2 flex items-center justify-between gap-3 rounded-[24px] border border-[#e8e1d0] bg-white px-4 py-3 shadow-[0_16px_36px_rgba(15,23,42,0.06)] md:hidden">
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
-                    {String(activeHeroSlideIndex + 1).padStart(2, '0')} / {String(heroSlides.length).padStart(2, '0')}
-                  </p>
-                  <p className="mt-1 truncate text-sm font-semibold text-slate-900">
-                    {activeHeroSlide.navLabel}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={goToPreviousHeroSlide}
-                    aria-label="Show previous slide"
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#e8e1d0] bg-[#fcfaf4] text-slate-700 transition-all duration-300 hover:border-emerald-200 hover:text-emerald-700"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={goToNextHeroSlide}
-                    aria-label="Show next slide"
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#e8e1d0] bg-[#fcfaf4] text-slate-700 transition-all duration-300 hover:border-emerald-200 hover:text-emerald-700"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
+                <div className="min-h-[4.5rem] border-t border-[#eee4cf] bg-[linear-gradient(180deg,_#fffdf8_0%,_#faf5e9_100%)] px-4 py-3.5 md:hidden">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      {heroSlides.map((slide, index) => {
+                        const isActive = index === activeHeroSlideIndex;
+                        return (
+                          <button
+                            key={slide.id}
+                            type="button"
+                            aria-label={`Show ${slide.navLabel} slide`}
+                            onClick={() => changeHeroSlide(index)}
+                            className={`h-2.5 rounded-full transition-all duration-300 ${
+                              isActive ? 'w-7 bg-emerald-600' : 'w-2.5 bg-[#d8ccb0] hover:bg-[#bfae82]'
+                            }`}
+                          />
+                        );
+                      })}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={goToPreviousHeroSlide}
+                        aria-label="Show previous slide"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#e6dcc6] bg-white text-slate-700 shadow-[0_8px_20px_rgba(15,23,42,0.06)] transition-all duration-300 hover:border-emerald-200 hover:text-emerald-700"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={goToNextHeroSlide}
+                        aria-label="Show next slide"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#e6dcc6] bg-white text-slate-700 shadow-[0_8px_20px_rgba(15,23,42,0.06)] transition-all duration-300 hover:border-emerald-200 hover:text-emerald-700"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1417,20 +1464,12 @@ const KalpavrukshaPage = () => {
             </div>
 
             <div className="relative aspect-video bg-gradient-to-br from-emerald-900 to-teal-900 rounded-2xl overflow-hidden shadow-2xl">
-              <iframe
-                className="w-full aspect-video"
-                src="https://www.youtube.com/embed/mt-G29uakpQ?autoplay=1&mute=1&loop=1&playlist=mt-G29uakpQ"
-                title="YouTube video player"
-                frameBorder="0"
-                loading='lazy'
-                allow="autoplay; fullscreen"
-              ></iframe>
-              <div className="absolute bottom-4 left-4 right-4 hidden md:block">
-                <div className="bg-black/50 backdrop-blur-sm rounded-lg p-4">
-                  <p className="text-white font-medium">Project Walkthrough Video</p>
-                  <p className="text-gray-300 text-sm">Experience Kalpavruksha before you visit</p>
-                </div>
-              </div>
+              <YouTubeLiteEmbed
+                videoId="mt-G29uakpQ"
+                title="Project Walkthrough Video"
+                description="Experience Kalpavruksha before you visit"
+                posterSrc="/kalpabg2.webp"
+              />
             </div>
           </div>
         </section>
@@ -1651,7 +1690,7 @@ const KalpavrukshaPage = () => {
             </div>
 
             <div className="mt-14 overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.08)]">
-              <div className="grid grid-cols-1 lg:grid-cols-[0.92fr,1.08fr]">
+              <div className="grid grid-cols-1 lg:grid-cols-[0.86fr,1.14fr]">
                 <div className="border-b border-slate-200 p-6 md:p-8 lg:border-b-0 lg:border-r">
                   <div className="flex items-start gap-4">
                     <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
@@ -1697,21 +1736,30 @@ const KalpavrukshaPage = () => {
                 </div>
 
                 <div className="bg-slate-100">
-                  <div className="h-full min-h-[340px] lg:min-h-[100%]">
-                    <iframe
-                      title="Kalpavruksha location map"
-                      src={projectMapEmbedUrl}
-                      className="h-full min-h-[340px] w-full"
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                    />
+                  <div className="h-full min-h-[380px] lg:min-h-[100%]">
+                    <Suspense
+                      fallback={
+                        <div className="flex h-full min-h-[380px] items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.08),_transparent_45%),linear-gradient(180deg,_#f8fafc_0%,_#eef2f7_100%)]">
+                          <div className="rounded-3xl border border-slate-200 bg-white/90 px-5 py-4 text-sm font-medium text-slate-600 shadow-sm backdrop-blur">
+                            Loading live map...
+                          </div>
+                        </div>
+                      }
+                    >
+                      <TravelTimesLocationMap
+                        propertyPosition={KALPAVRUKSHA_PROPERTY_POSITION}
+                        propertyLabel="Kalpavruksha"
+                        destinations={KALPAVRUKSHA_TRAVEL_DESTINATIONS}
+                        fallbackEmbedUrl={projectMapEmbedUrl}
+                      />
+                    </Suspense>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="mt-8 rounded-[28px] border border-slate-200 bg-white p-6 md:p-8 shadow-[0_24px_60px_rgba(15,23,42,0.06)]">
-              <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+              <div>
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-700">
                     Location Highlights
@@ -1720,16 +1768,13 @@ const KalpavrukshaPage = () => {
                     Key distance markers from the project
                   </h3>
                 </div>
-                <p className="max-w-xl text-sm leading-relaxed text-slate-600">
-                  These markers help buyers quickly understand how Kalpavruksha connects to Vijayawada, major road links, and Amaravati-side destinations.
-                </p>
               </div>
 
               <div className="mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {locationHighlights.map((item) => (
                   <div
                     key={item.title}
-                    className="flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-white hover:shadow-md"
+                    className="flex h-full items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-white hover:shadow-md"
                   >
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-emerald-700 ring-1 ring-slate-200">
                       {item.icon}

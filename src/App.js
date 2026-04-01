@@ -1,27 +1,35 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import SearchResults from './pages/SearchProperties';  // make sure this exists
-import Favourites from './pages/Favourites';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import Otp from './pages/Otp';
+import React, { Suspense, lazy, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext'
-import ForgotPassword from './pages/ForgetPassword';
-import ResetPassword from './pages/ResetPassword';
 import './index.css'
 import MainLayout from './layouts/MainLayout';
 import PlainLayout from './layouts/PlainLayout';
-import PropertyDetails from './pages/Propertydetails';
-import Compare from './pages/Compare';
-import ProfilePage from './pages/ProfilePage';
-import Home from './pages/Home';
-import KalpavrukshaPage from './pages/Kalpavruksha';
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import ThankYouPage from './pages/ThankYouPage';
-import AdminPanel from './pages/AdminPanel';
-import About from './pages/About';
-import Contact from './pages/Contact';
 import { trackPageView } from './utils/analytics';
+
+const SearchResults = lazy(() => import('./pages/SearchProperties'));
+const Favourites = lazy(() => import('./pages/Favourites'));
+const Login = lazy(() => import('./pages/Login'));
+const Signup = lazy(() => import('./pages/Signup'));
+const Otp = lazy(() => import('./pages/Otp'));
+const ForgotPassword = lazy(() => import('./pages/ForgetPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const PropertyDetails = lazy(() => import('./pages/Propertydetails'));
+const Compare = lazy(() => import('./pages/Compare'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const Home = lazy(() => import('./pages/Home'));
+const KalpavrukshaPage = lazy(() => import('./pages/Kalpavruksha'));
+const ThankYouPage = lazy(() => import('./pages/ThankYouPage'));
+const AdminPanel = lazy(() => import('./pages/AdminPanel'));
+const About = lazy(() => import('./pages/About'));
+const Contact = lazy(() => import('./pages/Contact'));
+
+function RouteFallback() {
+  return <div className="min-h-screen bg-white" aria-hidden="true" />;
+}
+
+function withSuspense(element) {
+  return <Suspense fallback={<RouteFallback />}>{element}</Suspense>;
+}
 
 function App() {
   function ScrollToTop() {
@@ -49,35 +57,35 @@ function App() {
           {/* Routes WITH Navbar */}
           <Route element={<MainLayout />}>
             {/* Search page: Buy a Plot */}
-            <Route path="/searchProperties" element={<SearchResults />} />
+            <Route path="/searchProperties" element={withSuspense(<SearchResults />)} />
             {/* You can stub out the other pages for now */}
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
+            <Route path="/" element={withSuspense(<Home />)} />
+            <Route path="/about" element={withSuspense(<About />)} />
+            <Route path="/contact" element={withSuspense(<Contact />)} />
             <Route path="/enquire" element={<div>Enquire Page</div>} />
-            <Route path="/favourites" element={<Favourites />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/otp" element={<Otp />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/favourites" element={withSuspense(<Favourites />)} />
+            <Route path="/login" element={withSuspense(<Login />)} />
+            <Route path="/signup" element={withSuspense(<Signup />)} />
+            <Route path="/otp" element={withSuspense(<Otp />)} />
+            <Route path="/forgot-password" element={withSuspense(<ForgotPassword />)} />
+            <Route path="/reset-password" element={withSuspense(<ResetPassword />)} />
           </Route>
           {/* Routes WITHOUT Navbar */}
           <Route element={<PlainLayout />}>
-            <Route path="/PropertyDetails" element={<PropertyDetails />} />
-            <Route path="/property/:mlsNumber" element={<PropertyDetails />} />
-            <Route path="/property/:mlsNumber/:slug" element={<PropertyDetails />} />
+            <Route path="/PropertyDetails" element={withSuspense(<PropertyDetails />)} />
+            <Route path="/property/:mlsNumber" element={withSuspense(<PropertyDetails />)} />
+            <Route path="/property/:mlsNumber/:slug" element={withSuspense(<PropertyDetails />)} />
             {/* You can add property detail page here too */}
           </Route>
-          <Route path="/favourites" element={<Favourites />} />
-          <Route path="/compare" element={<Compare />} />
-          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/favourites" element={withSuspense(<Favourites />)} />
+          <Route path="/compare" element={withSuspense(<Compare />)} />
+          <Route path="/profile" element={withSuspense(<ProfilePage />)} />
           {/* Kalpavruksha page */}
-          <Route path="/kalpavruksha" element={<KalpavrukshaPage />} />
+          <Route path="/kalpavruksha" element={withSuspense(<KalpavrukshaPage />)} />
           <Route path="/projects" element={<Navigate to="/kalpavruksha/" replace />} />
           {/* Thankyou page */}
-          <Route path="/thank-you" element={<ThankYouPage />} />
-          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/thank-you" element={withSuspense(<ThankYouPage />)} />
+          <Route path="/admin" element={withSuspense(<AdminPanel />)} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

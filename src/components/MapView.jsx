@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
-import { GoogleMap, MarkerF, InfoWindowF } from '@react-google-maps/api';
+import { GoogleMap, InfoWindowF } from '@react-google-maps/api';
 import { useNavigate } from 'react-router-dom';
+import AdvancedMarker from './AdvancedMarker';
+import { GOOGLE_MAP_ID } from '../config/googleMaps';
 import { buildPropertyPath } from '../utils/propertySeo';
 
 export default function MapView({
@@ -129,6 +131,7 @@ export default function MapView({
           mapContainerClassName="map-wrapper"
           center={center}
           zoom={zoom}
+          options={{ mapId: GOOGLE_MAP_ID }}
           onLoad={map => {
             mapRef.current = map;
 
@@ -186,7 +189,7 @@ export default function MapView({
           }}
         >
           {withinRadius.map(p => (
-            <MarkerF
+            <AdvancedMarker
               key={p.mlsNumber}
               position={{ lat: p.lat, lng: p.lng }}
               title={p.name}

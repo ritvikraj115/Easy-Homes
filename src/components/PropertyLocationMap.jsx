@@ -1,7 +1,8 @@
 // client/src/components/PropertyLocationMap.jsx
 import React, { useState, useEffect } from 'react';
-import { GoogleMap, MarkerF, useJsApiLoader } from '@react-google-maps/api';
-import { MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
+import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
+import AdvancedMarker from './AdvancedMarker';
+import { GOOGLE_MAP_ID, MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
 
 
 export default function PropertyLocationMap({ address }) {
@@ -9,7 +10,8 @@ export default function PropertyLocationMap({ address }) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: MAPS_LOADER_ID,
     googleMapsApiKey: process.env.REACT_APP_MAP_KEY,
-    libraries: MAP_LIBRARIES
+    libraries: MAP_LIBRARIES,
+    mapIds: [GOOGLE_MAP_ID],
   });
 
   // Geocode the address once it (or API) loads
@@ -37,9 +39,9 @@ export default function PropertyLocationMap({ address }) {
         mapContainerStyle={{ width: '100%', height: '100%' }}
         center={center}
         zoom={15}
-        options={{ streetViewControl: false, mapTypeControl: false }}
+        options={{ streetViewControl: false, mapTypeControl: false, mapId: GOOGLE_MAP_ID }}
       >
-        <MarkerF position={center} />
+        <AdvancedMarker position={center} title={address} />
       </GoogleMap>
     </div>
   );

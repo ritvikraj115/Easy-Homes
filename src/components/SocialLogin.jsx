@@ -1,6 +1,6 @@
 // client/src/components/SocialLogin.jsx
 import React, { memo } from 'react';
-import { useAuth0 } from '@auth0/auth0-react';
+import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
 import googleImg from '../assets/google.png';
 import facebookImg from '../assets/facebook.png';
 import appleImg from '../assets/apple.png';
@@ -9,7 +9,7 @@ import axios from 'axios';
 import { useAuthDispatch, loginSuccess } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-function SocialLogin({ onSuccess }) {
+function SocialLoginContent({ onSuccess }) {
   const { loginWithPopup, getIdTokenClaims } = useAuth0();
   const dispatch = useAuthDispatch();
   const navigate = useNavigate();
@@ -90,6 +90,29 @@ function SocialLogin({ onSuccess }) {
         </button>
       </div>
     </div>
+  );
+}
+
+function SocialLogin(props) {
+  const domain = process.env.REACT_APP_AUTH0_DOMAIN;
+  const clientId = process.env.REACT_APP_AUTH0_CLIENT_ID;
+
+  if (!domain || !clientId) {
+    return null;
+  }
+
+  return (
+    <Auth0Provider
+      domain={domain}
+      clientId={clientId}
+      authorizationParams={{
+        redirect_uri: window.location.origin,
+        scope: process.env.REACT_APP_AUTH0_SCOPE,
+        audience: process.env.REACT_APP_AUTH0_AUDIENCE,
+      }}
+    >
+      <SocialLoginContent {...props} />
+    </Auth0Provider>
   );
 }
 

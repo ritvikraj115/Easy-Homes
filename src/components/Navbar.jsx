@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import '../assets/Navbar.css';
-import logo from '../assets/logo.png';
 import {
   useAuthState,
   useAuthDispatch,
@@ -51,14 +50,12 @@ export default function Navbar() {
       <div className="navbar__container">
         <Link to="/" className="navbar__logo">
           <img
-            src="/logo.png"
-            srcSet="/logo.png 1x"
-            width="240"
-            height="96"
+            src="/logo-nav.png"
+            width="900"
+            height="149"
             alt="Easy Homes"
             loading="eager"
             decoding="async"
-            fetchPriority="high"
           />
         </Link>
 
