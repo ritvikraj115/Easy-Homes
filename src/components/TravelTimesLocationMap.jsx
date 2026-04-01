@@ -155,9 +155,9 @@ export default function TravelTimesLocationMap({
     resolvedDestinations.forEach((destination) => bounds.extend(destination.position));
     const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768;
     mapRef.current.fitBounds(bounds, {
-      top: 40,
+      top: isDesktop ? 40 : 56,
       right: 40,
-      bottom: 40,
+      bottom: isDesktop ? 40 : 170,
       left: isDesktop ? 280 : 40,
     });
 
@@ -255,35 +255,35 @@ export default function TravelTimesLocationMap({
             ))}
           </GoogleMap>
 
-          <div className="pointer-events-none absolute inset-x-3 top-3 z-10 md:bottom-4 md:left-4 md:right-auto md:top-auto md:w-[18rem]">
-            <div className="rounded-[24px] border border-white/75 bg-white/90 p-3.5 shadow-[0_18px_45px_rgba(15,23,42,0.16)] backdrop-blur-xl">
+          <div className="pointer-events-none absolute bottom-3 left-3 z-10 w-[min(17rem,calc(100%-5.5rem))] md:bottom-4 md:left-4 md:right-auto md:top-auto md:w-[18rem]">
+            <div className="rounded-[20px] border border-white/80 bg-white/88 p-2.5 shadow-[0_18px_45px_rgba(15,23,42,0.16)] backdrop-blur-xl md:rounded-[24px] md:bg-white/92 md:p-3.5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-700">
                 Live Drive Time
               </p>
-              <h3 className="mt-2 text-[1.15rem] font-bold text-slate-900">
+              <h3 className="mt-1.5 text-[1.02rem] font-bold text-slate-900 md:mt-2 md:text-[1.15rem]">
                 From {propertyLabel}
               </h3>
-              <p className="mt-1 text-[13px] leading-relaxed text-slate-500">
+              <p className="mt-1 hidden text-[13px] leading-relaxed text-slate-500 md:block">
                 Current road-time estimate based on driving conditions.
               </p>
 
-              <div className="mt-3.5 space-y-2.5">
+              <div className="mt-2 space-y-1.5 md:mt-3.5 md:space-y-2.5">
                 {destinations.map((destination) => {
                   const travelTime = travelTimes[destination.id];
                   return (
                     <div
                       key={destination.id}
-                      className="rounded-2xl border border-slate-200/80 bg-slate-50/92 px-3.5 py-3"
+                      className="rounded-[16px] border border-slate-200/80 bg-white/92 px-2.5 py-2 md:rounded-2xl md:bg-slate-50/92 md:px-3.5 md:py-3"
                     >
-                      <div className="flex items-start gap-2.5">
-                        <span className="mt-0.5 text-base" aria-hidden="true">
+                      <div className="flex items-start gap-2 md:gap-2.5">
+                        <span className="mt-0.5 text-[14px] md:text-base" aria-hidden="true">
                           {destination.emoji}
                         </span>
                         <div className="min-w-0">
-                          <p className="text-[0.95rem] font-semibold text-slate-900">
+                          <p className="text-[0.84rem] font-semibold leading-5 text-slate-900 md:text-[0.95rem]">
                             {destination.label}
                           </p>
-                          <p className="mt-0.5 text-sm text-slate-600">
+                          <p className="mt-0.5 text-[12px] leading-4 text-slate-600 md:text-sm">
                             {travelTime?.duration || 'Calculating drive time...'}
                             {travelTime?.distance ? ` - ${travelTime.distance}` : ''}
                           </p>
@@ -294,13 +294,13 @@ export default function TravelTimesLocationMap({
                 })}
               </div>
 
-              <p className="mt-3 text-xs text-slate-500">
+              <p className="mt-2 text-[11px] text-slate-500 md:mt-3 md:text-xs">
                 {travelError || (lastUpdated ? `Updated at ${formatUpdatedTime(lastUpdated)}` : 'Updating live drive times...')}
               </p>
             </div>
           </div>
 
-          <div className="pointer-events-none absolute right-3 top-3 z-10 md:right-4 md:top-4">
+          <div className="pointer-events-none absolute right-3 top-3 z-10 hidden md:block md:right-4 md:top-4">
             <div className="rounded-2xl border border-white/75 bg-white/92 px-3 py-3 shadow-[0_14px_35px_rgba(15,23,42,0.14)] backdrop-blur-xl">
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Map Legend
