@@ -3,12 +3,11 @@ import { GoogleMap, LoadScriptNext } from '@react-google-maps/api';
 import AdvancedMarker from './AdvancedMarker';
 import { GOOGLE_MAP_ID } from '../config/googleMaps';
 
-const PICKUP_MAP_LIBRARIES = ['marker'];
-
 function PickupLocationMap({
   apiKey,
   center,
   containerStyle,
+  libraries,
   mapLoaderId,
   onLoadError,
   onMapClick,
@@ -19,7 +18,7 @@ function PickupLocationMap({
     <LoadScriptNext
       id={mapLoaderId}
       googleMapsApiKey={apiKey}
-      libraries={PICKUP_MAP_LIBRARIES}
+      libraries={libraries}
       mapIds={[GOOGLE_MAP_ID]}
       preventGoogleFontsLoading
       onError={onLoadError}

@@ -25,7 +25,7 @@ import { Card, CardContent } from '../components/card';
 import Navbar from '../components/Navbar'
 import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../api';
-import { MAPS_LOADER_ID } from '../config/googleMaps';
+import { MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
 import { FaWhatsapp } from 'react-icons/fa';
 import YouTubeLiteEmbed from '../components/YouTubeLiteEmbed';
 import {
@@ -1216,6 +1216,7 @@ const KalpavrukshaPage = () => {
                           apiKey={pickupMapApiKey}
                           center={pickupMapCenter}
                           containerStyle={PICKUP_MAP_CONTAINER_STYLE}
+                          libraries={MAP_LIBRARIES}
                           mapLoaderId={MAPS_LOADER_ID}
                           onLoadError={() => setPickupMapLoadError(true)}
                           onMapClick={onPickupMapClick}
