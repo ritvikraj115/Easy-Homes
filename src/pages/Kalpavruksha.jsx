@@ -111,6 +111,18 @@ const HERO_IMAGE_SIZES = '(max-width: 1023px) 100vw, 50vw';
 const HERO_IMAGE_SRC_SET = '/kalpabg2-640.webp 640w, /kalpabg2-960.webp 960w';
 const SECURITY_HERO_IMAGE_SRC_SET = '/entry-hero-640.webp 640w, /entry-hero-960.webp 960w';
 const WALKTHROUGH_POSTER_SIZES = '(max-width: 768px) 100vw, 960px';
+const DEFAULT_SITE_VISIT_FORM = {
+  name: '',
+  phone: '',
+  email: '',
+  preferredDate: '',
+  preferredTime: '',
+  transportRequired: 'Yes',
+  pickupAddress: '',
+  pickupMode: 'manual',
+  pickupLat: '',
+  pickupLng: ''
+};
 
 const KalpavrukshaPage = () => {
   // ...existing code...
@@ -123,18 +135,7 @@ const KalpavrukshaPage = () => {
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
-  const [form, setForm] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    preferredDate: '',
-    preferredTime: '',
-    transportRequired: 'Yes',
-    pickupAddress: '',
-    pickupMode: 'manual',
-    pickupLat: '',
-    pickupLng: ''
-  });
+  const [form, setForm] = useState(DEFAULT_SITE_VISIT_FORM);
   const [layoutLeadForm, setLayoutLeadForm] = useState({
     name: '',
     phone: '',
@@ -973,6 +974,21 @@ const KalpavrukshaPage = () => {
 
   const onChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'transportRequired') {
+      setForm(prev => (
+        value === 'No'
+          ? {
+              ...prev,
+              transportRequired: value,
+              pickupAddress: '',
+              pickupMode: 'manual',
+              pickupLat: '',
+              pickupLng: ''
+            }
+          : { ...prev, transportRequired: value }
+      ));
+      return;
+    }
     if (name === 'pickupMode') {
       setForm(prev => ({
         ...prev,
@@ -987,8 +1003,14 @@ const KalpavrukshaPage = () => {
 
   const submitSiteVisit = async (e) => {
     e?.preventDefault?.();
-    if (!form.name || !form.phone || !form.preferredDate || !form.preferredTime || !form.pickupAddress.trim()) {
-      setToast({ type: 'error', msg: 'Please fill name, phone, date, time slot and pickup address.' });
+    const pickupRequired = form.transportRequired === 'Yes';
+    if (!form.name || !form.phone || !form.preferredDate || !form.preferredTime || (pickupRequired && !form.pickupAddress.trim())) {
+      setToast({
+        type: 'error',
+        msg: pickupRequired
+          ? 'Please fill name, phone, date, time slot and pickup address.'
+          : 'Please fill name, phone, date and time slot.'
+      });
       setTimeout(() => setToast(null), 4000);
       return;
     }
@@ -1002,10 +1024,10 @@ const KalpavrukshaPage = () => {
         email: form.email || undefined,
         preferredDate: preferredDateTime,
         transportRequired: form.transportRequired,
-        pickupAddress: form.pickupAddress.trim(),
-        pickupMode: form.pickupMode,
-        pickupLat: form.pickupLat || undefined,
-        pickupLng: form.pickupLng || undefined
+        pickupAddress: pickupRequired ? form.pickupAddress.trim() : undefined,
+        pickupMode: pickupRequired ? form.pickupMode : undefined,
+        pickupLat: pickupRequired ? (form.pickupLat || undefined) : undefined,
+        pickupLng: pickupRequired ? (form.pickupLng || undefined) : undefined
       });
       trackGenerateLead({
         form_name: 'kalpavruksha_site_visit_form',
@@ -1013,7 +1035,7 @@ const KalpavrukshaPage = () => {
         project: 'Kalpavruksha',
         source: 'kalpavruksha_site_visit_modal',
         transport_required: form.transportRequired,
-        pickup_mode: form.pickupMode,
+        pickup_mode: pickupRequired ? form.pickupMode : undefined,
       });
       trackScheduleVisit({
         form_name: 'kalpavruksha_site_visit_form',
@@ -1022,21 +1044,10 @@ const KalpavrukshaPage = () => {
         preferred_date: form.preferredDate,
         preferred_time: form.preferredTime,
         transport_required: form.transportRequired,
-        pickup_mode: form.pickupMode,
+        pickup_mode: pickupRequired ? form.pickupMode : undefined,
       });
       setShowVisitModal(false);
-      setForm({
-        name: '',
-        phone: '',
-        email: '',
-        preferredDate: '',
-        preferredTime: '',
-        transportRequired: 'Yes',
-        pickupAddress: '',
-        pickupMode: 'manual',
-        pickupLat: '',
-        pickupLng: ''
-      });
+      setForm(DEFAULT_SITE_VISIT_FORM);
       navigate('/thank-you');
     } catch (err) {
       console.error(err);
@@ -1223,7 +1234,7 @@ const KalpavrukshaPage = () => {
                       <button
                         key={value}
                         type="button"
-                        onClick={() => setForm(prev => ({ ...prev, transportRequired: value }))}
+                        onClick={() => onChange({ target: { name: 'transportRequired', value } })}
                         className={`px-3 py-2 rounded-md text-sm font-medium border transition-colors ${
                           form.transportRequired === value
                             ? 'bg-emerald-600 text-white border-emerald-600'
@@ -1235,76 +1246,82 @@ const KalpavrukshaPage = () => {
                     ))}
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Pickup Address Input</label>
-                  <div className="flex items-center gap-4 mb-2">
-                    <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-                      <input
-                        type="radio"
-                        name="pickupMode"
-                        value="manual"
-                        checked={form.pickupMode === 'manual'}
-                        onChange={onChange}
-                      />
-                      Manual
-                    </label>
-                    <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-                      <input
-                        type="radio"
-                        name="pickupMode"
-                        value="map"
-                        checked={form.pickupMode === 'map'}
-                        onChange={onChange}
-                      />
-                      Select on Map
-                    </label>
-                  </div>
-
-                  {form.pickupMode === 'map' && (
-                    <div className="rounded-lg overflow-hidden border border-gray-200 mb-2">
-                      {!pickupMapApiKey ? (
-                        <div className="p-3 text-xs text-gray-600">
-                          Map is unavailable right now. Enter the pickup address manually below.
-                        </div>
-                      ) : pickupMapLoadError ? (
-                        <div className="p-3 text-xs text-red-600">
-                          Map failed to load. Enter the pickup address manually below.
-                        </div>
-                      ) : (
-                        <Suspense fallback={<div className="p-3 text-xs text-gray-600">Loading map...</div>}>
-                          <PickupLocationMap
-                            apiKey={pickupMapApiKey}
-                            center={pickupMapCenter}
-                            containerStyle={PICKUP_MAP_CONTAINER_STYLE}
-                            libraries={MAP_LIBRARIES}
-                            mapLoaderId={MAPS_LOADER_ID}
-                            onLoadError={() => setPickupMapLoadError(true)}
-                            onMapClick={onPickupMapClick}
-                            onMarkerDragEnd={onPickupMarkerDragEnd}
-                            selectedPosition={
-                              form.pickupLat && form.pickupLng
-                                ? { lat: Number(form.pickupLat), lng: Number(form.pickupLng) }
-                                : null
-                            }
-                          />
-                        </Suspense>
-                      )}
+                {form.transportRequired === 'Yes' ? (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Pickup Address Input</label>
+                    <div className="flex items-center gap-4 mb-2">
+                      <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                        <input
+                          type="radio"
+                          name="pickupMode"
+                          value="manual"
+                          checked={form.pickupMode === 'manual'}
+                          onChange={onChange}
+                        />
+                        Manual
+                      </label>
+                      <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                        <input
+                          type="radio"
+                          name="pickupMode"
+                          value="map"
+                          checked={form.pickupMode === 'map'}
+                          onChange={onChange}
+                        />
+                        Select on Map
+                      </label>
                     </div>
-                  )}
 
-                  <textarea
-                    name="pickupAddress"
-                    value={form.pickupAddress}
-                    onChange={onChange}
-                    rows={3}
-                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder={form.pickupMode === 'map' ? 'Click map/drag marker to fill textual address, or type manually' : 'Enter pickup address'}
-                    required
-                  />
-                  {form.pickupMode === 'map' && (
-                    <p className="text-xs text-gray-500 mt-1">Tap on map or drag marker to auto-fill a textual address.</p>
-                  )}
-                </div>
+                    {form.pickupMode === 'map' && (
+                      <div className="rounded-lg overflow-hidden border border-gray-200 mb-2">
+                        {!pickupMapApiKey ? (
+                          <div className="p-3 text-xs text-gray-600">
+                            Map is unavailable right now. Enter the pickup address manually below.
+                          </div>
+                        ) : pickupMapLoadError ? (
+                          <div className="p-3 text-xs text-red-600">
+                            Map failed to load. Enter the pickup address manually below.
+                          </div>
+                        ) : (
+                          <Suspense fallback={<div className="p-3 text-xs text-gray-600">Loading map...</div>}>
+                            <PickupLocationMap
+                              apiKey={pickupMapApiKey}
+                              center={pickupMapCenter}
+                              containerStyle={PICKUP_MAP_CONTAINER_STYLE}
+                              libraries={MAP_LIBRARIES}
+                              mapLoaderId={MAPS_LOADER_ID}
+                              onLoadError={() => setPickupMapLoadError(true)}
+                              onMapClick={onPickupMapClick}
+                              onMarkerDragEnd={onPickupMarkerDragEnd}
+                              selectedPosition={
+                                form.pickupLat && form.pickupLng
+                                  ? { lat: Number(form.pickupLat), lng: Number(form.pickupLng) }
+                                  : null
+                              }
+                            />
+                          </Suspense>
+                        )}
+                      </div>
+                    )}
+
+                    <textarea
+                      name="pickupAddress"
+                      value={form.pickupAddress}
+                      onChange={onChange}
+                      rows={3}
+                      className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder={form.pickupMode === 'map' ? 'Click map/drag marker to fill textual address, or type manually' : 'Enter pickup address'}
+                      required
+                    />
+                    {form.pickupMode === 'map' && (
+                      <p className="text-xs text-gray-500 mt-1">Tap on map or drag marker to auto-fill a textual address.</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                    Pickup details are not needed if you will arrange your own travel.
+                  </p>
+                )}
               </div>
               <div className="shrink-0 border-t border-gray-200 bg-white px-6 pt-3 pb-4 shadow-[0_-10px_24px_rgba(15,23,42,0.08)]">
                 <button type="submit" disabled={submitting} className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-white font-semibold ${submitting ? 'bg-emerald-400' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
