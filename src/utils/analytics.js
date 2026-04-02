@@ -1,6 +1,8 @@
 const GA_MEASUREMENT_ID = 'G-PS0CKM6BCZ';
 const META_PIXEL_ID = '2391828714581394';
 const THIRD_PARTY_LOAD_DELAY_MS = 6000;
+const GTM_CONTAINER_ID = String(process.env.REACT_APP_GTM_ID || '').trim();
+const GTM_ID_PATTERN = /^GTM-[A-Z0-9]+$/i;
 
 function sanitizeValue(value) {
   if (value === undefined || value === null) {
@@ -21,6 +23,31 @@ function sanitizeParams(params = {}) {
       .map(([key, value]) => [key, sanitizeValue(value)])
       .filter(([, value]) => value !== undefined),
   );
+}
+
+function isTagManagerEnabled() {
+  return GTM_ID_PATTERN.test(GTM_CONTAINER_ID);
+}
+
+function getDataLayer() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  window.dataLayer = window.dataLayer || [];
+  return window.dataLayer;
+}
+
+function pushDataLayerEvent(eventName, params = {}) {
+  const dataLayer = getDataLayer();
+  if (!dataLayer) {
+    return;
+  }
+
+  dataLayer.push({
+    event: eventName,
+    ...sanitizeParams(params),
+  });
 }
 
 function appendScriptOnce({ id, src }) {
@@ -44,11 +71,14 @@ function ensureGtagStub() {
     return;
   }
 
-  window.dataLayer = window.dataLayer || [];
+  const dataLayer = getDataLayer();
+  if (!dataLayer) {
+    return;
+  }
 
   if (typeof window.gtag !== 'function') {
     window.gtag = function gtag() {
-      window.dataLayer.push(arguments);
+      dataLayer.push(arguments);
     };
   }
 }
@@ -81,7 +111,7 @@ function ensureMetaPixelStub() {
 }
 
 function bootstrapGoogleAnalytics() {
-  if (typeof window === 'undefined' || !GA_MEASUREMENT_ID) {
+  if (typeof window === 'undefined' || !GA_MEASUREMENT_ID || isTagManagerEnabled()) {
     return;
   }
 
@@ -114,6 +144,7 @@ export function initializeAnalytics() {
   }
 
   window.__easyHomesAnalyticsBootstrapped = true;
+  getDataLayer();
   bootstrapGoogleAnalytics();
 
   let hasLoadedThirdPartyScripts = false;
@@ -124,10 +155,12 @@ export function initializeAnalytics() {
     }
 
     hasLoadedThirdPartyScripts = true;
-    appendScriptOnce({
-      id: 'ga4',
-      src: `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`,
-    });
+    if (!isTagManagerEnabled()) {
+      appendScriptOnce({
+        id: 'ga4',
+        src: `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`,
+      });
+    }
     bootstrapMetaPixel();
     appendScriptOnce({
       id: 'meta-pixel',
@@ -161,7 +194,13 @@ export function initializeAnalytics() {
 }
 
 export function trackEvent(eventName, params = {}) {
-  if (typeof window === 'undefined' || typeof window.gtag !== 'function') {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  pushDataLayerEvent(eventName, params);
+
+  if (isTagManagerEnabled() || typeof window.gtag !== 'function') {
     return;
   }
 

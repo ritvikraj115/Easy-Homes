@@ -30,6 +30,7 @@ import { FaWhatsapp } from 'react-icons/fa';
 import YouTubeLiteEmbed from '../components/YouTubeLiteEmbed';
 import {
   trackFileDownload,
+  trackEvent,
   trackGenerateLead,
   trackScheduleVisit,
   trackWhatsAppClick,
@@ -844,9 +845,25 @@ const KalpavrukshaPage = () => {
     }
   };
 
-  const openVisitModal = () => setShowVisitModal(true);
+  const openVisitModal = (source = 'kalpavruksha_site_visit_modal') => {
+    trackEvent('form_open', {
+      form_name: 'kalpavruksha_site_visit_form',
+      lead_type: 'site_visit',
+      project: 'Kalpavruksha',
+      source,
+    });
+    setShowVisitModal(true);
+  };
   const closeVisitModal = () => setShowVisitModal(false);
-  const openDownloadLeadModal = (assetKey) => {
+  const openDownloadLeadModal = (assetKey, source = 'kalpavruksha_download_modal') => {
+    const assetType = assetKey === 'layout' ? 'master_layout' : 'brochure';
+    trackEvent('form_open', {
+      form_name: 'kalpavruksha_download_form',
+      lead_type: `${assetType}_download`,
+      project: 'Kalpavruksha',
+      source,
+      asset_type: assetType,
+    });
     setLayoutLeadForm({ name: '', phone: '', email: '' });
     setDownloadAssetKey(assetKey);
   };
@@ -872,6 +889,24 @@ const KalpavrukshaPage = () => {
       project: 'Kalpavruksha',
       source: 'kalpavruksha',
       placement,
+    });
+  };
+
+  const trackKalpavrukshaDirectionsClick = (placement) => {
+    trackEvent('directions_click', {
+      project: 'Kalpavruksha',
+      source: 'kalpavruksha',
+      placement,
+      destination: 'kalpavruksha',
+    });
+  };
+
+  const trackKalpavrukshaCallClick = (placement) => {
+    trackEvent('phone_click', {
+      project: 'Kalpavruksha',
+      source: 'kalpavruksha',
+      placement,
+      contact_method: 'phone',
     });
   };
 
@@ -1409,7 +1444,7 @@ const KalpavrukshaPage = () => {
                         <div className="flex flex-col gap-3 sm:flex-row">
                         <button
                           type="button"
-                          onClick={() => openDownloadLeadModal('brochure')}
+                          onClick={() => openDownloadLeadModal('brochure', 'hero_brochure_cta')}
                           className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_28px_rgba(16,185,129,0.22)] transition-all duration-300 hover:from-emerald-700 hover:to-teal-700 hover:shadow-[0_18px_34px_rgba(16,185,129,0.26)] sm:min-h-14 sm:w-auto sm:px-8 sm:py-4 sm:text-base"
                         >
                           <Download className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -1704,13 +1739,13 @@ const KalpavrukshaPage = () => {
                     icon={<Download className="w-5 h-5" />}
                     text="Download Layout PDF"
                     primary
-                    onClick={() => openDownloadLeadModal('layout')}
+                    onClick={() => openDownloadLeadModal('layout', 'master_plan_section')}
                   />
                   <div className="flex flex-col sm:flex-row gap-4">
                     <CTAButton
                       icon={<MapPin className="w-5 h-5" />}
                       text="Book a Site Visit"
-                      onClick={openVisitModal}
+                      onClick={() => openVisitModal('master_plan_section')}
                     />
                     <CTAButton
                       icon={<MessageCircle className="w-5 h-5" />}
@@ -1799,6 +1834,7 @@ const KalpavrukshaPage = () => {
                       href={projectDirectionsUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => trackKalpavrukshaDirectionsClick('location_section')}
                       className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:from-emerald-700 hover:to-teal-700 hover:shadow-md"
                     >
                       Get Directions
@@ -1806,7 +1842,7 @@ const KalpavrukshaPage = () => {
                     </a>
                     <button
                       type="button"
-                      onClick={openVisitModal}
+                      onClick={() => openVisitModal('location_section')}
                       className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-800 transition-all duration-300 hover:border-emerald-300 hover:bg-white hover:text-emerald-700 hover:shadow-sm"
                     >
                       <MapPin className="h-4 w-4" />
@@ -1950,7 +1986,7 @@ const KalpavrukshaPage = () => {
                 icon={<MapPin className="w-5 h-5" />}
                 text="Schedule a Site Visit"
                 primary
-                onClick={openVisitModal}
+                onClick={() => openVisitModal('journey_home')}
               />
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -1973,7 +2009,7 @@ const KalpavrukshaPage = () => {
                 <CTAButton
                   icon={<Download className="w-5 h-5" />}
                   text="Download Project Brochure"
-                  onClick={() => openDownloadLeadModal('brochure')}
+                  onClick={() => openDownloadLeadModal('brochure', 'journey_home')}
                 />
               </div>
             </div>
@@ -2075,10 +2111,10 @@ const KalpavrukshaPage = () => {
                   <div className="space-y-2">
                     <button
                       type="button"
-                      onClick={() => {
-                        setIsQuickActionsOpen(false);
-                        openVisitModal();
-                      }}
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    openVisitModal('mobile_quick_actions');
+                  }}
                       className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
                     >
                       <span className="flex items-center gap-3">
@@ -2095,10 +2131,10 @@ const KalpavrukshaPage = () => {
 
                     <button
                       type="button"
-                      onClick={() => {
-                        setIsQuickActionsOpen(false);
-                        openDownloadLeadModal('layout');
-                      }}
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    openDownloadLeadModal('layout', 'mobile_quick_actions');
+                  }}
                       className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
                     >
                       <span className="flex items-center gap-3">
@@ -2115,10 +2151,10 @@ const KalpavrukshaPage = () => {
 
                     <button
                       type="button"
-                      onClick={() => {
-                        setIsQuickActionsOpen(false);
-                        openDownloadLeadModal('brochure');
-                      }}
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    openDownloadLeadModal('brochure', 'mobile_quick_actions');
+                  }}
                       className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
                     >
                       <span className="flex items-center gap-3">
@@ -2241,7 +2277,10 @@ const KalpavrukshaPage = () => {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setIsQuickActionsOpen(false)}
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    trackKalpavrukshaDirectionsClick('mobile_quick_actions');
+                  }}
                   className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-600 transition-colors duration-200 hover:bg-white hover:text-slate-900"
                   aria-label="Close quick actions"
                 >
@@ -2254,7 +2293,7 @@ const KalpavrukshaPage = () => {
                   type="button"
                   onClick={() => {
                     setIsQuickActionsOpen(false);
-                    openVisitModal();
+                    openVisitModal('desktop_quick_actions');
                   }}
                   className="flex w-full items-center justify-between rounded-[24px] border border-[#dfe9d5] bg-[#f7fbf5] px-4 py-4 text-left shadow-sm transition-all duration-200"
                 >
@@ -2274,7 +2313,7 @@ const KalpavrukshaPage = () => {
                   type="button"
                   onClick={() => {
                     setIsQuickActionsOpen(false);
-                    openDownloadLeadModal('layout');
+                    openDownloadLeadModal('layout', 'desktop_quick_actions');
                   }}
                   className="flex w-full items-center justify-between rounded-[24px] border border-[#dfe9d5] bg-[#f7fbf5] px-4 py-4 text-left shadow-sm transition-all duration-200"
                 >
@@ -2294,7 +2333,7 @@ const KalpavrukshaPage = () => {
                   type="button"
                   onClick={() => {
                     setIsQuickActionsOpen(false);
-                    openDownloadLeadModal('brochure');
+                    openDownloadLeadModal('brochure', 'desktop_quick_actions');
                   }}
                   className="flex w-full items-center justify-between rounded-[24px] border border-[#dfe9d5] bg-[#f7fbf5] px-4 py-4 text-left shadow-sm transition-all duration-200"
                 >
@@ -2314,7 +2353,10 @@ const KalpavrukshaPage = () => {
                   href={projectDirectionsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => setIsQuickActionsOpen(false)}
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        trackKalpavrukshaDirectionsClick('desktop_quick_actions');
+                      }}
                   className="flex w-full items-center justify-between rounded-[24px] border border-[#dfe9d5] bg-[#f7fbf5] px-4 py-4 text-left shadow-sm transition-all duration-200"
                 >
                   <span className="flex items-center gap-3">
@@ -2382,7 +2424,7 @@ const KalpavrukshaPage = () => {
               <div>
                 <h4 className="text-lg font-semibold mb-4">Contact Us</h4>
                 <div className="flex gap-4">
-                  <a href="tel:+918988896666">
+                  <a href="tel:+918988896666" onClick={() => trackKalpavrukshaCallClick('footer_contact')}>
                     <CTAButton
                       icon={<Phone className="w-4 h-4 " />}
                       text="Call Now"
