@@ -18,6 +18,7 @@ const Compare = lazy(() => import('./pages/Compare'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const Home = lazy(() => import('./pages/Home'));
 const KalpavrukshaPage = lazy(() => import('./pages/Kalpavruksha'));
+const Kalpavruksha2Page = lazy(() => import('./pages/Kalpavruksha2'));
 const ThankYouPage = lazy(() => import('./pages/ThankYouPage'));
 const AdminPanel = lazy(() => import('./pages/AdminPanel'));
 const About = lazy(() => import('./pages/About'));
@@ -82,6 +83,7 @@ function App() {
           <Route path="/profile" element={withSuspense(<ProfilePage />)} />
           {/* Kalpavruksha page */}
           <Route path="/kalpavruksha" element={withSuspense(<KalpavrukshaPage />)} />
+          <Route path="/kalpavruksha2/*" element={withSuspense(<Kalpavruksha2Page />)} />
           <Route path="/projects" element={<Navigate to="/kalpavruksha/" replace />} />
           {/* Thankyou page */}
           <Route path="/thank-you" element={withSuspense(<ThankYouPage />)} />

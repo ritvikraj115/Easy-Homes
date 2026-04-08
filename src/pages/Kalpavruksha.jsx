@@ -124,6 +124,8 @@ const DEFAULT_SITE_VISIT_FORM = {
   pickupLng: ''
 };
 
+const SITE_VISIT_ZOHO_NOTE = 'Site visit scheduled from website.';
+
 const KalpavrukshaPage = () => {
   // ...existing code...
   const navigate = useNavigate();
@@ -1024,6 +1026,7 @@ const KalpavrukshaPage = () => {
         email: form.email || undefined,
         preferredDate: preferredDateTime,
         transportRequired: form.transportRequired,
+        notes: SITE_VISIT_ZOHO_NOTE,
         pickupAddress: pickupRequired ? form.pickupAddress.trim() : undefined,
         pickupMode: pickupRequired ? form.pickupMode : undefined,
         pickupLat: pickupRequired ? (form.pickupLat || undefined) : undefined,
