@@ -189,6 +189,7 @@ export default function ZohoSalesIQWidgetLoader({
   hideFloatButton = false,
   homeWidgets = [],
   theme = null,
+  autoLoad = true,
 }) {
   useEffect(() => {
     if (typeof document === 'undefined') {
@@ -217,7 +218,9 @@ export default function ZohoSalesIQWidgetLoader({
       flushPendingZohoSalesIQChatRequest();
     };
 
-    appendZohoSalesIQScript();
+    if (autoLoad) {
+      appendZohoSalesIQScript();
+    }
 
     if (salesiq.__easyHomesReady) {
       applyZohoSalesIQConfiguration({ hideFloatButton, homeWidgets, theme });
@@ -232,7 +235,7 @@ export default function ZohoSalesIQWidgetLoader({
       setZohoSalesIQChatWindowVisibility('hide');
       setZohoSalesIQFloatButtonVisibility('hide');
     };
-  }, [hideFloatButton, homeWidgets, theme]);
+  }, [autoLoad, hideFloatButton, homeWidgets, theme]);
 
   return null;
 }

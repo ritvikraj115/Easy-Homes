@@ -220,17 +220,19 @@ test('hero next/previous controls change slides', async () => {
 test('hero WhatsApp CTA tracks the same placement flow as Kalpa', () => {
   renderPage();
 
-  fireEvent.click(screen.getAllByRole('link', { name: 'Talk to Us on WhatsApp' })[0]);
+  fireEvent.click(screen.getAllByRole('button', { name: 'Talk on WhatsApp' })[0]);
 
   expect(trackWhatsAppClick).toHaveBeenCalledWith({
     project: 'Kalpavruksha',
     source: 'kalpavruksha',
-    placement: 'hero_cta',
+    placement: 'hero_cta_whatsapp',
   });
 });
 
-test('zoho salesiq widget script is added on kalpavruksha page', () => {
+test('zoho salesiq widget script is added when live chat is opened', () => {
   renderPage();
+
+  fireEvent.click(screen.getAllByRole('button', { name: 'Start Live Chat' })[0]);
 
   const widgetScript = document.getElementById('zsiqscript');
 

@@ -537,6 +537,32 @@ const KalpavrukshaPage = () => {
     "provider": { "@id": `${projectCanonicalUrl}#agent` }
   };
 
+  const buyerGuideSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "@id": `${projectCanonicalUrl}#buyer-guide`,
+    "headline": "Kalpavruksha Open Plots In Vijayawada: Location, Layout, And Buyer Essentials",
+    "description": "Buyer-focused guidance for evaluating Kalpavruksha open plots near Vijayawada and Amaravati, including approvals, layout checks, infrastructure readiness, and connectivity context.",
+    "inLanguage": "en-IN",
+    "isPartOf": { "@id": `${projectCanonicalUrl}#webpage` },
+    "mainEntityOfPage": projectCanonicalUrl,
+    "author": { "@id": `${projectCanonicalUrl}#agent` },
+    "publisher": { "@id": `${projectCanonicalUrl}#agent` },
+    "about": [
+      "CRDA-approved plotted development",
+      "Open plots near Vijayawada",
+      "Open plots near Amaravati",
+      "Residential plot due diligence"
+    ],
+    "articleSection": [
+      "Project Overview",
+      "Location and Connectivity",
+      "Layout and Infrastructure",
+      "Buyer Verification Checklist"
+    ],
+    "articleBody": "Kalpavruksha is presented as a CRDA-approved plotted development by Easy Homes near Vijayawada, planned across approximately 9.03 acres with 105 residential plots. Buyers looking for open plots near Amaravati often evaluate three factors first: approval clarity, location practicality, and ground-level infrastructure readiness. The project is structured around those priorities with a planned layout, internal circulation, and community-focused zoning. Plot dimensions in Kalpavruksha are positioned for multiple buyer goals, from long-term land holding to future home construction. Along with plot planning, the project narrative highlights amenities such as landscaped zones, clubhouse-oriented lifestyle components, utility-ready roads, and access-led design. From a connectivity standpoint, Kalpavruksha is positioned near the Vijayawada-Nagpur Greenfield Highway influence zone in Vemavaram, with practical travel links toward Vijayawada city, railway access points, airport routes, and Amaravati-side expansion areas. Buyers usually verify CRDA and statutory approval status, plot dimensions and road-width access, infrastructure progress, travel-time feasibility, and final documentation and registration process before booking."
+  };
+
   const features = [
     {
       icon: <CheckCircle className="h-6 w-6 text-[#e3cb98]" />,
@@ -1257,6 +1283,7 @@ const KalpavrukshaPage = () => {
         hideFloatButton
         homeWidgets={KALPAVRUKSHA_ZOHO_HOME_WIDGETS}
         theme={KALPAVRUKSHA_ZOHO_THEME}
+        autoLoad={false}
       />
       <Helmet>
         <title>{projectTitle}</title>
@@ -1311,6 +1338,9 @@ const KalpavrukshaPage = () => {
         </script>
         <script type="application/ld+json">
           {JSON.stringify(faqSchema)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(buyerGuideSchema)}
         </script>
       </Helmet>
       {/* Toast */}
