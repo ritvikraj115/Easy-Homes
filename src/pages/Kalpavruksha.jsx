@@ -2576,7 +2576,7 @@ const KalpavrukshaPage = () => {
               <div className="relative flex items-center justify-end">
                 <div
                   id="kalpavruksha-quick-actions"
-                  className={`absolute right-[calc(100%+0.65rem)] top-1/2 w-[min(14rem,calc(100vw-5.5rem))] -translate-y-1/2 transition-all duration-200 ${
+                  className={`absolute right-[calc(100%+0.65rem)] top-1/2 w-[min(18rem,calc(100vw-5.5rem))] -translate-y-1/2 transition-all duration-200 ${
                     isQuickActionsOpen
                       ? 'visible translate-x-0 opacity-100'
                       : 'invisible translate-x-6 opacity-0'
