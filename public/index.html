@@ -5,14 +5,41 @@
   <script>
     (function (w, d, s, l, i) {
       if (!/^GTM-[A-Z0-9]+$/i.test(i)) return;
-      w[l] = w[l] || [];
-      w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-      var f = d.getElementsByTagName(s)[0];
-      var j = d.createElement(s);
-      var dl = l !== 'dataLayer' ? '&l=' + l : '';
-      j.async = true;
-      j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
-      f.parentNode.insertBefore(j, f);
+      var gtmLoaded = false;
+      var isKalpavruksha = /^\/kalpavruksha\/?$/i.test(w.location.pathname || '');
+
+      function loadGtm() {
+        if (gtmLoaded) return;
+        gtmLoaded = true;
+        w[l] = w[l] || [];
+        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+        var f = d.getElementsByTagName(s)[0];
+        var j = d.createElement(s);
+        var dl = l !== 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+      }
+
+      if (!isKalpavruksha) {
+        loadGtm();
+        return;
+      }
+
+      var interactionEvents = ['pointerdown', 'keydown', 'touchstart'];
+      var onUserInteraction = function () {
+        loadGtm();
+        interactionEvents.forEach(function (eventName) {
+          w.removeEventListener(eventName, onUserInteraction, interactionListenerOptions);
+        });
+      };
+      var interactionListenerOptions = { passive: true, once: true };
+
+      interactionEvents.forEach(function (eventName) {
+        w.addEventListener(eventName, onUserInteraction, interactionListenerOptions);
+      });
+
+      w.setTimeout(loadGtm, 9000);
     })(window, document, 'script', 'dataLayer', '%REACT_APP_GTM_ID%');
   </script>
 

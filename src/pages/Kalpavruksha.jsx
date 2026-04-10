@@ -2576,13 +2576,13 @@ const KalpavrukshaPage = () => {
               <div className="relative flex items-center justify-end">
                 <div
                   id="kalpavruksha-quick-actions"
-                  className={`absolute right-[calc(100%+0.65rem)] top-1/2 w-[min(16.5rem,calc(100vw-4.75rem))] -translate-y-1/2 transition-all duration-200 ${
+                  className={`absolute right-[calc(100%+0.65rem)] top-1/2 w-[min(14rem,calc(100vw-5.5rem))] -translate-y-1/2 transition-all duration-200 ${
                     isQuickActionsOpen
                       ? 'visible translate-x-0 opacity-100'
                       : 'invisible translate-x-6 opacity-0'
                   }`}
                 >
-                  <div className="rounded-[32px] border border-[#eadfcb] bg-white/[0.97] p-4 shadow-[0_24px_55px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+                  <div className="max-h-[70vh] overflow-y-auto rounded-[32px] border border-[#eadfcb] bg-white/[0.97] p-4 shadow-[0_24px_55px_rgba(15,23,42,0.12)] backdrop-blur-xl">
                     <div className="flex items-start justify-between gap-3 px-2 pb-3">
                       <div>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8b6328]">

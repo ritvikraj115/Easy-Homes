@@ -1,6 +1,7 @@
 const GA_MEASUREMENT_ID = 'G-PS0CKM6BCZ';
 const META_PIXEL_ID = '2391828714581394';
 const THIRD_PARTY_LOAD_DELAY_MS = 6000;
+const KALPAVRUKSHA_THIRD_PARTY_LOAD_DELAY_MS = 12000;
 const GTM_CONTAINER_ID = String(process.env.REACT_APP_GTM_ID || '').trim();
 const GTM_ID_PATTERN = /^GTM-[A-Z0-9]+$/i;
 
@@ -27,6 +28,14 @@ function sanitizeParams(params = {}) {
 
 function isTagManagerEnabled() {
   return GTM_ID_PATTERN.test(GTM_CONTAINER_ID);
+}
+
+function isKalpavrukshaRoute() {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  return /^\/kalpavruksha\/?$/i.test(window.location.pathname || '');
 }
 
 function getDataLayer() {
@@ -148,6 +157,7 @@ export function initializeAnalytics() {
   bootstrapGoogleAnalytics();
 
   let hasLoadedThirdPartyScripts = false;
+  const onKalpavrukshaRoute = isKalpavrukshaRoute();
 
   const loadThirdPartyScripts = () => {
     if (hasLoadedThirdPartyScripts) {
@@ -169,10 +179,15 @@ export function initializeAnalytics() {
   };
 
   const scheduleDeferredLoad = () => {
-    window.setTimeout(loadThirdPartyScripts, THIRD_PARTY_LOAD_DELAY_MS);
+    const delay = onKalpavrukshaRoute
+      ? KALPAVRUKSHA_THIRD_PARTY_LOAD_DELAY_MS
+      : THIRD_PARTY_LOAD_DELAY_MS;
+    window.setTimeout(loadThirdPartyScripts, delay);
   };
 
-  const interactionEvents = ['pointerdown', 'keydown', 'touchstart', 'scroll'];
+  const interactionEvents = onKalpavrukshaRoute
+    ? ['pointerdown', 'keydown', 'touchstart']
+    : ['pointerdown', 'keydown', 'touchstart', 'scroll'];
   const handleUserInteraction = () => {
     loadThirdPartyScripts();
     interactionEvents.forEach((eventName) => {
