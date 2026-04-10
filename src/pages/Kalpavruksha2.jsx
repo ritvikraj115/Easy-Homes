@@ -19,11 +19,11 @@ import {
   ArrowUpRight,
   ChevronDown,
   ChevronLeft,
-  ChevronRight,
-  Menu
+  ChevronRight
 } from 'lucide-react';
 import { Card, CardContent } from '../components/card';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar'
+import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
 import { FaWhatsapp } from 'react-icons/fa';
@@ -107,14 +107,9 @@ const DEFERRED_SECTION_STYLE = {
   contentVisibility: 'auto',
   containIntrinsicSize: '1px 960px',
 };
-const HERO_IMAGE_SIZES = '100vw';
-const HERO_IMAGE_SRC_SET = '/kalpabg1-640.webp 640w, /kalpabg1-960.webp 960w, /kalpabg1.webp 1440w, /kalpabg1-1920.webp 1920w';
-const TRUST_HERO_SRC_SET = '/kalpavruksha-trust-hero-768.webp 768w, /kalpavruksha-trust-hero-1440.webp 1440w, /kalpavruksha-trust-hero-1920.webp 1920w';
-const CALM_HERO_SRC_SET = '/kalpavruksha-calm-hero-768.webp 768w, /kalpavruksha-calm-hero-1440.webp 1440w, /kalpavruksha-calm-hero-1920.webp 1920w';
-const PEACE_HERO_SRC_SET = '/kalpavruksha-peace-hero-768.webp 768w, /kalpavruksha-peace-hero-1440.webp 1440w, /kalpavruksha-peace-hero-1920.webp 1920w';
-const BELONGING_HERO_SRC_SET = '/kalpavruksha-belonging-hero-768.webp 768w, /kalpavruksha-belonging-hero-1440.webp 1440w, /kalpavruksha-belonging-hero-1920.webp 1920w';
-const CARE_HERO_SRC_SET = '/kalpavruksha-care-hero-768.webp 768w, /kalpavruksha-care-hero-1440.webp 1440w, /kalpavruksha-care-hero-1920.webp 1920w';
-const HERO_SUPPORT_LINE = 'CRDA approved | 9.03 acres | 105 plots';
+const HERO_IMAGE_SIZES = '(max-width: 1023px) 100vw, 50vw';
+const HERO_IMAGE_SRC_SET = '/kalpabg2-640.webp 640w, /kalpabg2-960.webp 960w';
+const SECURITY_HERO_IMAGE_SRC_SET = '/entry-hero-640.webp 640w, /entry-hero-960.webp 960w';
 const WALKTHROUGH_POSTER_SIZES = '(max-width: 768px) 100vw, 960px';
 const DEFAULT_SITE_VISIT_FORM = {
   name: '',
@@ -141,7 +136,6 @@ const KalpavrukshaPage = () => {
   const [downloadSubmitting, setDownloadSubmitting] = useState(false);
   const [showFloatingActions, setShowFloatingActions] = useState(false);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
-  const [isProjectNavOpen, setIsProjectNavOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
   const [form, setForm] = useState(DEFAULT_SITE_VISIT_FORM);
   const [layoutLeadForm, setLayoutLeadForm] = useState({
@@ -166,7 +160,6 @@ const KalpavrukshaPage = () => {
   const locationRef = React.useRef(null);
   const amenitiesRef = React.useRef(null);
   const galleryRef = React.useRef(null);
-  const masterPlanRef = React.useRef(null);
   const heroSectionRef = React.useRef(null);
   // For Home page CallToAction scroll (no reload)
   const goToHomeCallToAction = () => {
@@ -179,65 +172,40 @@ const KalpavrukshaPage = () => {
   const scrollToLocation = () => {
     locationRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-  const scrollToMasterPlan = () => {
-    masterPlanRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
   const scrollToAmenities = () => {
     amenitiesRef.current?.scrollIntoView({ behavior: "smooth" });
   };
   const scrollToGallery = () => {
     galleryRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-  const scrollToContact = () => {
-    document.querySelector('footer')?.scrollIntoView({ behavior: 'smooth' });
-  };
   // Expose scroll handlers globally for Navbar (after function declarations)
   if (typeof window !== 'undefined') {
     window.scrollToAmenities = scrollToAmenities;
-    window.scrollToContact = scrollToContact;
+    window.scrollToContact = () => {
+      // Scroll to footer contact section
+      const footer = document.querySelector('footer');
+      if (footer) footer.scrollIntoView({ behavior: 'smooth' });
+    };
   }
 
-  const projectNavItems = [
-    { label: 'Lifestyle', onClick: scrollToAbout },
-    { label: 'Master Plan', onClick: scrollToMasterPlan },
-    { label: 'Location', onClick: scrollToLocation },
-    { label: 'Amenities', onClick: scrollToAmenities },
-    { label: 'Gallery', onClick: scrollToGallery },
-    { label: 'Contact', onClick: scrollToContact },
-  ];
-
   React.useEffect(() => {
-    if (typeof window === 'undefined') {
+    const target = heroSectionRef.current;
+    if (!target || typeof window === 'undefined' || !('IntersectionObserver' in window)) {
       return undefined;
     }
 
-    let frameId = null;
-
-    const updateFloatingActions = () => {
-      frameId = null;
-      const heroTop = heroSectionRef.current?.getBoundingClientRect().top ?? 0;
-      setShowFloatingActions(heroTop < -8);
-    };
-
-    const requestUpdate = () => {
-      if (frameId !== null) {
-        return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowFloatingActions(!entry.isIntersecting);
+      },
+      {
+        threshold: 0.01,
       }
+    );
 
-      frameId = window.requestAnimationFrame(updateFloatingActions);
-    };
+    observer.observe(target);
 
-    requestUpdate();
-    window.addEventListener('scroll', requestUpdate, { passive: true });
-    window.addEventListener('resize', requestUpdate);
-
-    return () => {
-      if (frameId !== null) {
-        window.cancelAnimationFrame(frameId);
-      }
-      window.removeEventListener('scroll', requestUpdate);
-      window.removeEventListener('resize', requestUpdate);
-    };
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -290,12 +258,6 @@ const KalpavrukshaPage = () => {
   }, [isModalOpen]);
 
   useEffect(() => {
-    if (isModalOpen) {
-      setIsProjectNavOpen(false);
-    }
-  }, [isModalOpen]);
-
-  useEffect(() => {
     if (typeof document === 'undefined') {
       return undefined;
     }
@@ -326,7 +288,7 @@ const KalpavrukshaPage = () => {
   const projectLocationTitle = 'Kalpavruksha, near Vijayawada Nagpur Greenfield Highway, Vemavaram';
   const projectLocationAddress = 'Kalpavruksha, near Vijayawada Nagpur Greenfield Highway, Vemavaram, Vijayawada, Andhra Pradesh';
   const projectMapEmbedUrl = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3823.5114526053485!2d80.59797237418302!3d16.60108128415813!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a35ef003f891535%3A0xdb8f6ca60fc5d3fe!2sKalpavruksha!5e0!3m2!1sen!2sus!4v1774516140803!5m2!1sen!2sus';
-  const projectDirectionsUrl = 'https://maps.app.goo.gl/dNA1KdiDNuLjTthG8';
+  const projectDirectionsUrl = 'https://www.google.com/maps/search/?api=1&query=16.60108128415813,80.59797237418302';
 
   useEffect(() => {
     if (location.pathname.endsWith('/')) {
@@ -497,53 +459,53 @@ const KalpavrukshaPage = () => {
 
   const features = [
     {
-      icon: <CheckCircle className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <CheckCircle className="w-6 h-6 text-g  reen-600" />,
       title: "Fully Approved. Carefully Maintained.",
       description: "CRDA-approved and backed by 5 years of developer maintenance.",
     },
     {
-      icon: <MapPin className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <MapPin className="w-6 h-6 text-blue-600" />,
       title: "Closer to Everything That Matters",
       description:
         "7.5 km from Vijayawada | 13.5 km from Amaravati Start-up Village & BITS | Near Vijayawada-Nagpur Greenfield Highway",
     },
     {
-      icon: <Car className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <Car className="w-6 h-6 text-purple-600" />,
       title: "Roads That Respect Space and Flow",
       description: "60', 40', and 33' wide internal CC roads, walkways, avenue plantations, and stormwater drains.",
     },
     {
-      icon: <Zap className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <Zap className="w-6 h-6 text-yellow-600" />,
       title: "Seamless Systems Beneath the Surface",
       description: "Underground networks for power, water, fiber, and sewage - silent, secure, and future-ready.",
     },
     {
-      icon: <Waves className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <Waves className="w-6 h-6 text-cyan-600" />,
       title: "Water That Works, Landscapes That Live",
       description: "Overhead tank with underground supply, STP-connected drainage, and drip irrigation.",
     },
     {
-      icon: <Building className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <Building className="w-6 h-6 text-indigo-600" />,
       title: "A Clubhouse That Feels Like a Second Home",
       description: "Infinity pool, yoga room, gym, party lawn, convention hall, private theatre, and guest rooms.",
     },
     {
-      icon: <Users className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <Users className="w-6 h-6 text-pink-600" />,
       title: "Play Isn't Just for Kids - It's for Community",
       description: "Basketball, net cricket, multi-purpose court, children's play zone, and indoor games.",
     },
     {
-      icon: <Trees className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <Trees className="w-6 h-6 text-green-500" />,
       title: "Where Nature is Always Within Reach",
       description: "Central rivulet garden beside the creek, landscaped arrival court, and edge gardens.",
     },
     {
-      icon: <Shield className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <Shield className="w-6 h-6 text-red-600" />,
       title: "Protected. Peaceful. Prepared.",
       description: "8' compound wall with 2' solar fencing, 24x7 gated entry with CCTV, and solar lighting.",
     },
     {
-      icon: <Heart className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <Heart className="w-6 h-6 text-rose-600" />,
       title: "Designed Not Just to Last - But to Mean Something",
       description: "More than a layout - a vision grounded in values for your family's legacy.",
     },
@@ -611,11 +573,11 @@ const KalpavrukshaPage = () => {
     className = '',
   }) => {
     const classes = `
-    inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-full border text-sm font-semibold tracking-[0.01em]
-    shadow-[0_16px_32px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5
+    inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold 
+    transition-all duration-300 transform hover:scale-105 hover:shadow-lg
     ${primary
-        ? 'border-[#d3ab67] bg-gradient-to-r from-[#cba159] to-[#d7b16f] text-[#1d1609] hover:from-[#d2a764] hover:to-[#deb979] hover:shadow-[0_20px_40px_rgba(203,161,89,0.24)]'
-        : 'border-[#e0cfaf] bg-white/[0.96] text-[#221c14] hover:border-[#cba159] hover:bg-[#fffaf1] hover:shadow-[0_18px_34px_rgba(15,23,42,0.08)]'
+        ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700'
+        : 'bg-white text-gray-800 border border-gray-300 hover:bg-gray-50'
       }
     ${className}
   `;
@@ -663,7 +625,7 @@ const KalpavrukshaPage = () => {
       title: "Where You Don't Just Arrive - You Belong",
       description:
         "It's not just the feeling of arriving somewhere new, but somewhere right, where your heart belongs. Just 12 mins from Amaravati.",
-      image: '/kalpabg1.webp',
+      image: '/kalpabg2.webp',
       imageSrcSet: HERO_IMAGE_SRC_SET,
       imageSizes: HERO_IMAGE_SIZES,
       alt: 'Kalpavruksha plotted community overview',
@@ -677,122 +639,114 @@ const KalpavrukshaPage = () => {
       summaryLabel: 'Project snapshot',
       summaryTitle: 'Verified overview',
       summaryText:
-        'CRDA-approved plotted community near the Vijayawada-Nagpur Greenfield Highway with 105 residential plots, clubhouse amenities, and planned internal infrastructure.',
+        'CRDA-approved residential plotted development near Vijayawada-Nagpur Greenfield Highway with clubhouse amenities and internal infrastructure.',
     },
     {
       id: 'security',
-      navLabel: 'Trust',
-      eyebrow: 'Trust',
-      title: 'Trust begins with clarity',
+      navLabel: 'Security',
+      eyebrow: 'Security',
+      title: '24x7 gated entry and perimeter security',
       description:
-        'CRDA approval, gated entry, CCTV, and 5 years of maintenance make the project easier to choose with confidence.',
-      image: '/kalpavruksha-trust-hero-1440.webp',
-      imageSrcSet: TRUST_HERO_SRC_SET,
+        "8' compound wall with 2' solar fencing, 24x7 gated entry with CCTV, and solar lighting.",
+      image: '/entry-hero.webp',
+      imageSrcSet: SECURITY_HERO_IMAGE_SRC_SET,
       imageSizes: HERO_IMAGE_SIZES,
-      alt: 'Interlocking wooden beams representing trust, stability, and structure',
+      alt: demoImg[0].alt,
       imagePosition: 'center center',
       imageScale: 1.03,
       facts: [
-        'CRDA approved',
         '24x7 gated entry',
-        '5 years maintenance',
+        'CCTV',
+        'Solar lighting',
       ],
-      summaryLabel: 'Why it feels reliable',
-      summaryTitle: 'Trust built on clarity',
+      summaryLabel: 'Facility view',
+      summaryTitle: demoImg[0].title,
       summaryText:
-        'Dependability comes from visible approvals, site security, and a maintenance commitment that continues after purchase.',
+        "Grand entrance view supported by the project's gated access, boundary wall, CCTV coverage, and solar lighting.",
     },
     {
       id: 'clubhouse',
-      navLabel: 'Calm',
-      eyebrow: 'Calm',
-      title: 'Calm starts with space',
+      navLabel: 'Clubhouse',
+      eyebrow: 'Clubhouse amenities',
+      title: 'Clubhouse amenities for everyday living',
       description:
-        'Wide roads, walkways, avenue planting, and underground utilities help the layout feel open and ordered.',
-      image: '/kalpavruksha-calm-hero-1440.webp',
-      imageSrcSet: CALM_HERO_SRC_SET,
-      imageSizes: HERO_IMAGE_SIZES,
-      alt: 'Soft misty hills and layered gradients expressing calm and ease',
-      imagePosition: 'center center',
-      imageScale: 1.03,
-      facts: [
-        "60' / 40' / 33' roads",
-        'Underground utilities',
-        'Walkways and avenue trees',
-      ],
-      summaryLabel: 'Calm by design',
-      summaryTitle: 'Space feels intentional',
-      summaryText:
-        'Road widths, walkways, planting, and concealed services help the layout feel more open and organized.',
-    },
-    {
-      id: 'landscape',
-      navLabel: 'Peace',
-      eyebrow: 'Peace',
-      title: 'Peace comes from green edges',
-      description:
-        'Rivulet gardens, lotus pond zones, and green pockets make the site feel softer and less crowded.',
-      image: '/kalpavruksha-peace-hero-1440.webp',
-      imageSrcSet: PEACE_HERO_SRC_SET,
-      imageSizes: HERO_IMAGE_SIZES,
-      alt: 'Concentric sand circles and stones representing peace and stillness',
-      imagePosition: 'center center',
-      imageScale: 1.03,
-      facts: [
-        'Rivulet garden',
-        'Lotus pond zones',
-        'Drip irrigation',
-      ],
-      summaryLabel: 'Peace in the layout',
-      summaryTitle: 'Landscape changes the mood',
-      summaryText:
-        'Landscape and water planning are used to make the site feel greener, softer, and less congested.',
-    },
-    {
-      id: 'connectivity',
-      navLabel: 'Belonging',
-      eyebrow: 'Belonging',
-      title: 'Belonging grows around shared spaces',
-      description:
-        'The clubhouse, pool, play areas, and guest spaces give families more ways to spend time together.',
-      image: '/kalpavruksha-belonging-hero-1440.webp',
-      imageSrcSet: BELONGING_HERO_SRC_SET,
-      imageSizes: HERO_IMAGE_SIZES,
-      alt: 'Interwoven illuminated roots expressing belonging and connection',
+        'Infinity pool, yoga room, gym, party lawn, convention hall, private theatre, and guest rooms.',
+      image: '/club-house-hero.webp',
+      alt: demoImg[1].alt,
       imagePosition: 'center center',
       imageScale: 1.03,
       facts: [
         'Infinity pool',
+        'Yoga room & gym',
         'Guest rooms',
-        'Indoor and outdoor play',
       ],
-      summaryLabel: 'Belonging in practice',
-      summaryTitle: 'Community feels more natural',
+      summaryLabel: 'Facility view',
+      summaryTitle: demoImg[1].title,
       summaryText:
-        'The clubhouse mix supports both everyday routines and larger gatherings inside the community.',
+        'Clubhouse planning includes wellness, recreation, celebration, and guest stay spaces within the project.',
     },
     {
-      id: 'water',
-      navLabel: 'Care',
-      eyebrow: 'Care',
-      title: 'Care shows in what lasts',
+      id: 'landscape',
+      navLabel: 'Landscape',
+      eyebrow: 'Landscape',
+      title: 'Landscape planning within the layout',
       description:
-        'Power, water, fiber, drainage, and solar lighting are planned for dependable long-term use.',
-      image: '/kalpavruksha-care-hero-1440.webp',
-      imageSrcSet: CARE_HERO_SRC_SET,
-      imageSizes: HERO_IMAGE_SIZES,
-      alt: 'Soft luminous flowing forms representing care, continuity, and attention',
+        'Central rivulet garden beside the creek, landscaped arrival court, and edge gardens.',
+      image: '/contour-garden-hero.webp',
+      alt: demoImg[2].alt,
       imagePosition: 'center center',
       imageScale: 1.03,
       facts: [
-        'Power, water, and fiber',
-        'Stormwater drains',
-        'Solar lighting',
+        'Rivulet garden',
+        'Arrival court',
+        'Edge gardens',
       ],
-      summaryLabel: 'Care in the details',
-      summaryTitle: 'The groundwork matters',
+      summaryLabel: 'Facility view',
+      summaryTitle: demoImg[2].title,
       summaryText:
-        'Infrastructure planning helps the project feel more durable, cleaner, and better prepared for long-term use.',
+        'Green spaces are planned across the arrival and internal landscape zones of the community.',
+    },
+    {
+      id: 'connectivity',
+      navLabel: 'Connectivity',
+      eyebrow: 'Roads and access',
+      title: 'Wide internal roads and regional access',
+      description:
+        "60', 40', and 33' wide internal CC roads, walkways, avenue plantations, and stormwater drains.",
+      image: '/arrival-court-hero.webp',
+      alt: demoImg[3].alt,
+      imagePosition: 'center center',
+      imageScale: 1.03,
+      facts: [
+        'Near Greenfield Highway',
+        '7.5 km from Vijayawada',
+        '13.5 km from BITS Amaravati',
+      ],
+      summaryLabel: 'Facility view',
+      summaryTitle: demoImg[3].title,
+      summaryText:
+        'Near Vijayawada-Nagpur Greenfield Highway, with connectivity to Vijayawada and Amaravati-side destinations.',
+    },
+    {
+      id: 'water',
+      navLabel: 'Water',
+      eyebrow: 'Water and utilities',
+      title: 'Water and utility systems below the surface',
+      description:
+        'Overhead tank with underground supply, STP-connected drainage, and drip irrigation.',
+      image: '/lotus-pond-hero.webp',
+      alt: demoImg[4].alt,
+      imagePosition: 'center center',
+      imageScale: 1.03,
+      facts: [
+        'Underground supply',
+        'STP drainage',
+        'Drip irrigation',
+      ],
+      summaryLabel: 'Facility view',
+      summaryTitle: demoImg[4].title,
+      summaryText:
+        'Underground networks are planned for power, water, fiber, and sewage, alongside the project water systems.',
     },
   ];
   const activeHeroSlide = heroSlides[activeHeroSlideIndex] || heroSlides[0];
@@ -870,7 +824,7 @@ const KalpavrukshaPage = () => {
         setIsHeroSlideVisible(true);
         heroSlideTransitionTimeoutRef.current = null;
       }, 180);
-    }, 5000);
+    }, 3000);
 
     return () => window.clearInterval(intervalId);
   }, [heroSlides.length]);
@@ -1132,7 +1086,7 @@ const KalpavrukshaPage = () => {
         email: layoutLeadForm.email.trim() || undefined,
       });
 
-  const assetType = downloadAssetKey === 'layout' ? 'master_layout' : 'brochure';
+      const assetType = downloadAssetKey === 'layout' ? 'master_layout' : 'brochure';
       trackGenerateLead({
         form_name: 'kalpavruksha_download_form',
         lead_type: `${assetType}_download`,
@@ -1163,21 +1117,6 @@ const KalpavrukshaPage = () => {
       setDownloadSubmitting(false);
     }
   };
-
-  const formSectionClass = "rounded-[24px] border border-[#eadfcb] bg-white/[0.86] p-4 shadow-[0_18px_40px_rgba(15,23,42,0.05)] backdrop-blur-sm md:p-5";
-  const formSectionEyebrowClass = "text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8b6328]";
-  const formSectionTitleClass = "mt-1 text-lg font-semibold tracking-[-0.01em] text-[#221c14]";
-  const formLabelClass = "mb-2 block text-sm font-medium text-[#53594f]";
-  const formInputClass = "min-h-[3.2rem] w-full rounded-2xl border border-[#e0cfaf] bg-white px-4 py-3 text-[15px] text-[#221c14] placeholder:text-[#9a927f] shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] transition-all duration-200 focus:border-[#cba159] focus:outline-none focus:ring-4 focus:ring-[#cba159]/15";
-  const formTextareaClass = "w-full rounded-2xl border border-[#e0cfaf] bg-white px-4 py-3 text-[15px] text-[#221c14] placeholder:text-[#9a927f] shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] transition-all duration-200 focus:border-[#cba159] focus:outline-none focus:ring-4 focus:ring-[#cba159]/15";
-  const formChipClass = (isActive) =>
-    isActive
-      ? 'rounded-2xl border border-[#cba159] bg-[linear-gradient(180deg,#d8b36e_0%,#cba159_100%)] px-3 py-3 text-sm font-semibold text-[#1d1609] shadow-[0_12px_24px_rgba(203,161,89,0.18)]'
-      : 'rounded-2xl border border-[#e0cfaf] bg-white px-3 py-3 text-sm font-medium text-[#5f665d] transition-all duration-200 hover:border-[#cba159] hover:text-[#8b6328]';
-  const pickupModeCardClass = (isActive) =>
-    isActive
-      ? 'flex cursor-pointer flex-col rounded-[20px] border border-[#cba159] bg-[linear-gradient(180deg,#fff4dc_0%,#f7ebd0_100%)] px-4 py-3 shadow-[0_14px_28px_rgba(203,161,89,0.14)]'
-      : 'flex cursor-pointer flex-col rounded-[20px] border border-[#e3d4b9] bg-white px-4 py-3 transition-all duration-200 hover:border-[#cba159] hover:bg-[#fffaf1]';
   return (
     <>
       <Helmet>
@@ -1196,7 +1135,7 @@ const KalpavrukshaPage = () => {
         <link
           rel="preload"
           as="image"
-          href="/kalpabg1-960.webp"
+          href="/kalpabg2-960.webp"
           type="image/webp"
           imageSrcSet={HERO_IMAGE_SRC_SET}
           imageSizes={HERO_IMAGE_SIZES}
@@ -1237,194 +1176,161 @@ const KalpavrukshaPage = () => {
       </Helmet>
       {/* Toast */}
       {toast && (
-        <div className={`fixed top-4 left-1/2 z-50 -translate-x-1/2 rounded-full border px-4 py-2 text-sm font-medium shadow-lg ${toast.type === 'success' ? 'border-[#d3b57c] bg-[#162118] text-[#f5ebd2]' : 'border-[#8f4a4a] bg-[#5d2626] text-[#fff1ee]'}`}>
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded shadow text-white ${toast.type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`}>
           {toast.msg}
         </div>
       )}
 
       {/* Site Visit Modal */}
       {showVisitModal && (
-        <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto bg-black/55 p-4 backdrop-blur-[3px] md:items-center" onClick={(e) => { if (e.target === e.currentTarget) closeVisitModal(); }}>
-          <div className="relative my-6 flex max-h-[calc(100vh-3rem)] w-full max-w-3xl flex-col overflow-hidden rounded-[32px] border border-[#e2d4ba] bg-[linear-gradient(180deg,#fcfaf5_0%,#f6efe0_100%)] shadow-[0_34px_90px_rgba(0,0,0,0.24)]">
-            <div className="border-b border-[#ebe2d1] bg-[linear-gradient(180deg,#f7f0e2_0%,#f0e1c4_100%)] px-6 py-5">
-              <div className="flex items-start justify-between gap-4">
-                <div className="max-w-xl">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8b6328]">Visit Planning</p>
-                  <h3 className="mt-2 text-[1.65rem] font-bold tracking-[-0.02em] text-[#221c14]">Book a Site Visit</h3>
-                  <p className="mt-2 text-sm leading-6 text-[#6f6758]">
-                    Share your preferred date, time, and travel preference. We will confirm the visit and help coordinate pickup if needed.
-                  </p>
-                </div>
-                <button onClick={closeVisitModal} type="button" className="rounded-full border border-[#dfd2b5] bg-white p-2 text-[#6f6a5f] transition-colors duration-200 hover:bg-[#fbf7ef] hover:text-[#221c14]"><X className="w-5 h-5" /></button>
-              </div>
+        <div className="fixed inset-0 z-[120] flex items-start md:items-center justify-center bg-black/50 overflow-y-auto p-4" onClick={(e) => { if (e.target === e.currentTarget) closeVisitModal(); }}>
+          <div className="relative bg-white rounded-2xl w-full max-w-2xl shadow-xl my-6 max-h-[calc(100vh-3rem)] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <h3 className="text-xl font-bold">Book a Site Visit</h3>
+              <button onClick={closeVisitModal} className="p-2 rounded hover:bg-gray-100"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={submitSiteVisit} className="flex flex-1 min-h-0 flex-col">
-              <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
-                <div className={formSectionClass}>
-                  <p className={formSectionEyebrowClass}>Contact Details</p>
-                  <h4 className={formSectionTitleClass}>Where should we reach you?</h4>
-                  <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div>
-                      <label className={formLabelClass}>Full Name</label>
-                      <input name="name" value={form.name} onChange={onChange} className={formInputClass} placeholder="Your name" required />
-                    </div>
-                    <div>
-                      <label className={formLabelClass}>Phone Number</label>
-                      <input name="phone" value={form.phone} onChange={onChange} className={formInputClass} placeholder="e.g., 9898899666" required />
-                      <p className="mt-2 text-xs text-[#8b877d]">We will also send a WhatsApp update to this number.</p>
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className={formLabelClass}>Email (optional)</label>
-                      <input type="email" name="email" value={form.email} onChange={onChange} className={formInputClass} placeholder="you@example.com" />
+              <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <input name="name" value={form.name} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Your name" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <input name="phone" value={form.phone} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="e.g., 9898899666" required />
+                  <p className="text-xs text-gray-500 mt-1">We will also send a WhatsApp update to this number.</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email (optional)</label>
+                  <input type="email" name="email" value={form.email} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="you@example.com" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Date</label>
+                  <input type="date" name="preferredDate" min={todayDate} value={form.preferredDate} onChange={onChange} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Time Slot</label>
+                  <div className="border rounded-lg p-2 bg-gray-50 max-h-36 overflow-y-auto">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {VISIT_TIME_SLOTS.map((slot) => (
+                        <button
+                          key={slot.value}
+                          type="button"
+                          onClick={() => setForm(prev => ({ ...prev, preferredTime: slot.value }))}
+                          className={`px-3 py-2 rounded-md text-sm font-medium border transition-colors ${
+                            form.preferredTime === slot.value
+                              ? 'bg-emerald-600 text-white border-emerald-600'
+                              : 'bg-white text-gray-700 border-gray-300 hover:border-emerald-500 hover:text-emerald-700'
+                          }`}
+                        >
+                          {slot.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
+                  <input type="hidden" name="preferredTime" value={form.preferredTime} required />
                 </div>
-
-                <div className={formSectionClass}>
-                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,15rem)_1fr] lg:gap-6">
-                    <div>
-                      <p className={formSectionEyebrowClass}>Visit Preferences</p>
-                      <h4 className={formSectionTitleClass}>Pick a suitable slot</h4>
-                      <p className="mt-2 text-sm leading-6 text-[#716a5d]">
-                        Choose the date and time that works best for you. We will confirm availability after submission.
-                      </p>
-                    </div>
-                    <div className="space-y-4">
-                      <div>
-                        <label className={formLabelClass}>Preferred Date</label>
-                        <input type="date" name="preferredDate" min={todayDate} value={form.preferredDate} onChange={onChange} className={formInputClass} required />
-                      </div>
-                      <div>
-                        <label className={formLabelClass}>Preferred Time Slot</label>
-                        <div className="max-h-40 overflow-y-auto rounded-[22px] border border-[#e6dac2] bg-[#fbf6ec] p-2.5">
-                          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                            {VISIT_TIME_SLOTS.map((slot) => (
-                              <button
-                                key={slot.value}
-                                type="button"
-                                onClick={() => setForm(prev => ({ ...prev, preferredTime: slot.value }))}
-                                className={formChipClass(form.preferredTime === slot.value)}
-                              >
-                                {slot.label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        <input type="hidden" name="preferredTime" value={form.preferredTime} required />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className={formSectionClass}>
-                  <p className={formSectionEyebrowClass}>Travel Assistance</p>
-                  <h4 className={formSectionTitleClass}>Do you need pickup support?</h4>
-                  <div className="mt-4 grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Transport Required</label>
+                  <div className="grid grid-cols-2 gap-2">
                     {['Yes', 'No'].map((value) => (
                       <button
                         key={value}
                         type="button"
                         onClick={() => onChange({ target: { name: 'transportRequired', value } })}
-                        className={formChipClass(form.transportRequired === value)}
+                        className={`px-3 py-2 rounded-md text-sm font-medium border transition-colors ${
+                          form.transportRequired === value
+                            ? 'bg-emerald-600 text-white border-emerald-600'
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-emerald-500 hover:text-emerald-700'
+                        }`}
                       >
                         {value}
                       </button>
                     ))}
                   </div>
-
-                  {form.transportRequired === 'Yes' ? (
-                    <div className="mt-5 space-y-4">
-                      <div>
-                        <label className={formLabelClass}>Pickup Address Input</label>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                          <label className={pickupModeCardClass(form.pickupMode === 'manual')}>
-                            <input
-                              type="radio"
-                              name="pickupMode"
-                              value="manual"
-                              checked={form.pickupMode === 'manual'}
-                              onChange={onChange}
-                              className="sr-only"
-                            />
-                            <span className="text-sm font-semibold text-[#221c14]">Manual Address</span>
-                            <span className="mt-1 text-xs leading-5 text-[#746d60]">Type the pickup location directly.</span>
-                          </label>
-                          <label className={pickupModeCardClass(form.pickupMode === 'map')}>
-                            <input
-                              type="radio"
-                              name="pickupMode"
-                              value="map"
-                              checked={form.pickupMode === 'map'}
-                              onChange={onChange}
-                              className="sr-only"
-                            />
-                            <span className="text-sm font-semibold text-[#221c14]">Select on Map</span>
-                            <span className="mt-1 text-xs leading-5 text-[#746d60]">Tap the map to auto-fill your pickup point.</span>
-                          </label>
-                        </div>
-                      </div>
-
-                      {form.pickupMode === 'map' && (
-                        <div className="overflow-hidden rounded-[22px] border border-[#e5dcc8] bg-white">
-                          {!pickupMapApiKey ? (
-                            <div className="p-3 text-xs text-[#5f665d]">
-                              Map is unavailable right now. Enter the pickup address manually below.
-                            </div>
-                          ) : pickupMapLoadError ? (
-                            <div className="p-3 text-xs text-[#7a3434]">
-                              Map failed to load. Enter the pickup address manually below.
-                            </div>
-                          ) : (
-                            <Suspense fallback={<div className="p-3 text-xs text-[#5f665d]">Loading map...</div>}>
-                              <PickupLocationMap
-                                apiKey={pickupMapApiKey}
-                                center={pickupMapCenter}
-                                containerStyle={PICKUP_MAP_CONTAINER_STYLE}
-                                libraries={MAP_LIBRARIES}
-                                mapLoaderId={MAPS_LOADER_ID}
-                                onLoadError={() => setPickupMapLoadError(true)}
-                                onMapClick={onPickupMapClick}
-                                onMarkerDragEnd={onPickupMarkerDragEnd}
-                                selectedPosition={
-                                  form.pickupLat && form.pickupLng
-                                    ? { lat: Number(form.pickupLat), lng: Number(form.pickupLng) }
-                                    : null
-                                }
-                              />
-                            </Suspense>
-                          )}
-                        </div>
-                      )}
-
-                      <div>
-                        <textarea
-                          name="pickupAddress"
-                          value={form.pickupAddress}
+                </div>
+                {form.transportRequired === 'Yes' ? (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Pickup Address Input</label>
+                    <div className="flex items-center gap-4 mb-2">
+                      <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                        <input
+                          type="radio"
+                          name="pickupMode"
+                          value="manual"
+                          checked={form.pickupMode === 'manual'}
                           onChange={onChange}
-                          rows={3}
-                          className={formTextareaClass}
-                          placeholder={form.pickupMode === 'map' ? 'Click map/drag marker to fill textual address, or type manually' : 'Enter pickup address'}
-                          required
                         />
-                        {form.pickupMode === 'map' && (
-                          <p className="mt-2 text-xs text-[#8b877d]">Tap on the map or drag the marker to auto-fill a textual address.</p>
+                        Manual
+                      </label>
+                      <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                        <input
+                          type="radio"
+                          name="pickupMode"
+                          value="map"
+                          checked={form.pickupMode === 'map'}
+                          onChange={onChange}
+                        />
+                        Select on Map
+                      </label>
+                    </div>
+
+                    {form.pickupMode === 'map' && (
+                      <div className="rounded-lg overflow-hidden border border-gray-200 mb-2">
+                        {!pickupMapApiKey ? (
+                          <div className="p-3 text-xs text-gray-600">
+                            Map is unavailable right now. Enter the pickup address manually below.
+                          </div>
+                        ) : pickupMapLoadError ? (
+                          <div className="p-3 text-xs text-red-600">
+                            Map failed to load. Enter the pickup address manually below.
+                          </div>
+                        ) : (
+                          <Suspense fallback={<div className="p-3 text-xs text-gray-600">Loading map...</div>}>
+                            <PickupLocationMap
+                              apiKey={pickupMapApiKey}
+                              center={pickupMapCenter}
+                              containerStyle={PICKUP_MAP_CONTAINER_STYLE}
+                              libraries={MAP_LIBRARIES}
+                              mapLoaderId={MAPS_LOADER_ID}
+                              onLoadError={() => setPickupMapLoadError(true)}
+                              onMapClick={onPickupMapClick}
+                              onMarkerDragEnd={onPickupMarkerDragEnd}
+                              selectedPosition={
+                                form.pickupLat && form.pickupLng
+                                  ? { lat: Number(form.pickupLat), lng: Number(form.pickupLng) }
+                                  : null
+                              }
+                            />
+                          </Suspense>
                         )}
                       </div>
-                    </div>
-                  ) : (
-                    <p className="mt-4 rounded-[20px] border border-[#eadfcb] bg-[#fbf5e8] px-4 py-3 text-sm text-[#5f665d]">
-                      Pickup details are not needed if you will arrange your own travel.
-                    </p>
-                  )}
-                </div>
+                    )}
+
+                    <textarea
+                      name="pickupAddress"
+                      value={form.pickupAddress}
+                      onChange={onChange}
+                      rows={3}
+                      className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder={form.pickupMode === 'map' ? 'Click map/drag marker to fill textual address, or type manually' : 'Enter pickup address'}
+                      required
+                    />
+                    {form.pickupMode === 'map' && (
+                      <p className="text-xs text-gray-500 mt-1">Tap on map or drag marker to auto-fill a textual address.</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                    Pickup details are not needed if you will arrange your own travel.
+                  </p>
+                )}
               </div>
-              <div className="shrink-0 border-t border-[#ebe2d1] bg-white/[0.72] px-6 pb-5 pt-4 shadow-[0_-10px_24px_rgba(15,23,42,0.08)] backdrop-blur-sm">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-                  <button type="submit" disabled={submitting} className={`inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold shadow-[0_18px_34px_rgba(203,161,89,0.18)] sm:w-auto sm:min-w-[13rem] ${submitting ? 'bg-[#dcc7a0] text-[#6f654e]' : 'bg-[#cba159] text-[#1d1609] hover:bg-[#d4ab68]'}`}>
-                    <CheckCircle className="h-4 w-4" />
-                    {submitting ? 'Submitting...' : 'Submit Request'}
-                  </button>
-                </div>
+              <div className="shrink-0 border-t border-gray-200 bg-white px-6 pt-3 pb-4 shadow-[0_-10px_24px_rgba(15,23,42,0.08)]">
+                <button type="submit" disabled={submitting} className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-white font-semibold ${submitting ? 'bg-emerald-400' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
+                  {submitting ? 'Submitting...' : 'Submit Request'}
+                </button>
+                <p className="text-xs text-gray-500 text-center mt-2">You will receive an email and WhatsApp update once submitted.</p>
               </div>
             </form>
           </div>
@@ -1433,84 +1339,66 @@ const KalpavrukshaPage = () => {
       {/* Layout Download Lead Modal */}
       {downloadAssetKey && activeDownloadAsset && (
         <div
-          className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto bg-black/55 p-4 backdrop-blur-[3px] md:items-center"
+          className="fixed inset-0 z-[120] flex items-start md:items-center justify-center bg-black/50 overflow-y-auto p-4"
           onClick={(e) => { if (e.target === e.currentTarget) closeDownloadLeadModal(); }}
         >
-          <div className="relative my-6 flex max-h-[calc(100vh-3rem)] w-full max-w-xl flex-col overflow-hidden rounded-[32px] border border-[#e2d4ba] bg-[linear-gradient(180deg,#fcfaf5_0%,#f6efe0_100%)] shadow-[0_34px_90px_rgba(0,0,0,0.24)]">
-            <div className="border-b border-[#ebe2d1] bg-[linear-gradient(180deg,#f7f0e2_0%,#f0e1c4_100%)] px-6 py-5">
-              <div className="flex items-start justify-between gap-4">
-                <div className="max-w-md">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8b6328]">Document Access</p>
-                  <h3 className="mt-2 text-[1.55rem] font-bold tracking-[-0.02em] text-[#221c14]">{activeDownloadAsset.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-[#6f6758]">
-                    {activeDownloadAsset.description}
-                  </p>
-                </div>
-                <button onClick={closeDownloadLeadModal} className="rounded-full border border-[#dfd2b5] bg-white p-2 text-[#6f6a5f] transition-colors duration-200 hover:bg-[#fbf7ef] hover:text-[#221c14]" type="button">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+          <div className="relative bg-white rounded-2xl w-full max-w-xl shadow-xl my-6 max-h-[calc(100vh-3rem)] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-teal-50">
+              <h3 className="text-xl font-bold text-gray-900">{activeDownloadAsset.title}</h3>
+              <button onClick={closeDownloadLeadModal} className="p-2 rounded hover:bg-white/80" type="button">
+                <X className="w-5 h-5" />
+              </button>
             </div>
             <form onSubmit={submitLayoutLead} className="flex flex-1 min-h-0 flex-col">
-              <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
-                <div className={formSectionClass}>
-                  <p className={formSectionEyebrowClass}>Quick Details</p>
-                  <h4 className={formSectionTitleClass}>Tell us where to send it</h4>
-                  <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div>
-                      <label className={formLabelClass}>Full Name</label>
-                      <input
-                        name="name"
-                        value={layoutLeadForm.name}
-                        onChange={onLayoutLeadChange}
-                        className={formInputClass}
-                        placeholder="Your name"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className={formLabelClass}>Phone Number</label>
-                      <input
-                        name="phone"
-                        value={layoutLeadForm.phone}
-                        onChange={onLayoutLeadChange}
-                        className={formInputClass}
-                        placeholder="e.g., 9898899666"
-                        required
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className={formLabelClass}>Email (optional)</label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={layoutLeadForm.email}
-                        onChange={onLayoutLeadChange}
-                        className={formInputClass}
-                        placeholder="you@example.com"
-                      />
-                    </div>
+              <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {activeDownloadAsset.description}
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input
+                      name="name"
+                      value={layoutLeadForm.name}
+                      onChange={onLayoutLeadChange}
+                      className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Your name"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input
+                      name="phone"
+                      value={layoutLeadForm.phone}
+                      onChange={onLayoutLeadChange}
+                      className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="e.g., 9898899666"
+                      required
+                    />
                   </div>
                 </div>
-
-                <div className="rounded-[22px] border border-[#eadfcb] bg-[#fbf5e8] px-4 py-3 text-sm leading-6 text-[#625c50]">
-                  Submit once and the document will open for download immediately after the form is accepted.
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email (optional)</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={layoutLeadForm.email}
+                    onChange={onLayoutLeadChange}
+                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="you@example.com"
+                  />
                 </div>
+                <p className="text-xs text-gray-500">By continuing, you agree to be contacted by Easy Homes regarding this project.</p>
               </div>
-              <div className="shrink-0 border-t border-[#ebe2d1] bg-white/[0.72] px-6 pb-5 pt-4 shadow-[0_-10px_24px_rgba(15,23,42,0.08)] backdrop-blur-sm">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm leading-6 text-[#756d5f]">
-                    By continuing, you agree to be contacted by Easy Homes regarding this project.
-                  </p>
-                  <button
-                    type="submit"
-                    disabled={downloadSubmitting}
-                    className="inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 rounded-2xl bg-[#cba159] px-5 py-3 font-semibold text-[#1d1609] shadow-[0_18px_34px_rgba(203,161,89,0.18)] hover:bg-[#d4ab68] disabled:bg-[#dcc7a0] disabled:text-[#6f654e] sm:w-auto sm:min-w-[13rem]"
-                  >
-                    <Download className="h-4 w-4" />
-                    {downloadSubmitting ? 'Submitting...' : 'Submit & Download'}
-                  </button>
-                </div>
+              <div className="shrink-0 border-t border-gray-200 bg-white px-6 pt-3 pb-4 shadow-[0_-10px_24px_rgba(15,23,42,0.08)]">
+                <button
+                  type="submit"
+                  disabled={downloadSubmitting}
+                  className="w-full bg-emerald-600 text-white py-2.5 rounded-lg hover:bg-emerald-700 disabled:opacity-60"
+                >
+                  {downloadSubmitting ? 'Submitting...' : 'Submit & Download'}
+                </button>
               </div>
             </form>
           </div>
@@ -1519,253 +1407,113 @@ const KalpavrukshaPage = () => {
       <h1 className="sr-only">
         Kalpavruksha open plots in Vijayawada by Easy Homes
       </h1>
-
-      <div className="fixed inset-x-0 top-0 z-[90] px-3 pt-3 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl rounded-[24px] border border-white/[0.22] bg-[linear-gradient(180deg,rgba(7,11,9,0.96)_0%,rgba(10,14,12,0.92)_100%)] shadow-[0_26px_60px_rgba(0,0,0,0.32)] backdrop-blur-xl">
-          <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-5 lg:px-6">
-            <div className="flex min-w-0 items-center gap-3">
-              <Link
-                to="/"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#d7bd86]/40 bg-white/[0.08] text-[#f0ddb3] transition-colors duration-300 hover:bg-white/[0.14]"
-                aria-label="Go back to Easy Homes home"
-              >
-                <TreePine className="h-5 w-5" />
-              </Link>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium uppercase tracking-[0.3em] text-[#dbc58f] sm:text-[0.95rem]">
-                  Kalpavruksha
-                </p>
-              </div>
-            </div>
-
-            <nav className="hidden items-center gap-5 lg:flex xl:gap-6">
-              {projectNavItems.map((item) => (
-                <button
-                  key={item.label}
-                  type="button"
-                  onClick={item.onClick}
-                  className="text-sm font-medium text-white/[0.92] transition-colors duration-300 hover:text-[#f6e6bf]"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </nav>
-
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Link
-                to="/"
-                className="hidden rounded-full border border-white/[0.2] bg-white/[0.08] px-4 py-2 text-sm font-medium text-white/[0.92] transition-all duration-300 hover:bg-white/[0.14] md:inline-flex"
-              >
-                Back to Home
-              </Link>
-              <button
-                type="button"
-                onClick={() => openVisitModal()}
-                className="hidden rounded-xl bg-[#cba159] px-4 py-2.5 text-sm font-semibold text-[#1d1609] shadow-[0_16px_34px_rgba(203,161,89,0.3)] transition-all duration-300 hover:bg-[#d4ab68] lg:inline-flex"
-              >
-                Schedule a Visit
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsProjectNavOpen((current) => !current)}
-                aria-expanded={isProjectNavOpen}
-                aria-controls="kalpavruksha2-project-nav"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.16] bg-white/[0.08] text-white transition-colors duration-300 hover:bg-white/[0.14] lg:hidden"
-              >
-                {isProjectNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </button>
-            </div>
-          </div>
-
-          {isProjectNavOpen && (
-            <div
-              id="kalpavruksha2-project-nav"
-              className="border-t border-white/10 px-4 pb-4 pt-3 lg:hidden"
-            >
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {projectNavItems.map((item) => (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={() => {
-                      setIsProjectNavOpen(false);
-                      item.onClick();
-                    }}
-                    className="rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-white/[0.1]"
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <Link
-                  to="/"
-                  className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-white/[0.1]"
-                >
-                  Back to Home
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsProjectNavOpen(false);
-                    openVisitModal();
-                  }}
-                  className="inline-flex items-center justify-center rounded-2xl bg-[#cba159] px-4 py-3 text-sm font-semibold text-[#1d1609] transition-all duration-300 hover:bg-[#d4ab68]"
-                >
-                  Schedule a Visit
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="min-h-screen overflow-hidden bg-[#f5f1e8]">
+      <Navbar />
+      <div className="min-h-screen bg-white overflow-hidden">
         {/* Section 1: Hero Section */}
-        <section ref={heroSectionRef} className="relative isolate min-h-[100svh] overflow-hidden bg-[#111712] text-white">
-          <div className="absolute inset-0">
+        <section ref={heroSectionRef} className="relative overflow-hidden bg-[#faf8f3] pt-2 text-slate-900 sm:pt-4 lg:min-h-[calc(100vh-64px)] lg:pt-4">
+          <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#fffefb] to-transparent"></div>
+          <div className="relative z-10 mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-5 lg:flex lg:min-h-[calc(100vh-96px)] lg:flex-col lg:px-8 lg:py-4">
             <div
-              className={`h-full w-full transition-all duration-500 ease-in-out ${
-                isHeroSlideVisible ? 'scale-100 opacity-100' : 'scale-[1.02] opacity-0'
-              }`}
+              className="grid gap-4 sm:gap-5 lg:flex-1 lg:grid-cols-[1.02fr_0.98fr] lg:items-stretch lg:gap-6"
+              onTouchStart={handleHeroTouchStart}
+              onTouchEnd={handleHeroTouchEnd}
+              style={{ touchAction: 'pan-y' }}
             >
-              <img
-                key={activeHeroSlide.id}
-                src={activeHeroSlide.image}
-                srcSet={activeHeroSlide.imageSrcSet}
-                sizes={activeHeroSlide.imageSizes || '100vw'}
-                alt={activeHeroSlide.alt}
-                className="h-full w-full object-cover brightness-[0.94] saturate-[1.02] transition-transform duration-700 ease-out"
-                style={{
-                  objectPosition: activeHeroSlide.imagePosition || 'center center',
-                  transformOrigin: 'center center',
-                  transform: `scale(${activeHeroSlide.imageScale || 1.03})`,
-                }}
-                fetchPriority={activeHeroSlideIndex === 0 ? 'high' : 'auto'}
-                decoding="async"
-                loading={activeHeroSlideIndex === 0 ? 'eager' : 'lazy'}
-              />
-            </div>
-            <div className="absolute inset-0 bg-[linear-gradient(95deg,rgba(6,10,8,0.5)_0%,rgba(7,11,9,0.3)_28%,rgba(7,11,9,0.12)_56%,rgba(7,11,9,0.04)_100%)] sm:bg-[linear-gradient(95deg,rgba(6,10,8,0.42)_0%,rgba(7,11,9,0.24)_28%,rgba(7,11,9,0.08)_56%,rgba(7,11,9,0.03)_100%)]"></div>
-            <div className="absolute inset-0 sm:hidden bg-[linear-gradient(90deg,rgba(7,10,8,0.56)_0%,rgba(7,10,8,0.42)_38%,rgba(7,10,8,0.22)_68%,rgba(7,10,8,0.08)_100%)]"></div>
-            <div className="hidden sm:block absolute inset-y-0 left-0 w-[74%] lg:w-[58%] bg-[linear-gradient(90deg,rgba(7,10,8,0.2)_0%,rgba(7,10,8,0.15)_44%,rgba(7,10,8,0.08)_68%,rgba(7,10,8,0.03)_84%,rgba(7,10,8,0)_100%)] backdrop-blur-[3px]"></div>
-            <div className="hidden sm:block absolute inset-y-0 left-0 w-[58%] lg:w-[40%] bg-[linear-gradient(90deg,rgba(7,10,8,0.16)_0%,rgba(7,10,8,0.1)_54%,rgba(7,10,8,0.03)_84%,rgba(7,10,8,0)_100%)] backdrop-blur-[7px]"></div>
-            <div className="hidden sm:block absolute inset-y-0 left-0 w-[40%] lg:w-[26%] bg-[linear-gradient(90deg,rgba(7,10,8,0.12)_0%,rgba(7,10,8,0.05)_68%,rgba(7,10,8,0)_100%)] backdrop-blur-[12px]"></div>
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,10,8,0.28)_0%,rgba(6,10,8,0.06)_28%,rgba(6,10,8,0.12)_72%,rgba(6,10,8,0.34)_100%)]"></div>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(231,201,140,0.12),_transparent_22%),radial-gradient(circle_at_bottom_left,_rgba(39,94,62,0.1),_transparent_32%)]"></div>
-          </div>
-
-          <div className="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-black/[0.24] to-transparent"></div>
-
-          <div
-            className="relative z-10 mx-auto flex min-h-[100svh] max-w-7xl flex-col px-4 pb-8 pt-[8.8rem] sm:px-6 sm:pb-10 sm:pt-32 lg:px-8 lg:pb-12 lg:pt-28"
-            onTouchStart={handleHeroTouchStart}
-            onTouchEnd={handleHeroTouchEnd}
-            style={{ touchAction: 'pan-y' }}
-          >
-            <div className="relative grid min-h-0 flex-1 items-end gap-8 lg:grid-cols-[minmax(0,58rem)_1fr] lg:gap-14 xl:gap-[4.5rem]">
-              <div aria-live="polite" className="w-full min-w-0 self-end">
-                <div className="w-full max-w-[58rem]">
+              <div className="order-2 relative overflow-hidden flex flex-col rounded-[28px] border border-[#e7dfcf] bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.08),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(234,179,8,0.08),_transparent_30%),linear-gradient(180deg,_#fffdf8_0%,_#f8f3e8_100%)] px-4 py-5 shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:rounded-[32px] sm:px-6 sm:py-6 lg:order-1 lg:h-full lg:min-h-0 lg:px-8 lg:py-8">
+                <div className="pointer-events-none absolute -left-10 top-10 h-28 w-28 rounded-full bg-emerald-200/25 blur-3xl"></div>
+                <div className="pointer-events-none absolute bottom-0 right-0 h-36 w-36 rounded-full bg-amber-100/40 blur-3xl"></div>
+                <div aria-live="polite" className="relative z-10 flex flex-1 flex-col">
                   <article
                     key={activeHeroSlide.id}
-                    className={`w-full transition-all duration-500 ease-in-out ${
+                    className={`flex flex-1 flex-col transition-all duration-500 ease-in-out ${
                       isHeroSlideVisible ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
                     }`}
                   >
-                    <div className="relative w-full max-w-none px-0 sm:max-w-[46rem] lg:max-w-[50rem]">
-                      <div className="pointer-events-none absolute -left-6 -top-7 hidden h-[17rem] w-[17rem] rounded-full bg-[radial-gradient(circle,_rgba(6,10,8,0.22)_0%,_rgba(6,10,8,0.08)_54%,_rgba(6,10,8,0)_82%)] blur-2xl sm:block sm:h-[21rem] sm:w-[21rem]"></div>
-                      <div className="relative flex flex-col justify-end">
-                        <div>
-                        <p className="inline-flex items-center gap-2 rounded-full border border-white/[0.12] bg-white/[0.08] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.26em] text-[#f1ddb1] backdrop-blur-none sm:px-3.5 sm:py-2 sm:text-[11px] sm:backdrop-blur-sm">
-                          <span className="h-2 w-2 rounded-full bg-[#dcb66a] shadow-[0_0_0_4px_rgba(220,182,106,0.12)]"></span>
-                          <span>{activeHeroSlide.eyebrow}</span>
-                        </p>
-                        <div className="mt-4 h-px w-28 bg-gradient-to-r from-[#e1cb97] via-white/[0.45] to-transparent sm:mt-5"></div>
+                    <div className="max-w-[36rem]">
+                      <p className="inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-white/80 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-emerald-800 shadow-[0_10px_24px_rgba(16,185,129,0.08)] backdrop-blur sm:text-[11px]">
+                        <span className="h-2 w-2 rounded-full bg-emerald-600 shadow-[0_0_0_4px_rgba(16,185,129,0.14)]"></span>
+                        <span>{activeHeroSlide.eyebrow}</span>
+                      </p>
+                      <h1 className="mt-5 max-w-[12.8ch] text-[2rem] font-semibold leading-[0.96] tracking-[-0.05em] text-slate-900 sm:text-[2.55rem] md:text-[2.9rem] lg:text-[3.2rem]">
+                        {activeHeroSlide.title}
+                      </h1>
+                      <p className="mt-5 max-w-[33rem] text-[15.5px] leading-7 text-slate-600 sm:text-base sm:leading-8 lg:text-[1.05rem] lg:leading-8">
+                        {activeHeroSlide.description}
+                      </p>
+                      <div className="mt-6 h-px w-full max-w-[34rem] bg-gradient-to-r from-[#dccb9e] via-[#ece3cd] to-transparent"></div>
+                    </div>
 
-                        <div className="mt-4 min-h-[4.4rem] sm:mt-5 sm:min-h-[5.4rem] lg:min-h-[6.1rem]">
-                          <h1
-                            className="w-full max-w-none leading-[0.95] tracking-[-0.045em] text-[#fbf6ea] [text-shadow:0_10px_28px_rgba(0,0,0,0.22)] sm:max-w-[14ch] lg:max-w-[15.2ch]"
-                            style={{ fontFamily: 'Georgia, Times New Roman, serif', fontWeight: 400, fontSize: 'clamp(1.68rem, 3.2vw, 3.28rem)', textWrap: 'balance' }}
-                          >
-                            {activeHeroSlide.title}
-                          </h1>
-                        </div>
-
-                        <div className="mt-3 min-h-[3.2rem] w-full max-w-none sm:mt-4 sm:max-w-[35rem] sm:min-h-[3.8rem] lg:max-w-[38rem]">
-                          <p
-                            className="text-[14px] leading-6 text-white/[0.88] [text-shadow:0_8px_20px_rgba(0,0,0,0.18)] sm:text-[0.98rem] sm:leading-7"
-                            style={{ textWrap: 'balance' }}
-                          >
-                            {activeHeroSlide.description}
-                          </p>
-                        </div>
-                      </div>
-
-                        <div className="mt-4 flex w-full max-w-none flex-wrap gap-2 sm:mt-5 sm:max-w-[38rem] sm:gap-2.5">
-                          {activeHeroSlide.facts.map((fact, index) => (
-                            <span
-                              key={fact}
-                              className={`inline-flex items-center gap-2 rounded-full border border-white/[0.12] bg-white/[0.08] px-3 py-1.5 text-[12px] font-medium text-white/[0.92] backdrop-blur-none sm:px-3.5 sm:text-[13px] sm:backdrop-blur-sm ${
-                                index === 2 ? 'hidden sm:inline-flex' : ''
-                              }`}
-                            >
-                              <span className="h-1.5 w-1.5 rounded-full bg-[#dcb66a]"></span>
-                              <span>{fact}</span>
+                    <div className="mt-5 grid max-w-[34rem] grid-cols-1 gap-2.5 min-[480px]:grid-cols-3">
+                      {activeHeroSlide.facts.map((fact) => (
+                        <div
+                          key={fact}
+                          className="group relative overflow-hidden rounded-[18px] border border-[#e6dcc7] bg-white/88 px-3.5 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.045)] backdrop-blur-sm transition-transform duration-300"
+                        >
+                          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-300/80 to-transparent"></div>
+                          <div className="flex items-start gap-2.5">
+                            <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.12)]"></span>
+                            <span className="text-[0.95rem] font-semibold leading-5 text-slate-700">
+                              {fact}
                             </span>
-                          ))}
+                          </div>
                         </div>
+                      ))}
+                    </div>
 
-                        <p className="mt-5 hidden text-[10px] font-semibold uppercase tracking-[0.2em] text-[#ead6aa]/90 sm:block">
-                          {HERO_SUPPORT_LINE}
-                        </p>
-
-                        <div className="mt-4 flex flex-col gap-3 sm:mt-6 sm:flex-row sm:items-center sm:gap-3.5">
-                          <button
-                            type="button"
-                            onClick={() => openDownloadLeadModal('brochure', 'hero_brochure_cta')}
-                            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#cba159] px-6 py-3.5 text-[15px] font-semibold text-[#1d1609] shadow-[0_18px_38px_rgba(203,161,89,0.28)] transition-all duration-300 hover:bg-[#d4ab68] hover:shadow-[0_22px_42px_rgba(203,161,89,0.34)] sm:min-h-14 sm:w-auto sm:min-w-[13.5rem] sm:px-8 sm:text-base"
-                          >
-                            <Download className="h-4 w-4 sm:h-5 sm:w-5" />
-                            <span>Download Brochure</span>
-                          </button>
-
-                          <a
-                            href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20Kalpavruksha%20project."
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={() => trackKalpavrukshaWhatsAppClick('hero_cta')}
-                            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-white/[0.14] bg-white/[0.05] px-5 py-3.5 text-[15px] font-semibold text-white/[0.92] shadow-[0_10px_20px_rgba(0,0,0,0.08)] backdrop-blur-none transition-all duration-300 hover:border-[#d8b46c]/70 hover:bg-white/[0.1] hover:text-white sm:min-h-14 sm:w-auto sm:px-6 sm:text-base sm:backdrop-blur-sm"
-                          >
-                            <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-                            <span>Talk to Us on WhatsApp</span>
-                          </a>
-                        </div>
+                      <div className="mt-8 pt-1 lg:mt-auto lg:pt-8">
+                        <div className="flex flex-col gap-3 sm:flex-row">
+                        <button
+                          type="button"
+                          onClick={() => openDownloadLeadModal('brochure', 'hero_brochure_cta')}
+                          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_28px_rgba(16,185,129,0.22)] transition-all duration-300 hover:from-emerald-700 hover:to-teal-700 hover:shadow-[0_18px_34px_rgba(16,185,129,0.26)] sm:min-h-14 sm:w-auto sm:px-8 sm:py-4 sm:text-base"
+                        >
+                          <Download className="h-4 w-4 sm:h-5 sm:w-5" />
+                          <span>Get Brochure</span>
+                        </button>
+                        <a
+                          href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20Kalpavruksha%20project."
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => trackKalpavrukshaWhatsAppClick('hero_cta')}
+                          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-[#e7d7ac] bg-[#fffaf0] px-6 py-3.5 text-[15px] font-semibold text-emerald-800 shadow-[0_10px_22px_rgba(242,229,192,0.35)] transition-all duration-300 hover:border-[#dcc58a] hover:bg-white hover:shadow-[0_14px_28px_rgba(242,229,192,0.4)] sm:min-h-14 sm:w-auto sm:px-8 sm:py-4 sm:text-base"
+                        >
+                          <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+                          <span>Talk to Us on WhatsApp</span>
+                        </a>
                       </div>
                     </div>
                   </article>
                 </div>
               </div>
 
-              <div className="hidden items-end justify-end lg:flex">
-                <div className="translate-y-3 rounded-[20px] border border-white/[0.08] bg-black/[0.1] px-3.5 py-3 shadow-[0_16px_32px_rgba(0,0,0,0.14)] backdrop-blur-sm">
-                  <div className="flex flex-wrap items-center justify-end gap-2 text-[10px] uppercase tracking-[0.24em] text-white/[0.62]">
-                    <span>{String(activeHeroSlideIndex + 1).padStart(2, '0')}</span>
-                    <span className="h-1 w-1 rounded-full bg-[#d4ab67]/65"></span>
-                    <span>{activeHeroSlide.navLabel}</span>
+              <div className="order-1 overflow-hidden rounded-[28px] border border-[#e8e1d0] bg-white shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:rounded-[32px] lg:order-2 lg:h-full lg:min-h-0">
+                <div className="relative aspect-[16/9] overflow-hidden sm:h-[17rem] sm:aspect-auto md:h-[22rem] lg:h-full">
+                  <div
+                    className={`h-full w-full transition-all duration-500 ease-in-out ${
+                      isHeroSlideVisible ? 'scale-100 opacity-100' : 'scale-[1.02] opacity-0'
+                    }`}
+                  >
+                    <img
+                      key={activeHeroSlide.id}
+                      src={activeHeroSlide.image}
+                      srcSet={activeHeroSlide.imageSrcSet}
+                      sizes={activeHeroSlide.imageSizes}
+                      alt={activeHeroSlide.alt}
+                      className="h-full w-full object-cover transition-transform duration-700 ease-out"
+                      style={{
+                        objectPosition: activeHeroSlide.imagePosition || 'center center',
+                        transformOrigin: 'center center',
+                        transform: `scale(${activeHeroSlide.imageScale || 1})`,
+                      }}
+                      fetchPriority={activeHeroSlideIndex === 0 ? 'high' : 'auto'}
+                      decoding="async"
+                      loading={activeHeroSlideIndex === 0 ? 'eager' : 'lazy'}
+                    />
                   </div>
-
-                  <div className="mt-2.5 flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={goToPreviousHeroSlide}
-                      aria-label="Show previous slide"
-                      className="inline-flex h-8.5 w-8.5 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-white/[0.74] backdrop-blur-sm transition-all duration-300 hover:border-[#d8b46c]/60 hover:bg-white/[0.08] hover:text-white"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-
-                    <div className="flex items-center gap-1">
+                </div>
+                <div className="min-h-[4.5rem] border-t border-[#eee4cf] bg-[linear-gradient(180deg,_#fffdf8_0%,_#faf5e9_100%)] px-4 py-3.5 md:hidden">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2">
                       {heroSlides.map((slide, index) => {
                         const isActive = index === activeHeroSlideIndex;
                         return (
@@ -1774,90 +1522,32 @@ const KalpavrukshaPage = () => {
                             type="button"
                             aria-label={`Show ${slide.navLabel} slide`}
                             onClick={() => changeHeroSlide(index)}
-                            className={`rounded-full transition-all duration-300 ${
-                              isActive ? 'h-1.5 w-5 bg-[#d4ab67]' : 'h-1.5 w-1.5 bg-white/[0.24] hover:bg-white/[0.38]'
+                            className={`h-2.5 rounded-full transition-all duration-300 ${
+                              isActive ? 'w-7 bg-emerald-600' : 'w-2.5 bg-[#d8ccb0] hover:bg-[#bfae82]'
                             }`}
                           />
                         );
                       })}
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={goToNextHeroSlide}
-                      aria-label="Show next slide"
-                      className="inline-flex h-8.5 w-8.5 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-white/[0.74] backdrop-blur-sm transition-all duration-300 hover:border-[#d8b46c]/60 hover:bg-white/[0.08] hover:text-white"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={goToPreviousHeroSlide}
+                        aria-label="Show previous slide"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#e6dcc6] bg-white text-slate-700 shadow-[0_8px_20px_rgba(15,23,42,0.06)] transition-all duration-300 hover:border-emerald-200 hover:text-emerald-700"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={goToNextHeroSlide}
+                        aria-label="Show next slide"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#e6dcc6] bg-white text-slate-700 shadow-[0_8px_20px_rgba(15,23,42,0.06)] transition-all duration-300 hover:border-emerald-200 hover:text-emerald-700"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={scrollToAbout}
-                    className="mt-3 inline-flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.22em] text-white/[0.72] transition-colors duration-300 hover:text-white"
-                  >
-                    <span>Discover More</span>
-                    <ChevronDown className="h-4 w-4 text-[#e1cb97]" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="w-full rounded-[20px] border border-white/[0.08] bg-black/[0.24] px-4 py-3.5 shadow-[0_16px_28px_rgba(0,0,0,0.16)] lg:hidden">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={goToPreviousHeroSlide}
-                      aria-label="Show previous slide"
-                      className="inline-flex h-8.5 w-8.5 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.06] text-white/[0.74] transition-all duration-300 hover:border-[#d8b46c]/60 hover:bg-white/[0.08] hover:text-white"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={goToNextHeroSlide}
-                      aria-label="Show next slide"
-                      className="inline-flex h-8.5 w-8.5 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.06] text-white/[0.74] transition-all duration-300 hover:border-[#d8b46c]/60 hover:bg-white/[0.08] hover:text-white"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-1">
-                    {heroSlides.map((slide, index) => {
-                      const isActive = index === activeHeroSlideIndex;
-                      return (
-                        <button
-                          key={slide.id}
-                          type="button"
-                          aria-label={`Show ${slide.navLabel} slide`}
-                          onClick={() => changeHeroSlide(index)}
-                          className={`rounded-full transition-all duration-300 ${
-                            isActive ? 'h-1.5 w-5 bg-[#d4ab67]' : 'h-1.5 w-1.5 bg-white/[0.24] hover:bg-white/[0.38]'
-                          }`}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="mt-4 flex items-center justify-between gap-4">
-                  <div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-white/[0.62]">
-                    <span>{String(activeHeroSlideIndex + 1).padStart(2, '0')}</span>
-                    <span className="h-1 w-1 rounded-full bg-[#d4ab67]/65"></span>
-                    <span>{activeHeroSlide.navLabel}</span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={scrollToAbout}
-                    className="inline-flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.22em] text-white/[0.72] transition-colors duration-300 hover:text-white"
-                  >
-                    <span>Discover More</span>
-                    <ChevronDown className="h-4 w-4 text-[#e1cb97]" />
-                  </button>
                 </div>
               </div>
             </div>
@@ -1866,125 +1556,90 @@ const KalpavrukshaPage = () => {
 
         {/* Section 2: From Longing to Belonging */}
         <div ref={aboutRef} />
-        <section
-          id="about"
-          className="relative overflow-hidden border-t border-[#ebe0ca] bg-[linear-gradient(180deg,#fdf8ef_0%,#f6ede0_100%)] py-20 md:py-24"
-          style={DEFERRED_SECTION_STYLE}
-        >
-          <div className="pointer-events-none absolute -left-24 top-10 h-56 w-56 rounded-full bg-[#e7d7b4]/35 blur-3xl" />
-          <div className="pointer-events-none absolute right-0 top-1/3 h-64 w-64 rounded-full bg-[#f4e4bf]/50 blur-3xl" />
+        <section id="about" className="py-20 bg-gradient-to-b from-white to-gray-50" style={DEFERRED_SECTION_STYLE}>
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-8">
+              From Longing to <span className="text-emerald-600">Belonging</span>
+            </h2>
 
-          <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <div className="inline-flex items-center rounded-full border border-[#d7ba82] bg-[#fff9ef] px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#8b6328] shadow-sm backdrop-blur">
-                Project Essence
-              </div>
-              <h2 className="mt-6 text-3xl font-bold tracking-[-0.03em] text-[#18231d] md:text-5xl">
-                From Longing to <span className="text-[#8b6328]">Belonging</span>
-              </h2>
-            </div>
+            <div className="prose prose-lg md:prose-xl mx-auto text-gray-700 leading-relaxed">
+              <p className="mb-6">
+                Some journeys don't begin with a destination. They begin with a feeling -
+                and some places bring a stillness so true, your heart remembers it.
+              </p>
 
-            <div className="mt-10 rounded-[36px] border border-[#eadfcb] bg-white/[0.92] p-8 text-center shadow-[0_24px_60px_rgba(15,23,42,0.06)] backdrop-blur-sm md:p-12 lg:p-14">
-              <div className="mx-auto h-px w-28 bg-gradient-to-r from-transparent via-[#d7b16f] to-transparent" />
-              <div className="mx-auto mt-8 max-w-[44rem] space-y-6 text-[#58635c]">
-                <p className="text-[1.04rem] leading-8">
-                  Some journeys don't begin with a destination. They begin with a feeling,
-                  and some places bring a stillness so true, your heart remembers it.
-                </p>
+              <p className="mb-6">
+                Kalpavruksha was shaped by that search. Not just to be seen, but to be felt.
+                And when you stand here - with hills behind you and the creek beside you -
+                something in you softens.
+              </p>
 
-                <p className="text-[1.04rem] leading-8">
-                  Kalpavruksha was shaped by that search. Not just to be seen, but to be felt.
-                  And when you stand here, with hills behind you and the creek beside you,
-                  something in you softens.
-                </p>
-
-                <p className="text-xl font-semibold text-[#8b6328] md:text-2xl">
-                  This isn't just arrival. It's belonging.
-                </p>
-              </div>
+              <p className="text-xl font-semibold text-emerald-600">
+                This isn't just arrival. It's belonging.
+              </p>
             </div>
           </div>
         </section>
 
         {/* Section 3: Video Walkthrough */}
-        <section
-          className="relative overflow-hidden border-t border-[#242c27] bg-[radial-gradient(circle_at_top_left,rgba(203,161,89,0.16),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(203,161,89,0.08),transparent_28%),linear-gradient(180deg,#111713_0%,#0d1310_100%)] py-20 md:py-24"
-          style={DEFERRED_SECTION_STYLE}
-        >
-          <div className="pointer-events-none absolute -left-16 top-12 h-72 w-72 rounded-full bg-[#d7b16f]/10 blur-3xl" />
-          <div className="pointer-events-none absolute right-0 bottom-0 h-80 w-80 rounded-full bg-[#d7b16f]/6 blur-3xl" />
-          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center">
-              <div className="inline-flex items-center rounded-full border border-white/[0.14] bg-white/[0.06] px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#e3cb98] backdrop-blur">
-                Walkthrough
-              </div>
-              <h2 className="mt-6 text-3xl font-bold leading-[1.08] tracking-[-0.03em] text-white md:text-[3.4rem]">
-                A Glimpse of What <span className="text-[#e3cb98]">Belonging</span> Looks Like
+        <section className="py-20 bg-gray-900" style={DEFERRED_SECTION_STYLE}>
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12 ">
+              <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
+                A Glimpse of What <span className="text-emerald-400">Belonging</span> Looks Like
               </h2>
-              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-[#d4d9d2] md:text-[1.05rem]">
-                Let Kalpavruksha reveal itself in motion, in flow, and in feeling before you ever visit the site.
+              <p className="text-xl text-gray-300">
+                Let Kalpavruksha reveal itself - in motion, in flow, in feeling.
+              </p>
+              <p className="text-gray-400 mt-2">
+                Watch the vision unfold before your visit
               </p>
             </div>
 
-            <div className="mt-12 overflow-hidden rounded-[36px] border border-[#2f3933] bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0.03)_100%)] p-4 shadow-[0_24px_64px_rgba(0,0,0,0.3)] backdrop-blur-xl md:p-5">
-              <div className="relative aspect-video overflow-hidden rounded-[30px] bg-[#171e1a] ring-1 ring-[#39453e]">
-                <YouTubeLiteEmbed
-                  videoId="mt-G29uakpQ"
-                  title="Project Walkthrough Video"
-                  description="Experience Kalpavruksha before you visit"
-                  posterSrc="/kalpabg1-960.webp"
-                  posterSrcSet={HERO_IMAGE_SRC_SET}
-                  posterSizes={WALKTHROUGH_POSTER_SIZES}
-                />
-              </div>
+            <div className="relative aspect-video bg-gradient-to-br from-emerald-900 to-teal-900 rounded-2xl overflow-hidden shadow-2xl">
+              <YouTubeLiteEmbed
+                videoId="mt-G29uakpQ"
+                title="Project Walkthrough Video"
+                description="Experience Kalpavruksha before you visit"
+                posterSrc="/kalpabg2-960.webp"
+                posterSrcSet={HERO_IMAGE_SRC_SET}
+                posterSizes={WALKTHROUGH_POSTER_SIZES}
+              />
             </div>
           </div>
         </section>
 
         {/* Section 4: Project Renderings Gallery */}
         <div ref={galleryRef} />
-        <section
-          id="gallery"
-          className="border-t border-[#ece1cb] bg-[linear-gradient(180deg,#fffdfa_0%,#f3ebde_100%)] py-20 md:py-24"
-          style={DEFERRED_SECTION_STYLE}
-        >
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center">
-              <div className="inline-flex items-center rounded-full border border-[#d7ba82] bg-[#fff9ef] px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#8b6328] shadow-sm">
-                Project Gallery
-              </div>
-              <h2 className="mt-6 text-3xl font-bold tracking-[-0.03em] text-[#18231d] md:text-5xl">
-                Picture the Life That <span className="text-[#8b6328]">Awaits</span>
+        <section id="gallery" className="py-20 bg-white" style={DEFERRED_SECTION_STYLE}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
+                Picture the Life That <span className="text-emerald-600">Awaits</span>
               </h2>
-              <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-[#637067] md:text-xl">
-                Every space is rendered with care, so visitors understand the atmosphere before the first walkthrough.
+              <p className="text-xl text-gray-600">
+                Every space rendered with care - so you can feel it before it's real.
               </p>
             </div>
 
-            <div className="mt-12 grid grid-cols-1 gap-7 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {demoImg.map((item, index) => (
                 <div key={index}
                   onClick={() => openModal(item)}
-                  className="group overflow-hidden rounded-[30px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] shadow-[0_18px_45px_rgba(15,23,42,0.07)] transition-all duration-300 hover:-translate-y-1 hover:border-[#d6b171] hover:shadow-[0_24px_55px_rgba(15,23,42,0.1)]">
-                  <div className="aspect-[16/11] overflow-hidden bg-[linear-gradient(180deg,#fbf7ef_0%,#f2e6ce_100%)]">
+                  className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                  <div className="aspect-video bg-gradient-to-br from-emerald-100 to-teal-100">
                     <img
                       src={item.image}
                       alt={item.title}
                       loading="lazy"
                       decoding="async"
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                   </div>
-                  <div className="flex items-center justify-between gap-4 border-t border-[#efe4cf] px-5 py-5">
-                    <div>
-                      <div className="inline-flex items-center rounded-full bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8b6328] ring-1 ring-[#d7ba82]">
-                        Render {String(index + 1).padStart(2, '0')}
-                      </div>
-                      <h3 className="mt-3 text-lg font-semibold text-[#18231d]">{item.title}</h3>
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300">
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
+                      <h3 className="text-white font-semibold text-lg">{item.title}</h3>
                     </div>
-                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#d7ba82] bg-white text-[#8b6328] shadow-sm transition-transform duration-300 group-hover:translate-x-0.5">
-                      <ArrowUpRight className="h-4 w-4" />
-                    </span>
                   </div>
                 </div>
               ))}
@@ -2027,110 +1682,79 @@ const KalpavrukshaPage = () => {
 
         {/* Section 5: What Sets Kalpavruksha Apart */}
         <div ref={amenitiesRef} />
-        <section
-          id="amenities"
-          className="relative overflow-hidden border-t border-[#263129] bg-[linear-gradient(180deg,#111813_0%,#15211a_100%)] py-20 md:py-24"
-          style={DEFERRED_SECTION_STYLE}
-        >
-          <div className="pointer-events-none absolute -left-20 top-24 h-72 w-72 rounded-full bg-[#d7b16f]/14 blur-3xl" />
-          <div className="pointer-events-none absolute right-0 top-1/3 h-80 w-80 rounded-full bg-[#d7b16f]/10 blur-3xl" />
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="overflow-hidden rounded-[40px] border border-white/[0.08] bg-[radial-gradient(circle_at_top_left,rgba(203,161,89,0.18),transparent_26%),linear-gradient(135deg,#111813_0%,#18271d_52%,#0d1410_100%)] px-6 py-10 shadow-[0_30px_80px_rgba(0,0,0,0.3)] md:px-10 md:py-12 lg:px-12">
-              <div className="mx-auto max-w-3xl text-center">
-                <div className="inline-flex items-center rounded-full border border-white/[0.14] bg-white/[0.06] px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#e3cb98] shadow-sm backdrop-blur">
-                  Signature Advantages
-                </div>
-                <h2 className="mt-6 text-3xl font-bold tracking-[-0.03em] text-white md:text-5xl">
-                  What Sets <span className="text-[#e3cb98]">Kalpavruksha</span> Apart
-                </h2>
-                <p className="mt-5 text-lg leading-8 text-[#d7ddd4] md:text-xl">
-                  Some places are where you stay, but some places stay with you. Kalpavruksha is shaped by the quieter assurances that matter after the sale too.
-                </p>
-              </div>
+        <section id="amenities" className="py-20 bg-white" style={DEFERRED_SECTION_STYLE}>
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
+                What Sets <span className="text-emerald-600">Kalpavruksha</span> Apart
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Some places are where you stay - but some places stay with you.
+                Kalpavruksha is built with quiet assurances that go beyond the sale.
+              </p>
+            </div>
 
-              <div className="mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-                {features.map((feature, index) => (
-                  <Card
-                    key={index}
-                    className="h-full rounded-[30px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_100%)] p-7 text-white shadow-[0_20px_44px_rgba(0,0,0,0.22)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-[#d8b46c]/65 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.1)_0%,rgba(255,255,255,0.05)_100%)] hover:shadow-[0_28px_58px_rgba(0,0,0,0.28)]"
-                  >
-                    <CardContent className="p-0">
-                      <div className="flex h-full flex-col gap-5">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#d7b16f]/28 bg-[linear-gradient(180deg,rgba(215,177,111,0.18)_0%,rgba(215,177,111,0.08)_100%)] shadow-[0_12px_28px_rgba(203,161,89,0.12)]">
-                          {feature.icon}
-                        </div>
-
-                        <div className="h-px w-20 bg-gradient-to-r from-[#d7b16f] via-[#c59a55]/45 to-transparent"></div>
-
-                        <div>
-                          <div className="mb-3 inline-flex items-center rounded-full bg-white/[0.08] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#e3cb98] ring-1 ring-white/[0.1]">
-                            {String(index + 1).padStart(2, '0')}
-                          </div>
-                          <h3 className="mb-3 text-lg font-semibold text-[#f8f7f2]">
-                            {feature.title}
-                          </h3>
-                          <p className="leading-7 text-[#d7ddd4]">{feature.description}</p>
-                        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+              {features.map((feature, index) => (
+                <Card
+                  key={index}
+                  className="p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-l-emerald-500"
+                >
+                  <CardContent className="p-0">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 p-2 bg-gray-50 rounded-lg">{feature.icon}</div>
+                      <div>
+                        <h3 className="font-semibold text-lg text-gray-900 mb-2">
+                          {index + 1}. {feature.title}
+                        </h3>
+                        <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </section>
 
         {/* Section 6: Community Details */}
-        <div ref={masterPlanRef} />
-        <section className="border-t border-[#e3d2b4] bg-[linear-gradient(180deg,#fcf4e6_0%,#efdfc5_100%)] py-20 md:py-24" style={DEFERRED_SECTION_STYLE}>
+        <section className="py-20 bg-white" style={DEFERRED_SECTION_STYLE}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mx-auto mb-14 max-w-3xl text-center">
-              <div className="inline-flex items-center rounded-full border border-[#d7ba82] bg-[#fff9ef] px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#8b6328] shadow-sm">
-                Master Plan
-              </div>
-              <h2 className="mt-6 text-3xl md:text-5xl font-bold tracking-[-0.03em] text-[#18231d] mb-6">
-                A Community Drawn with <span className="text-[#8b6328]">Intention</span>
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
+                A Community Drawn with <span className="text-emerald-600">Intention</span>
               </h2>
-              <p className="text-lg leading-8 text-[#647067] md:text-xl">
+              <p className="text-xl text-gray-600">
                 From plot sizes to pathways, everything at Kalpavruksha has been shaped
                 to bring balance, beauty, and belonging.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[0.95fr,1.05fr] lg:gap-14">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
-                <div className="inline-flex items-center rounded-full border border-[#d7ba82] bg-[#fff9ef] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8b6328] shadow-sm">
-                  Layout Overview
-                </div>
-                <h3 className="mt-4 text-[2rem] font-bold tracking-[-0.03em] text-[#18231d] md:text-[2.35rem]">
-                  Project Snapshot
-                </h3>
-                <div className="mt-4 h-px w-24 bg-gradient-to-r from-[#d7b16f] via-[#c59a55]/45 to-transparent" />
-                <p className="mt-5 max-w-xl text-[1rem] leading-7 text-[#647067]">
-                  The layout is planned to feel practical on paper and comfortable on site, with balanced plot sizing, circulation, and day-to-day usability.
-                </p>
+                <h3 className="text-2xl font-bold text-gray-900 mb-8">Project Snapshot</h3>
 
-                <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {projectSnapshotStats.map((item) => (
                     <div
                       key={item.label}
-                      className="rounded-[26px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] p-5 shadow-[0_14px_28px_rgba(15,23,42,0.05)]"
+                      className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-white via-emerald-50/40 to-teal-50/40 p-5 shadow-sm"
                     >
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9a8d71]">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
                         {item.label}
                       </p>
                       <div className="mt-3 flex items-baseline gap-1.5">
-                        <span className="text-2xl font-bold text-[#18231d]">{item.value}</span>
-                        <span className="text-sm font-semibold text-[#8b6328]">{item.unit}</span>
+                        <span className="text-2xl font-bold text-slate-900">{item.value}</span>
+                        <span className="text-sm font-semibold text-emerald-600">{item.unit}</span>
                       </div>
-                      <p className="mt-3 text-sm leading-relaxed text-[#627067]">
+                      <p className="mt-3 text-sm leading-relaxed text-slate-600">
                         {item.detail}
                       </p>
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-8 max-w-xl space-y-4">
+                <div className="mt-8 space-y-4">
                   <CTAButton
                     icon={<Download className="w-5 h-5" />}
                     text="Download Layout PDF"
@@ -2155,28 +1779,28 @@ const KalpavrukshaPage = () => {
               </div>
 
               <div className="relative">
-                <div className="rounded-[36px] border border-[#eadfcb] bg-white/[0.96] p-6 shadow-[0_22px_55px_rgba(15,23,42,0.07)] md:p-8">
-                  <h4 className="text-xl font-bold text-[#18231d] mb-4 flex items-center">
-                    <MapPin className="mr-2 h-5 w-5 text-[#8b6328]" />
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-8 shadow-lg">
+                  <h4 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                    <MapPin className="w-5 h-5 text-emerald-600 mr-2" />
                     Master Plan Layout
                   </h4>
-                  <p className="text-[#627067] mb-6 leading-7">
+                  <p className="text-gray-600 mb-6">
                     Every plot and pathway - drawn with care, not just to optimize space,
                     but to cultivate a lifestyle.
                   </p>
 
                   {/* Landscape aspect ratio for layout image */}
-                  <div className="aspect-[16/9] bg-[linear-gradient(180deg,#fbf7ef_0%,#f1e6d0_100%)] rounded-[28px] border border-[#eadfcb] shadow-inner cursor-pointer flex items-center justify-center overflow-hidden" onClick={() => setSelectedImage({ image: require('../assets/kalpavruksha/layout.webp'), title: 'Kalpavruksha Project Master Layout', alt: 'Kalpavruksha Project Master Layout - CRDA Approved Plots Map' })}>
+                  <div className="aspect-[16/9] bg-white rounded-lg shadow-inner cursor-pointer flex items-center justify-center overflow-hidden" onClick={() => setSelectedImage({ image: require('../assets/kalpavruksha/layout.webp'), title: 'Kalpavruksha Project Master Layout', alt: 'Kalpavruksha Project Master Layout - CRDA Approved Plots Map' })}>
                     <img
                       src={require('../assets/kalpavruksha/layout.webp')}
                       alt="Kalpavruksha Project Master Layout - CRDA Approved Plots Map"
-                      className="object-contain w-full h-full rounded-[28px] transition-transform duration-300 hover:scale-[1.03]"
+                      className="object-contain w-full h-full rounded-lg transition-transform duration-300 hover:scale-105"
                       loading="lazy"
                       decoding="async"
                       style={{ maxHeight: '320px' }}
                     />
                   </div>
-                  <p className="text-xs text-[#8f8a7c] mt-3">Click image to enlarge</p>
+                  <p className="text-xs text-gray-500 mt-2">Click image to enlarge</p>
                 </div>
               </div>
             </div>
@@ -2185,42 +1809,42 @@ const KalpavrukshaPage = () => {
 
         {/* Section 7: Location */}
         <div ref={locationRef} />
-        <section id="location" className="border-t border-[#ebdfc6] bg-[linear-gradient(180deg,#fffbf4_0%,#f4ead9_100%)] py-20 md:py-24" style={DEFERRED_SECTION_STYLE}>
+        <section id="location" className="py-20 bg-slate-50" style={DEFERRED_SECTION_STYLE}>
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl mx-auto text-center">
-              <div className="inline-flex items-center rounded-full border border-[#d7ba82] bg-[#fff9ef] px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.18em] text-[#8b6328] shadow-sm">
+            <div className="max-w-4xl mx-auto text-center">
+              <div className="inline-flex items-center rounded-full border border-emerald-100 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-700 shadow-sm">
                 Property Location
               </div>
-              <h2 className="mt-5 text-3xl md:text-5xl font-bold tracking-[-0.03em] text-[#18231d]">
+              <h2 className="mt-5 text-3xl md:text-5xl font-bold text-slate-900">
                 Connected to Vijayawada. <br />
-                <span className="text-[#8b6328]">Positioned for everyday convenience.</span>
+                <span className="text-emerald-600">Positioned for everyday convenience.</span>
               </h2>
-              <p className="mt-5 text-lg md:text-xl leading-8 text-[#647067]">
+              <p className="mt-5 text-lg md:text-xl text-slate-600">
                 A project location that keeps daily access practical while preserving a quieter plotted community setting.
               </p>
             </div>
 
-            <div className="mt-14 overflow-hidden rounded-[36px] border border-[#eadfcb] bg-white/[0.95] shadow-[0_24px_68px_rgba(15,23,42,0.07)]">
+            <div className="mt-14 overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.08)]">
               <div className="grid grid-cols-1 lg:grid-cols-[0.86fr,1.14fr]">
-                <div className="border-b border-[#ece4d3] p-6 md:p-8 lg:border-b-0 lg:border-r lg:p-10">
+                <div className="border-b border-slate-200 p-6 md:p-8 lg:border-b-0 lg:border-r">
                   <div className="flex items-start gap-4">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#fff8ee] text-[#8b6328] ring-1 ring-[#d7ba82]">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
                       <MapPin className="h-6 w-6" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-[#8d8778]">Property Location</p>
-                      <h3 className="mt-1 text-2xl font-bold leading-tight text-[#18231d]">
+                      <p className="text-sm font-medium text-slate-500">Property Location</p>
+                      <h3 className="mt-1 text-2xl font-bold leading-tight text-slate-900">
                         {projectLocationTitle}
                       </h3>
-                      <p className="mt-3 text-sm leading-relaxed text-[#627067]">
+                      <p className="mt-3 text-sm leading-relaxed text-slate-600">
                         The project sits on a well-connected corridor near Vijayawada, with practical access to highway links, city infrastructure, and Amaravati-side growth zones.
                       </p>
                     </div>
                   </div>
 
-                  <div className="mt-6 rounded-[24px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] p-5">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#8b6328]">Address Summary</p>
-                    <p className="mt-2 text-base font-semibold text-[#18231d]">
+                  <div className="mt-6 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Address Summary</p>
+                    <p className="mt-2 text-base font-semibold text-slate-900">
                       {projectLocationAddress}
                     </p>
                   </div>
@@ -2231,7 +1855,7 @@ const KalpavrukshaPage = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => trackKalpavrukshaDirectionsClick('location_section')}
-                      className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#cba159] to-[#d7b16f] px-5 py-3 text-sm font-semibold text-[#1d1609] shadow-sm transition-all duration-300 hover:from-[#d2a764] hover:to-[#ddb574] hover:shadow-md"
+                      className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:from-emerald-700 hover:to-teal-700 hover:shadow-md"
                     >
                       Get Directions
                       <ArrowUpRight className="h-4 w-4" />
@@ -2239,7 +1863,7 @@ const KalpavrukshaPage = () => {
                     <button
                       type="button"
                       onClick={() => openVisitModal('location_section')}
-                      className="inline-flex items-center justify-center gap-2 rounded-full border border-[#d9cfb9] bg-white px-5 py-3 text-sm font-semibold text-[#221c14] transition-all duration-300 hover:border-[#c5ab72] hover:bg-[#fffdf7] hover:shadow-sm"
+                      className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-800 transition-all duration-300 hover:border-emerald-300 hover:bg-white hover:text-emerald-700 hover:shadow-sm"
                     >
                       <MapPin className="h-4 w-4" />
                       Book Site Visit
@@ -2247,13 +1871,13 @@ const KalpavrukshaPage = () => {
                   </div>
                 </div>
 
-                <div className="bg-[linear-gradient(180deg,#faf4e8_0%,#f1e6d0_100%)]">
+                <div className="bg-slate-100">
                   <div className="h-full min-h-[380px] lg:min-h-[100%]">
                     {shouldLoadTravelMap ? (
                       <Suspense
                         fallback={
-                          <div className="flex h-full min-h-[380px] items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(203,161,89,0.12),_transparent_45%),linear-gradient(180deg,_#faf4e7_0%,_#efe3cd_100%)]">
-                            <div className="rounded-3xl border border-[#eadfcb] bg-white/92 px-5 py-4 text-sm font-medium text-[#627067] shadow-sm backdrop-blur">
+                          <div className="flex h-full min-h-[380px] items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.08),_transparent_45%),linear-gradient(180deg,_#f8fafc_0%,_#eef2f7_100%)]">
+                            <div className="rounded-3xl border border-slate-200 bg-white/90 px-5 py-4 text-sm font-medium text-slate-600 shadow-sm backdrop-blur">
                               Loading live map...
                             </div>
                           </div>
@@ -2267,8 +1891,8 @@ const KalpavrukshaPage = () => {
                         />
                       </Suspense>
                     ) : (
-                      <div className="flex h-full min-h-[380px] items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(203,161,89,0.12),_transparent_45%),linear-gradient(180deg,_#faf4e7_0%,_#efe3cd_100%)]">
-                        <div className="rounded-3xl border border-[#eadfcb] bg-white/92 px-5 py-4 text-sm font-medium text-[#627067] shadow-sm backdrop-blur">
+                      <div className="flex h-full min-h-[380px] items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.08),_transparent_45%),linear-gradient(180deg,_#f8fafc_0%,_#eef2f7_100%)]">
+                        <div className="rounded-3xl border border-slate-200 bg-white/90 px-5 py-4 text-sm font-medium text-slate-600 shadow-sm backdrop-blur">
                           Preparing interactive map...
                         </div>
                       </div>
@@ -2278,31 +1902,31 @@ const KalpavrukshaPage = () => {
               </div>
             </div>
 
-            <div className="mt-8 rounded-[32px] border border-[#eadfcb] bg-white/[0.95] p-6 shadow-[0_22px_55px_rgba(15,23,42,0.06)] md:p-8">
+            <div className="mt-8 rounded-[28px] border border-slate-200 bg-white p-6 md:p-8 shadow-[0_24px_60px_rgba(15,23,42,0.06)]">
               <div>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8b6328]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-700">
                     Location Highlights
                   </p>
-                  <h3 className="mt-3 text-2xl font-bold text-[#18231d]">
+                  <h3 className="mt-3 text-2xl font-bold text-slate-900">
                     Key distance markers from the project
                   </h3>
                 </div>
               </div>
 
-              <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {locationHighlights.map((item) => (
                   <div
                     key={item.title}
-                    className="flex h-full items-start gap-4 rounded-[24px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#d6b171] hover:bg-white hover:shadow-md"
+                    className="flex h-full items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-white hover:shadow-md"
                   >
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-emerald-700 ring-1 ring-slate-200">
                       {item.icon}
                     </div>
                     <div>
-                      <h3 className="text-base font-semibold leading-snug text-[#18231d]">{item.title}</h3>
+                      <h3 className="text-base font-semibold leading-snug text-slate-900">{item.title}</h3>
                       {item.detail && (
-                        <p className="mt-1 text-sm leading-relaxed text-[#627067]">
+                        <p className="mt-1 text-sm leading-relaxed text-slate-600">
                           {item.detail}
                         </p>
                       )}
@@ -2315,30 +1939,28 @@ const KalpavrukshaPage = () => {
         </section>
 
         {/* Section 8: FAQ */}
-        <section className="relative overflow-hidden border-t border-[#e5d6b7] bg-[linear-gradient(180deg,#faf3e8_0%,#eee0c9_100%)] py-20 md:py-24" style={DEFERRED_SECTION_STYLE}>
-          <div className="pointer-events-none absolute -right-16 top-16 h-72 w-72 rounded-full bg-[#ead8b1]/28 blur-3xl" />
-          <div className="pointer-events-none absolute left-0 bottom-0 h-72 w-72 rounded-full bg-[#f0e2c6]/30 blur-3xl" />
+        <section className="py-20 bg-white" style={DEFERRED_SECTION_STYLE}>
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center">
-              <div className="inline-flex items-center rounded-full border border-[#d7ba82] bg-[#fff9ef] px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.18em] text-[#8b6328] shadow-sm">
+            <div className="text-center">
+              <div className="inline-flex items-center rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-700">
                 Frequently Asked Questions
               </div>
-              <h2 className="mt-5 text-3xl md:text-5xl font-bold tracking-[-0.03em] text-[#18231d]">
+              <h2 className="mt-5 text-3xl md:text-5xl font-bold text-slate-900">
                 Questions buyers usually ask before the first visit
               </h2>
-              <p className="mt-5 text-lg leading-8 text-[#647067]">
+              <p className="mt-5 text-lg text-slate-600">
                 Tap a question to view the answer. The section stays clean until someone wants the detail.
               </p>
             </div>
 
-            <div className="mt-12 space-y-3">
+            <div className="mt-12 space-y-4">
               {faqItems.map((item, index) => {
                 const isOpen = openFaqIndex === index;
 
                 return (
                   <div
                     key={item.question}
-                    className="overflow-hidden rounded-[28px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] shadow-[0_14px_28px_rgba(15,23,42,0.05)] transition-all duration-300"
+                    className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300"
                   >
                     <button
                       type="button"
@@ -2346,17 +1968,17 @@ const KalpavrukshaPage = () => {
                       onClick={() => setOpenFaqIndex(isOpen ? null : index)}
                       aria-expanded={isOpen}
                     >
-                      <span className="text-base md:text-lg font-semibold leading-snug text-[#18231d]">
+                      <span className="text-base md:text-lg font-semibold leading-snug text-slate-900">
                         {item.question}
                       </span>
-                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#eadfcb] bg-[#fffaf1] text-[#7d7a70] transition-transform duration-300 ${isOpen ? 'rotate-180 border-[#d6b171] bg-[#fbf5e8] text-[#8b6328]' : ''}`}>
+                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-500 transition-transform duration-300 ${isOpen ? 'rotate-180 border-emerald-200 bg-emerald-50 text-emerald-700' : ''}`}>
                         <ChevronDown className="h-5 w-5" />
                       </span>
                     </button>
                     <div className={`grid transition-all duration-300 ease-out ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
                       <div className="overflow-hidden">
-                        <div className="border-t border-[#efe4cf] px-5 py-4 md:px-6">
-                          <p className="max-w-3xl text-sm md:text-base leading-relaxed text-[#627067]">
+                        <div className="border-t border-slate-100 px-5 py-4 md:px-6">
+                          <p className="max-w-3xl text-sm md:text-base leading-relaxed text-slate-600">
                             {item.answer}
                           </p>
                         </div>
@@ -2370,119 +1992,114 @@ const KalpavrukshaPage = () => {
         </section>
 
         {/* Section 9: Journey Home */}
-        <section className="border-t border-[#e0cfa8] bg-[linear-gradient(180deg,#fbf5e9_0%,#f0dfbf_100%)] py-20 md:py-24" style={DEFERRED_SECTION_STYLE}>
-          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="overflow-hidden rounded-[40px] border border-[#d5c29a] bg-[radial-gradient(circle_at_top_left,rgba(214,189,130,0.16),transparent_24%),linear-gradient(135deg,#111712_0%,#173325_42%,#0f1a14_100%)] px-6 py-10 text-center shadow-[0_28px_70px_rgba(0,0,0,0.26)] md:px-10 md:py-14 lg:px-14">
-              <div className="inline-flex items-center rounded-full border border-white/[0.12] bg-white/[0.08] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#e3cb98] backdrop-blur">
-                Next Step
-              </div>
-              <h2 className="mt-6 text-3xl font-bold tracking-[-0.03em] text-white md:text-5xl">
-                Your Journey Home <span className="text-[#e3cb98]">Begins Here</span>
-              </h2>
-              <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-white/[0.84] md:text-xl">
-                Every lasting story begins with one step. This section keeps the next actions clear, simple, and reassuring.
-              </p>
+        <section className="py-20 bg-gradient-to-b from-white to-gray-50" style={DEFERRED_SECTION_STYLE}>
+          <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
+              Your Journey Home <span className="text-emerald-600">Begins Here</span>
+            </h2>
+            <p className="text-xl text-gray-600 mb-12">
+              Every lasting story begins with one step. Let's take it together.
+            </p>
 
-              <div className="mt-10 flex flex-col items-center gap-4">
+            <div className="space-y-6">
+              <CTAButton
+                icon={<MapPin className="w-5 h-5" />}
+                text="Schedule a Site Visit"
+                primary
+                onClick={() => openVisitModal('journey_home')}
+              />
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a
+                  href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20Kalpavruksha."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackKalpavrukshaWhatsAppClick('journey_home')}
+                >
+                  <CTAButton
+                    icon={<MessageCircle className="w-5 h-5" />}
+                    text="Talk to Us on WhatsApp"
+                  />
+                </a>
                 <CTAButton
-                  icon={<MapPin className="w-5 h-5" />}
-                  text="Schedule a Site Visit"
-                  primary
-                  onClick={() => openVisitModal('journey_home')}
-                  className="min-w-[16rem]"
+                  icon={<Phone className="w-5 h-5" />}
+                  text="Request a Callback"
+                  onClick={goToHomeCallToAction}
                 />
-
-                <div className="grid w-full max-w-5xl grid-cols-1 gap-4 md:grid-cols-3">
-                  <a
-                    href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20Kalpavruksha."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => trackKalpavrukshaWhatsAppClick('journey_home')}
-                    className="w-full"
-                  >
-                    <CTAButton
-                      icon={<MessageCircle className="w-5 h-5" />}
-                      text="Talk to Us on WhatsApp"
-                      className="w-full justify-center !border-white/[0.16] !bg-white/[0.10] !text-white hover:!bg-white/[0.14] hover:!text-white"
-                    />
-                  </a>
-                  <CTAButton
-                    icon={<Phone className="w-5 h-5" />}
-                    text="Request a Callback"
-                    onClick={goToHomeCallToAction}
-                    className="w-full justify-center !border-white/[0.16] !bg-white/[0.10] !text-white hover:!bg-white/[0.14] hover:!text-white"
-                  />
-                  <CTAButton
-                    icon={<Download className="w-5 h-5" />}
-                    text="Download Project Brochure"
-                    onClick={() => openDownloadLeadModal('brochure', 'journey_home')}
-                    className="w-full justify-center !border-white/[0.16] !bg-white/[0.10] !text-white hover:!bg-white/[0.14] hover:!text-white"
-                  />
-                </div>
+                <CTAButton
+                  icon={<Download className="w-5 h-5" />}
+                  text="Download Project Brochure"
+                  onClick={() => openDownloadLeadModal('brochure', 'journey_home')}
+                />
               </div>
             </div>
           </div>
         </section>
 
         {/* Section 10: Testimonials */}
-        <section className="border-t border-[#e8dbc0] bg-[linear-gradient(180deg,#f9f2e7_0%,#efe0c9_100%)] py-20 md:py-24" style={DEFERRED_SECTION_STYLE}>
+        <section className="py-20 bg-white" style={DEFERRED_SECTION_STYLE}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mx-auto mb-9 max-w-3xl text-center">
-              <div className="inline-flex items-center rounded-full border border-[#d7ba82] bg-[#fff9ef] px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.18em] text-[#8b6328] shadow-sm">
-                Reviews & Trust
-              </div>
-              <h2 className="mt-6 text-3xl md:text-5xl font-bold tracking-[-0.03em] text-[#18231d] mb-6">
-                Voices That Speak for <span className="text-[#8b6328]">Kalpavruksha</span>
+            <div className="text-center mb-9">
+              <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
+                Voices That Speak for <span className="text-emerald-600">Kalpavruksha</span>
               </h2>
-            </div>
-            <div className="rounded-2xl text-center">
-              <p className="mx-auto max-w-2xl text-lg leading-8 text-[#627067] md:text-xl">
-                See what our customers are saying on <span className='font-semibold text-[#8b6328]'>Google</span> Reviews
-              </p>
-              <div className="mt-8 rounded-[32px] border border-[#e5dcc8] bg-white/[0.92] p-5 shadow-[0_24px_60px_rgba(15,23,42,0.08)] md:p-8">
-                  <Suspense fallback={<div className="h-24 rounded-2xl bg-[#f4efe4]" />}>
-                    <ReviewsSection />
-                  </Suspense>
-              </div>
-              <div className="mx-auto mt-10 max-w-5xl text-left">
-                  <div className="rounded-[32px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffdfa_0%,#f5eee2_100%)] p-6 shadow-[0_22px_55px_rgba(15,23,42,0.07)] md:p-8">
-                    <div className="mb-4 inline-flex items-center rounded-full border border-[#d7ba82] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#8b6328]">
+              <div className="rounded-2xl text-center">
+                <p className="text-gray-600 text-xl">
+                  See what our customers are saying on {' '}
+                  <span className="mb-4">
+                    <span className='text-blue-500'>G</span>
+                    <span className='text-red-500'>o</span>
+                    <span className='text-yellow-500'>o</span>
+                    <span className='text-blue-500'>g</span>
+                    <span className='text-green-500'>l</span>
+                    <span className='text-red-500'>e</span>
+                    <span className='text-red-500'>{'  '}</span>
+                  </span>
+                  Reviews
+                </p>
+                <Suspense fallback={<div className="mt-8 h-24 rounded-2xl bg-slate-100" />}>
+                  <ReviewsSection />
+                </Suspense>
+                <div className="max-w-4xl mx-auto mt-10 px-4 text-left">
+                  <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-white via-emerald-50/35 to-slate-50 p-6 md:p-8 shadow-lg">
+                    <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase bg-emerald-50 border border-emerald-100 text-emerald-700 mb-4">
                       Buyer Decision Guide
                     </div>
-                    <div className="mb-5 h-px w-24 bg-gradient-to-r from-[#d7b16f] via-[#c59a55]/35 to-transparent" />
-                    <h3 className="text-2xl md:text-3xl font-bold text-[#18231d] mb-4">
+                    <div className="h-px w-24 bg-gradient-to-r from-emerald-500/80 via-teal-500/50 to-transparent mb-5" />
+                    <h3 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4">
                       Why Kalpavruksha Is a Preferred Choice for Plot Buyers
                     </h3>
-                    <p className="text-[#5f6a62] leading-relaxed mb-6 max-w-3xl">
+                    <p className="text-slate-700 leading-relaxed mb-6 max-w-3xl">
                       Plot buyers usually evaluate three things first: legal clarity, daily convenience, and on-ground readiness.
                       Kalpavruksha performs strongly on all three.
                     </p>
 
-                    <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-                      <div className="rounded-[24px] border border-[#eadfcb] bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
-                        <h4 className="font-semibold text-[#18231d] mb-2">1. Clear Approvals</h4>
-                        <p className="text-sm text-[#627067] leading-relaxed">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <div className="rounded-xl border border-slate-200 border-t-2 border-t-emerald-400/70 bg-white p-5 shadow-sm hover:shadow-md hover:border-emerald-200 hover:bg-emerald-50/40 transition-all duration-300">
+                        <h4 className="font-semibold text-slate-900 mb-2">1. Clear Approvals</h4>
+                        <p className="text-sm text-slate-600 leading-relaxed">
                           CRDA approvals, boundaries, and registration details are easier to verify.
                         </p>
                       </div>
-                      <div className="rounded-[24px] border border-[#eadfcb] bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
-                        <h4 className="font-semibold text-[#18231d] mb-2">2. Practical Location</h4>
-                        <p className="text-sm text-[#627067] leading-relaxed">
+                      <div className="rounded-xl border border-slate-200 border-t-2 border-t-emerald-400/70 bg-white p-5 shadow-sm hover:shadow-md hover:border-emerald-200 hover:bg-emerald-50/40 transition-all duration-300">
+                        <h4 className="font-semibold text-slate-900 mb-2">2. Practical Location</h4>
+                        <p className="text-sm text-slate-600 leading-relaxed">
                           The site connects well to Vijayawada, Amaravati corridors, and major roads.
                         </p>
                       </div>
-                      <div className="rounded-[24px] border border-[#eadfcb] bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
-                        <h4 className="font-semibold text-[#18231d] mb-2">3. Visible Infrastructure</h4>
-                        <p className="text-sm text-[#627067] leading-relaxed">
+                      <div className="rounded-xl border border-slate-200 border-t-2 border-t-emerald-400/70 bg-white p-5 shadow-sm hover:shadow-md hover:border-emerald-200 hover:bg-emerald-50/40 transition-all duration-300">
+                        <h4 className="font-semibold text-slate-900 mb-2">3. Visible Infrastructure</h4>
+                        <p className="text-sm text-slate-600 leading-relaxed">
                           Roads, utilities, and drainage planning are visible during site inspection.
                         </p>
                       </div>
                     </div>
 
-                    <p className="text-[#435046] leading-relaxed font-medium">
+                    <p className="text-slate-700 leading-relaxed font-medium">
                       Compare documents, check the layout, and visit the site to decide with confidence.
                     </p>
                   </div>
+                </div>
               </div>
             </div>
           </div>
@@ -2501,24 +2118,14 @@ const KalpavrukshaPage = () => {
                     : 'invisible translate-x-6 opacity-0'
                 }`}
               >
-                <div className="rounded-[32px] border border-[#eadfcb] bg-white/[0.97] p-4 shadow-[0_24px_55px_rgba(15,23,42,0.12)] backdrop-blur-xl">
-                  <div className="flex items-start justify-between gap-3 px-2 pb-3">
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8b6328]">
-                        Quick Actions
-                      </p>
-                      <p className="mt-1 text-sm text-[#68736b]">
-                        Everything important, one tap away.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setIsQuickActionsOpen(false)}
-                      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#eadfcb] bg-white text-[#6c756d] transition-colors duration-200 hover:bg-[#fffaf1] hover:text-[#18231d]"
-                      aria-label="Close quick actions"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
+                <div className="rounded-[28px] border border-[#dfe9d5] bg-white/96 p-3.5 shadow-[0_24px_55px_rgba(15,23,42,0.18)] backdrop-blur-xl">
+                  <div className="px-2 pb-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
+                      Quick Actions
+                    </p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Everything important, one tap away.
+                    </p>
                   </div>
 
                   <div className="space-y-2">
@@ -2528,18 +2135,18 @@ const KalpavrukshaPage = () => {
                     setIsQuickActionsOpen(false);
                     openVisitModal('mobile_quick_actions');
                   }}
-                      className="flex w-full items-center justify-between rounded-[22px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-3 text-left text-[#4b5750] shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white hover:shadow-md"
+                      className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
                     >
                       <span className="flex items-center gap-3">
-                        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
+                        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
                           <MapPin className="h-4 w-4" />
                         </span>
                         <span>
-                          <span className="block text-sm font-semibold text-[#18231d]">Schedule Site Visit</span>
-                          <span className="block text-xs text-[#7a7f77]">Pick your preferred day and time</span>
+                          <span className="block text-sm font-semibold text-slate-900">Schedule Site Visit</span>
+                          <span className="block text-xs text-slate-500">Pick your preferred day and time</span>
                         </span>
                       </span>
-                      <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
+                      <ArrowUpRight className="h-4 w-4 text-slate-400" />
                     </button>
 
                     <button
@@ -2548,18 +2155,18 @@ const KalpavrukshaPage = () => {
                     setIsQuickActionsOpen(false);
                     openDownloadLeadModal('layout', 'mobile_quick_actions');
                   }}
-                      className="flex w-full items-center justify-between rounded-[22px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-3 text-left text-[#4b5750] shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white hover:shadow-md"
+                      className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
                     >
                       <span className="flex items-center gap-3">
-                        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
+                        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
                           <Download className="h-4 w-4" />
                         </span>
                         <span>
-                          <span className="block text-sm font-semibold text-[#18231d]">Download Layout PDF</span>
-                          <span className="block text-xs text-[#7a7f77]">Get the approved master layout</span>
+                          <span className="block text-sm font-semibold text-slate-900">Download Layout PDF</span>
+                          <span className="block text-xs text-slate-500">Get the approved master layout</span>
                         </span>
                       </span>
-                      <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
+                      <ArrowUpRight className="h-4 w-4 text-slate-400" />
                     </button>
 
                     <button
@@ -2568,18 +2175,18 @@ const KalpavrukshaPage = () => {
                     setIsQuickActionsOpen(false);
                     openDownloadLeadModal('brochure', 'mobile_quick_actions');
                   }}
-                      className="flex w-full items-center justify-between rounded-[22px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-3 text-left text-[#4b5750] shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white hover:shadow-md"
+                      className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
                     >
                       <span className="flex items-center gap-3">
-                        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
+                        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
                           <Download className="h-4 w-4" />
                         </span>
                         <span>
-                          <span className="block text-sm font-semibold text-[#18231d]">Download Brochure</span>
-                          <span className="block text-xs text-[#7a7f77]">Get the full project brochure</span>
+                          <span className="block text-sm font-semibold text-slate-900">Download Brochure</span>
+                          <span className="block text-xs text-slate-500">Get the full project brochure</span>
                         </span>
                       </span>
-                      <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
+                      <ArrowUpRight className="h-4 w-4 text-slate-400" />
                     </button>
 
                     <a
@@ -2587,18 +2194,18 @@ const KalpavrukshaPage = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => setIsQuickActionsOpen(false)}
-                      className="flex w-full items-center justify-between rounded-[22px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-3 text-left text-[#4b5750] shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white hover:shadow-md"
+                      className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
                     >
                       <span className="flex items-center gap-3">
-                        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
+                        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
                           <ArrowUpRight className="h-4 w-4" />
                         </span>
                         <span>
-                          <span className="block text-sm font-semibold text-[#18231d]">Get Directions</span>
-                          <span className="block text-xs text-[#7a7f77]">Open the route in Google Maps</span>
+                          <span className="block text-sm font-semibold text-slate-900">Get Directions</span>
+                          <span className="block text-xs text-slate-500">Open the route in Google Maps</span>
                         </span>
                       </span>
-                      <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
+                      <ArrowUpRight className="h-4 w-4 text-slate-400" />
                     </a>
 
                     <a
@@ -2609,18 +2216,18 @@ const KalpavrukshaPage = () => {
                         setIsQuickActionsOpen(false);
                         trackKalpavrukshaWhatsAppClick('desktop_quick_actions');
                       }}
-                      className="flex w-full items-center justify-between rounded-[22px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-3 text-left text-[#4b5750] shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white hover:shadow-md"
+                      className="flex w-full items-center justify-between rounded-[22px] border border-emerald-100 bg-[#f7fbf5] px-4 py-3 text-left text-slate-700 transition-all duration-200 hover:border-emerald-200 hover:bg-white hover:shadow-sm"
                     >
                       <span className="flex items-center gap-3">
-                        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
+                        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
                           <FaWhatsapp className="h-4 w-4" />
                         </span>
                         <span>
-                          <span className="block text-sm font-semibold text-[#18231d]">Chat on WhatsApp</span>
-                          <span className="block text-xs text-[#7a7f77]">Speak to the sales team directly</span>
+                          <span className="block text-sm font-semibold text-slate-900">Chat on WhatsApp</span>
+                          <span className="block text-xs text-slate-500">Speak to the sales team directly</span>
                         </span>
                       </span>
-                      <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
+                      <ArrowUpRight className="h-4 w-4 text-slate-400" />
                     </a>
                   </div>
                 </div>
@@ -2631,7 +2238,7 @@ const KalpavrukshaPage = () => {
                 onClick={() => setIsQuickActionsOpen((current) => !current)}
                 aria-expanded={isQuickActionsOpen}
                 aria-controls="kalpavruksha-quick-actions"
-                className="inline-flex h-14 items-center gap-2 rounded-l-full border border-r-0 border-[#d3ab67] bg-gradient-to-r from-[#cba159] to-[#d7b16f] pl-4 pr-3 text-sm font-semibold text-[#1d1609] shadow-[0_16px_35px_rgba(203,161,89,0.24)] transition-all duration-200 hover:pr-4 hover:shadow-[0_20px_42px_rgba(203,161,89,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b16f]/24"
+                className="inline-flex h-14 items-center gap-2 rounded-l-full border border-r-0 border-[#d8c995] bg-gradient-to-r from-[#0f7b63] to-[#0e8f72] pl-4 pr-3 text-sm font-semibold text-white shadow-[0_16px_35px_rgba(15,123,99,0.28)] transition-all duration-200 hover:pr-4 hover:shadow-[0_20px_42px_rgba(15,123,99,0.34)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
               >
                 <Zap className="h-4 w-4" />
                 <span>Quick Actions</span>
@@ -2651,13 +2258,13 @@ const KalpavrukshaPage = () => {
                 onClick={() => setIsQuickActionsOpen((current) => !current)}
                 aria-expanded={isQuickActionsOpen}
                 aria-controls="kalpavruksha-mobile-quick-actions"
-                className="inline-flex min-h-14 items-center gap-2 rounded-full border border-[#e0cfaf] bg-white/[0.96] px-5 text-sm font-semibold text-[#221c14] shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b16f]/24"
+                className="inline-flex min-h-14 items-center gap-2 rounded-full border border-[#d8c995] bg-white/95 px-5 text-sm font-semibold text-emerald-900 shadow-[0_18px_40px_rgba(15,23,42,0.18)] backdrop-blur-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
               >
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[#cba159] to-[#d7b16f] text-[#1d1609]">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[#0f7b63] to-[#0e8f72] text-white">
                   <Zap className="h-4 w-4" />
                 </span>
                 <span>Quick Actions</span>
-                <ChevronDown className={`h-4 w-4 text-[#8b6328] transition-transform duration-200 ${isQuickActionsOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`h-4 w-4 text-emerald-700 transition-transform duration-200 ${isQuickActionsOpen ? 'rotate-180' : ''}`} />
               </button>
             </div>
           </div>
@@ -2667,24 +2274,24 @@ const KalpavrukshaPage = () => {
           <div className="fixed inset-0 z-40 lg:hidden">
             <button
               type="button"
-              className="absolute inset-0 bg-[#101712]/30 backdrop-blur-[2px]"
+              className="absolute inset-0 bg-slate-900/28 backdrop-blur-[2px]"
               aria-label="Close quick actions"
               onClick={() => setIsQuickActionsOpen(false)}
             />
             <div
               id="kalpavruksha-mobile-quick-actions"
-              className="absolute inset-x-0 bottom-0 rounded-t-[32px] border-t border-[#eadfcb] bg-[#fffdf8] px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-4 shadow-[0_-24px_60px_rgba(15,23,42,0.16)]"
+              className="absolute inset-x-0 bottom-0 rounded-t-[32px] border-t border-[#dfe9d5] bg-white px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-4 shadow-[0_-24px_60px_rgba(15,23,42,0.18)]"
             >
-              <div className="mx-auto h-1.5 w-12 rounded-full bg-[#d7ccb8]" />
+              <div className="mx-auto h-1.5 w-12 rounded-full bg-slate-200" />
               <div className="mt-4 flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8b6328]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
                     Quick Actions
                   </p>
-                  <h3 className="mt-2 text-lg font-semibold text-[#18231d]">
+                  <h3 className="mt-2 text-lg font-semibold text-slate-900">
                     Everything important in one place
                   </h3>
-                  <p className="mt-1 text-sm leading-6 text-[#68736b]">
+                  <p className="mt-1 text-sm leading-6 text-slate-500">
                     Fast actions for site visit, layout, directions, and direct contact.
                   </p>
                 </div>
@@ -2694,7 +2301,7 @@ const KalpavrukshaPage = () => {
                     setIsQuickActionsOpen(false);
                     trackKalpavrukshaDirectionsClick('mobile_quick_actions');
                   }}
-                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#eadfcb] bg-white text-[#6c756d] transition-colors duration-200 hover:bg-[#fffaf1] hover:text-[#18231d]"
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-600 transition-colors duration-200 hover:bg-white hover:text-slate-900"
                   aria-label="Close quick actions"
                 >
                   <X className="h-4 w-4" />
@@ -2708,18 +2315,18 @@ const KalpavrukshaPage = () => {
                     setIsQuickActionsOpen(false);
                     openVisitModal('desktop_quick_actions');
                   }}
-                  className="flex w-full items-center justify-between rounded-[24px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-4 text-left shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white"
+                  className="flex w-full items-center justify-between rounded-[24px] border border-[#dfe9d5] bg-[#f7fbf5] px-4 py-4 text-left shadow-sm transition-all duration-200"
                 >
                   <span className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-700 ring-1 ring-emerald-100">
                       <MapPin className="h-4 w-4" />
                     </span>
                     <span>
-                      <span className="block text-sm font-semibold text-[#18231d]">Schedule Site Visit</span>
-                      <span className="block text-xs leading-5 text-[#7a7f77]">Choose a day and time that suits you</span>
+                      <span className="block text-sm font-semibold text-slate-900">Schedule Site Visit</span>
+                      <span className="block text-xs leading-5 text-slate-500">Choose a day and time that suits you</span>
                     </span>
                   </span>
-                  <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
+                  <ArrowUpRight className="h-4 w-4 text-slate-400" />
                 </button>
 
                 <button
@@ -2728,18 +2335,18 @@ const KalpavrukshaPage = () => {
                     setIsQuickActionsOpen(false);
                     openDownloadLeadModal('layout', 'desktop_quick_actions');
                   }}
-                  className="flex w-full items-center justify-between rounded-[24px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-4 text-left shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white"
+                  className="flex w-full items-center justify-between rounded-[24px] border border-[#dfe9d5] bg-[#f7fbf5] px-4 py-4 text-left shadow-sm transition-all duration-200"
                 >
                   <span className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-700 ring-1 ring-emerald-100">
                       <Download className="h-4 w-4" />
                     </span>
                     <span>
-                      <span className="block text-sm font-semibold text-[#18231d]">Download Layout PDF</span>
-                      <span className="block text-xs leading-5 text-[#7a7f77]">Get the approved master layout instantly</span>
+                      <span className="block text-sm font-semibold text-slate-900">Download Layout PDF</span>
+                      <span className="block text-xs leading-5 text-slate-500">Get the approved master layout instantly</span>
                     </span>
                   </span>
-                  <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
+                  <ArrowUpRight className="h-4 w-4 text-slate-400" />
                 </button>
 
                 <button
@@ -2748,18 +2355,18 @@ const KalpavrukshaPage = () => {
                     setIsQuickActionsOpen(false);
                     openDownloadLeadModal('brochure', 'desktop_quick_actions');
                   }}
-                  className="flex w-full items-center justify-between rounded-[24px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-4 text-left shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white"
+                  className="flex w-full items-center justify-between rounded-[24px] border border-[#dfe9d5] bg-[#f7fbf5] px-4 py-4 text-left shadow-sm transition-all duration-200"
                 >
                   <span className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-700 ring-1 ring-emerald-100">
                       <Download className="h-4 w-4" />
                     </span>
                     <span>
-                      <span className="block text-sm font-semibold text-[#18231d]">Download Brochure</span>
-                      <span className="block text-xs leading-5 text-[#7a7f77]">Get the full project brochure instantly</span>
+                      <span className="block text-sm font-semibold text-slate-900">Download Brochure</span>
+                      <span className="block text-xs leading-5 text-slate-500">Get the full project brochure instantly</span>
                     </span>
                   </span>
-                  <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
+                  <ArrowUpRight className="h-4 w-4 text-slate-400" />
                 </button>
 
                 <a
@@ -2770,18 +2377,18 @@ const KalpavrukshaPage = () => {
                         setIsQuickActionsOpen(false);
                         trackKalpavrukshaDirectionsClick('desktop_quick_actions');
                       }}
-                  className="flex w-full items-center justify-between rounded-[24px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-4 text-left shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white"
+                  className="flex w-full items-center justify-between rounded-[24px] border border-[#dfe9d5] bg-[#f7fbf5] px-4 py-4 text-left shadow-sm transition-all duration-200"
                 >
                   <span className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-700 ring-1 ring-emerald-100">
                       <ArrowUpRight className="h-4 w-4" />
                     </span>
                     <span>
-                      <span className="block text-sm font-semibold text-[#18231d]">Get Directions</span>
-                      <span className="block text-xs leading-5 text-[#7a7f77]">Open the route directly in Google Maps</span>
+                      <span className="block text-sm font-semibold text-slate-900">Get Directions</span>
+                      <span className="block text-xs leading-5 text-slate-500">Open the route directly in Google Maps</span>
                     </span>
                   </span>
-                  <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
+                  <ArrowUpRight className="h-4 w-4 text-slate-400" />
                 </a>
 
                 <a
@@ -2792,18 +2399,18 @@ const KalpavrukshaPage = () => {
                     setIsQuickActionsOpen(false);
                     trackKalpavrukshaWhatsAppClick('mobile_quick_actions');
                   }}
-                  className="flex w-full items-center justify-between rounded-[24px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-4 text-left shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white"
+                  className="flex w-full items-center justify-between rounded-[24px] border border-[#dfe9d5] bg-[#f7fbf5] px-4 py-4 text-left shadow-sm transition-all duration-200"
                 >
                   <span className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-700 ring-1 ring-emerald-100">
                       <FaWhatsapp className="h-4 w-4" />
                     </span>
                     <span>
-                      <span className="block text-sm font-semibold text-[#18231d]">Chat on WhatsApp</span>
-                      <span className="block text-xs leading-5 text-[#7a7f77]">Connect with the sales team directly</span>
+                      <span className="block text-sm font-semibold text-slate-900">Chat on WhatsApp</span>
+                      <span className="block text-xs leading-5 text-slate-500">Connect with the sales team directly</span>
                     </span>
                   </span>
-                  <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
+                  <ArrowUpRight className="h-4 w-4 text-slate-400" />
                 </a>
               </div>
             </div>
@@ -2811,37 +2418,36 @@ const KalpavrukshaPage = () => {
         )}
 
         {/* Footer */}
-        <footer className="bg-[radial-gradient(circle_at_top_left,rgba(213,177,110,0.16),transparent_24%),linear-gradient(180deg,#132018_0%,#0c1410_100%)] pb-24 pt-16 text-white lg:pb-12">
+        <footer className="bg-gray-900 pb-24 pt-12 text-white lg:pb-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 gap-12 md:grid-cols-[1.1fr,0.8fr,1fr]">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
-                <div className="mb-5 flex items-center">
-                  <TreePine className="w-8 h-8 text-[#e3cb98]" />
+                <div className="flex items-center mb-4">
+                  <TreePine className="w-8 h-8 text-emerald-400" />
                   <span className="ml-2 text-xl font-bold">Kalpavruksha</span>
                 </div>
-                <p className="max-w-sm leading-7 text-white/[0.74]">
+                <p className="text-gray-400">
                   by Easy Homes - Creating communities where hearts belong
                 </p>
               </div>
 
               <div>
-                <h4 className="text-lg font-semibold mb-4 text-[#e9d6ad]">Quick Links</h4>
-                <ul className="space-y-3 text-white/[0.78]">
-                  <li><button onClick={scrollToAbout} className="footer-slide-link bg-transparent border-none outline-none p-0 transition-colors duration-200 hover:text-white">About Project</button></li>
-                  <li><button onClick={scrollToLocation} className="footer-slide-link bg-transparent border-none outline-none p-0 transition-colors duration-200 hover:text-white">Location</button></li>
-                  <li><button onClick={scrollToAmenities} className="footer-slide-link bg-transparent border-none outline-none p-0 transition-colors duration-200 hover:text-white">Amenities</button></li>
-                  <li><button onClick={scrollToGallery} className="footer-slide-link bg-transparent border-none outline-none p-0 transition-colors duration-200 hover:text-white">Gallery</button></li>
+                <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+                <ul className="space-y-2 text-gray-400">
+                  <li><button onClick={scrollToAbout} className="footer-slide-link bg-transparent border-none outline-none p-0">About Project</button></li>
+                  <li><button onClick={scrollToLocation} className="footer-slide-link bg-transparent border-none outline-none p-0">Location</button></li>
+                  <li><button onClick={scrollToAmenities} className="footer-slide-link bg-transparent border-none outline-none p-0">Amenities</button></li>
+                  <li><button onClick={scrollToGallery} className="footer-slide-link bg-transparent border-none outline-none p-0">Gallery</button></li>
                 </ul>
               </div>
 
               <div>
-                <h4 className="text-lg font-semibold mb-4 text-[#e9d6ad]">Contact Us</h4>
-                <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
+                <h4 className="text-lg font-semibold mb-4">Contact Us</h4>
+                <div className="flex gap-4">
                   <a href="tel:+918988896666" onClick={() => trackKalpavrukshaCallClick('footer_contact')}>
                     <CTAButton
                       icon={<Phone className="w-4 h-4 " />}
                       text="Call Now"
-                      className="!border-white/[0.14] !bg-white/[0.10] !text-white hover:!bg-white/[0.14] hover:!text-white"
                     />
                   </a>
                   <div>
@@ -2862,7 +2468,7 @@ const KalpavrukshaPage = () => {
               </div>
             </div>
 
-            <div className="mt-10 border-t border-white/10 pt-8 text-center text-white/[0.62]">
+            <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
               <p>&copy; 2025 Kalpavruksha by Easy Homes. All rights reserved.</p>
             </div>
           </div>

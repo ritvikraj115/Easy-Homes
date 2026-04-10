@@ -1,7 +1,7 @@
 import React from 'react';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { HelmetProvider } from 'react-helmet-async';
-import KalpavrukshaPage from './Kalpavruksha2';
+import KalpavrukshaPage from '../../../Kalpavruksha2';
 import api from '../api';
 import {
   trackEvent,
@@ -185,12 +185,16 @@ beforeEach(() => {
     value: createIntersectionObserverMock(),
   });
 
+  delete window.$zoho;
+  document.getElementById('zsiqscript')?.remove();
   HTMLElement.prototype.scrollIntoView = jest.fn();
 });
 
 afterEach(() => {
   jest.runOnlyPendingTimers();
   jest.useRealTimers();
+  delete window.$zoho;
+  document.getElementById('zsiqscript')?.remove();
 });
 
 test('hero next/previous controls change slides', async () => {
@@ -225,6 +229,18 @@ test('hero WhatsApp CTA tracks the same placement flow as Kalpa', () => {
   });
 });
 
+test('zoho salesiq widget script is added on kalpavruksha2 page', () => {
+  renderPage();
+
+  const widgetScript = document.getElementById('zsiqscript');
+
+  expect(widgetScript).not.toBeNull();
+  expect(widgetScript).toHaveAttribute(
+    'src',
+    'https://salesiq.zohopublic.in/widget?wc=siq79be0a217878e0446b69dce568ecb00ecb77d7f8f0f8e11c5824d0d15aa2db43',
+  );
+});
+
 test('project nav links scroll to the matching section', () => {
   renderPage();
   HTMLElement.prototype.scrollIntoView.mockClear();
@@ -251,7 +267,7 @@ test('site visit form validates and submits successfully', async () => {
 
   fireEvent.click(screen.getByRole('button', { name: 'Submit Request' }));
   expect(
-    screen.getByText('Please fill name, phone, date, time slot and pickup address.'),
+    screen.getByText('Please fill name, phone, date and time slot.'),
   ).toBeInTheDocument();
   act(() => {
     jest.runOnlyPendingTimers();
@@ -268,11 +284,10 @@ test('site visit form validates and submits successfully', async () => {
     target: { name: 'preferredDate', value: '2099-01-01' },
   });
   fireEvent.click(screen.getByRole('button', { name: '9:00 AM' }));
-  fireEvent.change(siteVisitForm.querySelector('textarea[name="pickupAddress"]'), {
-    target: { name: 'pickupAddress', value: 'Benz Circle, Vijayawada' },
-  });
 
-  fireEvent.submit(siteVisitForm);
+  await act(async () => {
+    fireEvent.submit(siteVisitForm);
+  });
 
   await waitFor(() => {
     expect(api.post).toHaveBeenCalledWith('/api/site-visits', {
@@ -281,10 +296,10 @@ test('site visit form validates and submits successfully', async () => {
       phone: '9876543210',
       email: undefined,
       preferredDate: '2099-01-01T09:00',
-      transportRequired: 'Yes',
+      transportRequired: 'No',
       notes: 'Site visit scheduled from website.',
-      pickupAddress: 'Benz Circle, Vijayawada',
-      pickupMode: 'manual',
+      pickupAddress: undefined,
+      pickupMode: undefined,
       pickupLat: undefined,
       pickupLng: undefined,
     });
@@ -299,6 +314,7 @@ test('site visit map pickup mode can populate the pickup address', async () => {
   renderPage();
 
   fireEvent.click(screen.getAllByRole('button', { name: 'Schedule a Visit' })[0]);
+  fireEvent.click(screen.getByRole('button', { name: 'Yes' }));
   fireEvent.click(screen.getByText('Select on Map'));
   fireEvent.click(await screen.findByTestId('pickup-map'));
 
@@ -322,9 +338,6 @@ test('brochure download form submits and triggers the file download flow', async
   fireEvent.change(downloadForm.querySelector('input[name="phone"]'), {
     target: { name: 'phone', value: '9123456789' },
   });
-  fireEvent.change(downloadForm.querySelector('input[name="email"]'), {
-    target: { name: 'email', value: 'brochure@example.com' },
-  });
 
   await act(async () => {
     fireEvent.submit(downloadForm);
@@ -337,7 +350,7 @@ test('brochure download form submits and triggers the file download flow', async
       leadStatus: 'Downloaded Brochure',
       name: 'Brochure User',
       phone: '9123456789',
-      email: 'brochure@example.com',
+      email: undefined,
     });
   });
 
@@ -347,6 +360,17 @@ test('brochure download form submits and triggers the file download flow', async
   expect(mockNavigate).toHaveBeenCalledWith('/thank-you');
 
   anchorClickSpy.mockRestore();
+});
+
+test('gallery cards use descriptive alt text for SEO and accessibility', () => {
+  renderPage();
+
+  expect(
+    screen.getByAltText('Kalpavruksha grand entrance for the CRDA-approved plotted community in Vijayawada'),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByAltText('Kalpavruksha clubhouse exterior with landscaped lawns and premium lifestyle amenities'),
+  ).toBeInTheDocument();
 });
 
 test('location and quick action directions use the exact shared map URL', async () => {
