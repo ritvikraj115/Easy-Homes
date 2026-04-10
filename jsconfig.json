@@ -5,5 +5,5 @@
       "@/*": ["*"]
     }
   },
-  "include": ["src", "scripts", "../Kalpavruksha2.jsx"]
+  "include": ["src", "scripts"]
 }

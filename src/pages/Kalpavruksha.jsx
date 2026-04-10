@@ -1609,7 +1609,7 @@ const KalpavrukshaPage = () => {
                 type="button"
                 onClick={() => setIsProjectNavOpen((current) => !current)}
                 aria-expanded={isProjectNavOpen}
-                aria-controls="kalpavruksha2-project-nav"
+                aria-controls="kalpavruksha-project-nav"
                 className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.16] bg-white/[0.08] text-white transition-colors duration-300 hover:bg-white/[0.14] lg:hidden"
               >
                 {isProjectNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -1619,7 +1619,7 @@ const KalpavrukshaPage = () => {
 
           {isProjectNavOpen && (
             <div
-              id="kalpavruksha2-project-nav"
+              id="kalpavruksha-project-nav"
               className="border-t border-white/10 px-4 pb-4 pt-3 lg:hidden"
             >
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">

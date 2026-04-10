@@ -1,7 +1,7 @@
 import React from 'react';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { HelmetProvider } from 'react-helmet-async';
-import KalpavrukshaPage from '../../../Kalpavruksha2';
+import KalpavrukshaPage from './Kalpavruksha';
 import api from '../api';
 import {
   trackEvent,
@@ -12,7 +12,7 @@ import {
 } from '../utils/analytics';
 
 const mockNavigate = jest.fn();
-let mockPathname = '/kalpavruksha2/';
+let mockPathname = '/kalpavruksha/';
 
 jest.mock('../api', () => ({
   __esModule: true,
@@ -140,13 +140,13 @@ beforeEach(() => {
   jest.useFakeTimers();
   jest.clearAllMocks();
   api.post.mockResolvedValue({ data: { ok: true } });
-  mockPathname = '/kalpavruksha2/';
+  mockPathname = '/kalpavruksha/';
   mockNavigate.mockImplementation((to) => {
     mockPathname = typeof to === 'string' ? to : to?.pathname || mockPathname;
   });
   process.env.REACT_APP_MAP_KEY = 'test-map-key';
   
-  window.history.pushState({}, '', '/kalpavruksha2/');
+  window.history.pushState({}, '', '/kalpavruksha/');
 
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
@@ -229,7 +229,7 @@ test('hero WhatsApp CTA tracks the same placement flow as Kalpa', () => {
   });
 });
 
-test('zoho salesiq widget script is added on kalpavruksha2 page', () => {
+test('zoho salesiq widget script is added on kalpavruksha page', () => {
   renderPage();
 
   const widgetScript = document.getElementById('zsiqscript');
