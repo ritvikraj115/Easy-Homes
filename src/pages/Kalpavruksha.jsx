@@ -716,7 +716,7 @@ const KalpavrukshaPage = () => {
 
   //All codes related to img glary 
   const demoImg = [
-    { title: "Grand Entrance", image: require("../assets/kalpavruksha/Entry-000.webp"), alt: "Kalpavruksha grand entrance for the CRDA-approved plotted community in Vijayawada", maskEmbeddedLabel: false },
+    { title: "Grand Entrance", image: require("../assets/kalpavruksha/Entry-000.webp"), alt: "Kalpavruksha grand entrance for the CRDA-approved plotted community in Vijayawada", maskEmbeddedLabel: true },
     { title: "Modern Clubhouse", image: require("../assets/kalpavruksha/club house.webp"), alt: "Kalpavruksha clubhouse exterior with landscaped lawns and premium lifestyle amenities", maskEmbeddedLabel: true },
     { title: "Contour Garden", image: require("../assets/kalpavruksha/contour garden.webp"), alt: "Kalpavruksha contour garden with landscaped pathways and open recreational greens", maskEmbeddedLabel: true },
     { title: "Arrival Court", image: require("../assets/kalpavruksha/arrival court.webp"), alt: "Kalpavruksha arrival court with landscaped entry features inside the gated layout", maskEmbeddedLabel: true },
@@ -1352,8 +1352,8 @@ const KalpavrukshaPage = () => {
 
       {/* Site Visit Modal */}
       {showVisitModal && (
-        <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto bg-black/55 p-4 backdrop-blur-[3px] md:items-center" onClick={(e) => { if (e.target === e.currentTarget) closeVisitModal(); }}>
-          <div className="relative my-6 flex max-h-[calc(100vh-3rem)] w-full max-w-3xl flex-col overflow-hidden rounded-[32px] border border-[#e2d4ba] bg-[linear-gradient(180deg,#fcfaf5_0%,#f6efe0_100%)] shadow-[0_34px_90px_rgba(0,0,0,0.24)]">
+        <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto bg-black/55 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-[3px] sm:p-4 md:items-center" onClick={(e) => { if (e.target === e.currentTarget) closeVisitModal(); }}>
+          <div className="relative my-2 flex max-h-[calc(100dvh-1rem)] w-full max-w-3xl flex-col overflow-hidden rounded-[32px] border border-[#e2d4ba] bg-[linear-gradient(180deg,#fcfaf5_0%,#f6efe0_100%)] shadow-[0_34px_90px_rgba(0,0,0,0.24)] md:my-6 md:max-h-[calc(100vh-3rem)]">
             <div className="border-b border-[#ebe2d1] bg-[linear-gradient(180deg,#f7f0e2_0%,#f0e1c4_100%)] px-6 py-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="max-w-xl">
@@ -1506,7 +1506,7 @@ const KalpavrukshaPage = () => {
                   ) : null}
                 </div>
               </div>
-              <div className="shrink-0 border-t border-[#ebe2d1] bg-white/[0.72] px-6 pb-5 pt-4 shadow-[0_-10px_24px_rgba(15,23,42,0.08)] backdrop-blur-sm">
+              <div className="shrink-0 border-t border-[#ebe2d1] bg-white/[0.72] px-6 pt-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-[0_-10px_24px_rgba(15,23,42,0.08)] backdrop-blur-sm md:pb-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
                   <button type="submit" disabled={submitting} className={`inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold shadow-[0_18px_34px_rgba(203,161,89,0.18)] sm:w-auto sm:min-w-[13rem] ${submitting ? 'bg-[#dcc7a0] text-[#6f654e]' : 'bg-[#cba159] text-[#1d1609] hover:bg-[#d4ab68]'}`}>
                     <CheckCircle className="h-4 w-4" />
@@ -1521,10 +1521,10 @@ const KalpavrukshaPage = () => {
       {/* Layout Download Lead Modal */}
       {downloadAssetKey && activeDownloadAsset && (
         <div
-          className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto bg-black/55 p-4 backdrop-blur-[3px] md:items-center"
+          className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto bg-black/55 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-[3px] sm:p-4 md:items-center"
           onClick={(e) => { if (e.target === e.currentTarget) closeDownloadLeadModal(); }}
         >
-          <div className="relative my-6 flex max-h-[calc(100vh-3rem)] w-full max-w-xl flex-col overflow-hidden rounded-[32px] border border-[#e2d4ba] bg-[linear-gradient(180deg,#fcfaf5_0%,#f6efe0_100%)] shadow-[0_34px_90px_rgba(0,0,0,0.24)]">
+          <div className="relative my-2 flex max-h-[calc(100dvh-1rem)] w-full max-w-xl flex-col overflow-hidden rounded-[32px] border border-[#e2d4ba] bg-[linear-gradient(180deg,#fcfaf5_0%,#f6efe0_100%)] shadow-[0_34px_90px_rgba(0,0,0,0.24)] md:my-6 md:max-h-[calc(100vh-3rem)]">
             <div className="border-b border-[#ebe2d1] bg-[linear-gradient(180deg,#f7f0e2_0%,#f0e1c4_100%)] px-6 py-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="max-w-md">
@@ -1568,7 +1568,7 @@ const KalpavrukshaPage = () => {
                 </div>
 
               </div>
-              <div className="shrink-0 border-t border-[#ebe2d1] bg-white/[0.72] px-6 pb-5 pt-4 shadow-[0_-10px_24px_rgba(15,23,42,0.08)] backdrop-blur-sm">
+              <div className="shrink-0 border-t border-[#ebe2d1] bg-white/[0.72] px-6 pt-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-[0_-10px_24px_rgba(15,23,42,0.08)] backdrop-blur-sm md:pb-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
                   <button
                     type="submit"
@@ -2051,7 +2051,7 @@ const KalpavrukshaPage = () => {
                     {item.maskEmbeddedLabel && (
                       <div
                         aria-hidden="true"
-                        className="pointer-events-none absolute bottom-0 right-0 h-24 w-44 rounded-tl-[28px] bg-[#f7efe0]/78 shadow-[-18px_-14px_40px_rgba(247,239,224,0.56)] backdrop-blur-md"
+                        className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-[linear-gradient(180deg,rgba(247,239,224,0)_0%,rgba(247,239,224,0.58)_58%,rgba(247,239,224,0.74)_100%)] backdrop-blur-[2px]"
                       />
                     )}
                   </div>
@@ -2099,7 +2099,7 @@ const KalpavrukshaPage = () => {
                 {selectedImage.maskEmbeddedLabel && (
                   <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute bottom-0 right-0 h-24 w-52 rounded-tl-[32px] bg-[#f7efe0]/78 shadow-[-18px_-14px_40px_rgba(247,239,224,0.56)] backdrop-blur-md sm:h-28 sm:w-64"
+                    className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(180deg,rgba(247,239,224,0)_0%,rgba(247,239,224,0.58)_58%,rgba(247,239,224,0.74)_100%)] backdrop-blur-[2px] sm:h-24"
                   />
                 )}
               </div>
