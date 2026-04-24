@@ -821,6 +821,7 @@ function buildKalpavrukshaPrerenderedPage(templateHtml) {
   html = upsertTitle(html, KALPAVRUKSHA_SEO.title);
   html = upsertMetaByName(html, 'description', KALPAVRUKSHA_SEO.description);
   html = upsertMetaByName(html, 'keywords', KALPAVRUKSHA_SEO.keywords);
+  html = upsertMetaByName(html, 'easyhomes:prerendered-route', 'kalpavruksha');
   html = upsertMetaByName(html, 'robots', 'index,follow');
   html = upsertMetaByProperty(html, 'og:title', KALPAVRUKSHA_SEO.shareTitle);
   html = upsertMetaByProperty(html, 'og:description', KALPAVRUKSHA_SEO.shareDescription);

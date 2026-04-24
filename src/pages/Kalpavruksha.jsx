@@ -368,6 +368,11 @@ const KalpavrukshaPage = () => {
   const projectLocationAddress = 'Kalpavruksha, near Vijayawada Nagpur Greenfield Highway, Vemavaram, Vijayawada, Andhra Pradesh';
   const projectMapEmbedUrl = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3823.5114526053485!2d80.59797237418302!3d16.60108128415813!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a35ef003f891535%3A0xdb8f6ca60fc5d3fe!2sKalpavruksha!5e0!3m2!1sen!2sus!4v1774516140803!5m2!1sen!2sus';
   const projectDirectionsUrl = KALPAVRUKSHA_DIRECTIONS_URL;
+  const shouldRenderStructuredData =
+    typeof document === 'undefined' ||
+    !document.head?.querySelector(
+      'meta[name="easyhomes:prerendered-route"][content="kalpavruksha"]',
+    );
 
   useEffect(() => {
     if (location.pathname.endsWith('/')) {
@@ -1324,24 +1329,28 @@ const KalpavrukshaPage = () => {
         <meta name="twitter:image" content={projectImageUrl} />
         <meta name="twitter:image:alt" content="Kalpavruksha open plots by Easy Homes in Vijayawada" />
 
-        <script type="application/ld+json">
-          {JSON.stringify(breadcrumbData)}
-        </script>
-        <script type="application/ld+json">
-          {JSON.stringify(realEstateAgentData)}
-        </script>
-        <script type="application/ld+json">
-          {JSON.stringify(webPageData)}
-        </script>
-        <script type="application/ld+json">
-          {JSON.stringify(projectSchema)}
-        </script>
-        <script type="application/ld+json">
-          {JSON.stringify(faqSchema)}
-        </script>
-        <script type="application/ld+json">
-          {JSON.stringify(buyerGuideSchema)}
-        </script>
+        {shouldRenderStructuredData && (
+          <>
+            <script id="kalpavruksha-breadcrumb-schema" type="application/ld+json">
+              {JSON.stringify(breadcrumbData)}
+            </script>
+            <script id="kalpavruksha-agent-schema" type="application/ld+json">
+              {JSON.stringify(realEstateAgentData)}
+            </script>
+            <script id="kalpavruksha-webpage-schema" type="application/ld+json">
+              {JSON.stringify(webPageData)}
+            </script>
+            <script id="kalpavruksha-listing-schema" type="application/ld+json">
+              {JSON.stringify(projectSchema)}
+            </script>
+            <script id="kalpavruksha-faq-schema" type="application/ld+json">
+              {JSON.stringify(faqSchema)}
+            </script>
+            <script id="kalpavruksha-buyer-guide-schema" type="application/ld+json">
+              {JSON.stringify(buyerGuideSchema)}
+            </script>
+          </>
+        )}
       </Helmet>
       {/* Toast */}
       {toast && (
