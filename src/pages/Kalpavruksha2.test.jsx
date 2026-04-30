@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { HelmetProvider } from 'react-helmet-async';
 import KalpavrukshaPage from './Kalpavruksha';
 import api from '../api';
@@ -388,24 +388,19 @@ test('location keeps the shared directions link and no longer renders the travel
   expect(locationDirectionsLink).toHaveAttribute('href', 'https://maps.app.goo.gl/dNA1KdiDNuLjTthG8');
 });
 
-test('quick actions become available after the hero is scrolled with only brochure and whatsapp actions', async () => {
+test('floating action icons become available after the hero is scrolled', async () => {
   const restoreLayout = mockScrolledHeroLayout();
-  const { container } = renderPage();
+  renderPage();
 
   await waitFor(() => {
-    expect(screen.getAllByRole('button', { name: /Quick Actions/i }).length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: 'Open brochure download' })).toBeInTheDocument();
   });
-  fireEvent.click(screen.getAllByRole('button', { name: /Quick Actions/i })[0]);
 
-  const quickActionsPanel = container.querySelector('#kalpavruksha-quick-actions');
-  expect(within(quickActionsPanel).queryByRole('button', { name: /Schedule Site Visit/i })).not.toBeInTheDocument();
-  expect(within(quickActionsPanel).queryByRole('button', { name: /Download Layout PDF/i })).not.toBeInTheDocument();
-  expect(within(quickActionsPanel).queryByRole('link', { name: /Get Directions/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Quick Actions/i })).not.toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Open WhatsApp chat' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Open live chat' })).toBeInTheDocument();
 
-  const brochureButton = within(quickActionsPanel).getByRole('button', { name: /Download Brochure/i });
-  expect(within(quickActionsPanel).getByRole('link', { name: /Chat on WhatsApp/i })).toBeInTheDocument();
-
-  fireEvent.click(brochureButton);
+  fireEvent.click(screen.getByRole('button', { name: 'Open brochure download' }));
 
   expect(await screen.findByRole('heading', { name: 'Download Project Brochure' })).toBeInTheDocument();
   expect(trackEvent).toHaveBeenCalledWith(

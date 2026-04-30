@@ -147,7 +147,6 @@ const KalpavrukshaPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [downloadSubmitting, setDownloadSubmitting] = useState(false);
   const [showFloatingActions, setShowFloatingActions] = useState(false);
-  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [isProjectNavOpen, setIsProjectNavOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
   const [form, setForm] = useState(DEFAULT_SITE_VISIT_FORM);
@@ -251,18 +250,6 @@ const KalpavrukshaPage = () => {
       setPickupMapLoadError(false);
     }
   }, [form.pickupMode, showVisitModal]);
-
-  useEffect(() => {
-    if (!showFloatingActions) {
-      setIsQuickActionsOpen(false);
-    }
-  }, [showFloatingActions]);
-
-  useEffect(() => {
-    if (isModalOpen) {
-      setIsQuickActionsOpen(false);
-    }
-  }, [isModalOpen]);
 
   useEffect(() => {
     if (isModalOpen) {
@@ -2476,212 +2463,41 @@ const KalpavrukshaPage = () => {
 
         {shouldShowFloatingActions && (
           <div
-            className="pointer-events-none fixed right-0 top-1/2 z-30 hidden -translate-y-1/2 transition-all duration-300 lg:block"
+            className="pointer-events-none fixed bottom-5 right-4 z-40 transition-all duration-300"
             aria-hidden={!shouldShowFloatingActions}
           >
-            <div className="pointer-events-auto flex flex-col items-end gap-3">
-              <div className="relative flex items-center justify-end">
-                <div
-                  id="kalpavruksha-quick-actions"
-                  className={`absolute right-[calc(100%+0.65rem)] top-1/2 w-[min(18rem,calc(100vw-5.5rem))] -translate-y-1/2 transition-all duration-200 ${
-                    isQuickActionsOpen
-                      ? 'visible translate-x-0 opacity-100'
-                      : 'invisible translate-x-6 opacity-0'
-                  }`}
-                >
-                  <div className="max-h-[70vh] overflow-y-auto rounded-[32px] border border-[#eadfcb] bg-white/[0.97] p-4 shadow-[0_24px_55px_rgba(15,23,42,0.12)] backdrop-blur-xl">
-                    <div className="flex items-start justify-between gap-3 px-2 pb-3">
-                      <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8b6328]">
-                          Quick Actions
-                        </p>
-                        <p className="mt-1 text-sm text-[#68736b]">
-                          Everything important, one tap away.
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setIsQuickActionsOpen(false)}
-                        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#eadfcb] bg-white text-[#6c756d] transition-colors duration-200 hover:bg-[#fffaf1] hover:text-[#18231d]"
-                        aria-label="Close quick actions"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-
-                    <div className="space-y-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsQuickActionsOpen(false);
-                          openDownloadLeadModal('brochure', 'desktop_quick_actions');
-                        }}
-                        className="flex w-full items-center justify-between rounded-[22px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-3 text-left text-[#4b5750] shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white hover:shadow-md"
-                      >
-                        <span className="flex items-center gap-3">
-                          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
-                            <Download className="h-4 w-4" />
-                          </span>
-                          <span>
-                            <span className="block text-sm font-semibold text-[#18231d]">Download Brochure</span>
-                            <span className="block text-xs text-[#7a7f77]">Get the full project brochure</span>
-                          </span>
-                        </span>
-                        <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
-                      </button>
-
-                      <a
-                        href={KALPAVRUKSHA_WHATSAPP_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => {
-                          setIsQuickActionsOpen(false);
-                          trackKalpavrukshaWhatsAppClick('desktop_quick_actions');
-                        }}
-                        className="flex w-full items-center justify-between rounded-[22px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-3 text-left text-[#4b5750] shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white hover:shadow-md"
-                      >
-                        <span className="flex items-center gap-3">
-                          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
-                            <FaWhatsapp className="h-4 w-4" />
-                          </span>
-                          <span>
-                            <span className="block text-sm font-semibold text-[#18231d]">Chat on WhatsApp</span>
-                            <span className="block text-xs text-[#7a7f77]">Speak to the sales team directly</span>
-                          </span>
-                        </span>
-                        <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
-                      </a>
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setIsQuickActionsOpen((current) => !current)}
-                  aria-expanded={isQuickActionsOpen}
-                  aria-controls="kalpavruksha-quick-actions"
-                  className="inline-flex h-14 items-center gap-2 rounded-l-full border border-r-0 border-[#d3ab67] bg-gradient-to-r from-[#cba159] to-[#d7b16f] pl-4 pr-3 text-sm font-semibold text-[#1d1609] shadow-[0_16px_35px_rgba(203,161,89,0.24)] transition-all duration-200 hover:pr-4 hover:shadow-[0_20px_42px_rgba(203,161,89,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b16f]/24"
-                >
-                  <Zap className="h-4 w-4" />
-                  <span>Quick Actions</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {shouldShowFloatingActions && (
-          <div
-            className="pointer-events-none fixed inset-x-0 bottom-4 z-30 px-4 transition-all duration-300 lg:hidden"
-            aria-hidden={!shouldShowFloatingActions}
-          >
-            <div className="pointer-events-auto mx-auto flex max-w-md items-center gap-3">
+            <div className="pointer-events-auto flex flex-col items-center gap-3">
               <button
                 type="button"
-                onClick={() => setIsQuickActionsOpen((current) => !current)}
-                aria-expanded={isQuickActionsOpen}
-                aria-controls="kalpavruksha-mobile-quick-actions"
-                className="inline-flex min-h-14 flex-1 items-center justify-center gap-2 rounded-full border border-[#e0cfaf] bg-white/[0.96] px-5 text-sm font-semibold text-[#221c14] shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b16f]/24"
+                onClick={() => openDownloadLeadModal('brochure', 'floating_brochure_icon')}
+                className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-[#d7ba82] bg-[linear-gradient(180deg,#fffefb_0%,#f4ead8_100%)] text-[#8b6328] shadow-[0_20px_42px_rgba(83,64,31,0.16)] transition-all duration-200 hover:scale-[1.03] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b16f]/24"
+                aria-label="Open brochure download"
+                title="Open brochure download"
               >
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[#cba159] to-[#d7b16f] text-[#1d1609]">
-                  <Zap className="h-4 w-4" />
-                </span>
-                <span>Quick Actions</span>
-                <ChevronDown className={`h-4 w-4 text-[#8b6328] transition-transform duration-200 ${isQuickActionsOpen ? 'rotate-180' : ''}`} />
+                <Download className="h-5 w-5" />
               </button>
-            </div>
-          </div>
-        )}
 
-        {shouldShowFloatingActions && (
-          <button
-            type="button"
-            onClick={() => launchKalpavrukshaLiveChat('floating_chat_icon')}
-            className="fixed bottom-5 right-4 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full border border-[#d7ba82] bg-[linear-gradient(180deg,#fffefb_0%,#f4ead8_100%)] text-[#8b6328] shadow-[0_20px_42px_rgba(83,64,31,0.16)] transition-all duration-200 hover:scale-[1.03] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b16f]/24"
-            aria-label="Open live chat"
-          >
-            <MessageCircle className="h-5 w-5" />
-          </button>
-        )}
+              <a
+                href={KALPAVRUKSHA_WHATSAPP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackKalpavrukshaWhatsAppClick('floating_whatsapp_icon')}
+                className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-[#d7ba82] bg-[linear-gradient(180deg,#fffefb_0%,#f4ead8_100%)] text-[#8b6328] shadow-[0_20px_42px_rgba(83,64,31,0.16)] transition-all duration-200 hover:scale-[1.03] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b16f]/24"
+                aria-label="Open WhatsApp chat"
+                title="Open WhatsApp chat"
+              >
+                <FaWhatsapp className="h-5 w-5" />
+              </a>
 
-        {shouldShowFloatingActions && isQuickActionsOpen && (
-          <div className="fixed inset-0 z-40 lg:hidden">
-            <button
-              type="button"
-              className="absolute inset-0 bg-[#101712]/30 backdrop-blur-[2px]"
-              aria-label="Close quick actions"
-              onClick={() => setIsQuickActionsOpen(false)}
-            />
-            <div
-              id="kalpavruksha-mobile-quick-actions"
-              className="absolute inset-x-0 bottom-0 rounded-t-[32px] border-t border-[#eadfcb] bg-[#fffdf8] px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-4 shadow-[0_-24px_60px_rgba(15,23,42,0.16)]"
-            >
-              <div className="mx-auto h-1.5 w-12 rounded-full bg-[#d7ccb8]" />
-              <div className="mt-4 flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8b6328]">
-                    Quick Actions
-                  </p>
-                  <h3 className="mt-2 text-lg font-semibold text-[#18231d]">
-                    Everything important in one place
-                  </h3>
-                  <p className="mt-1 text-sm leading-6 text-[#68736b]">
-                    Fast actions for brochure access and direct contact.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsQuickActionsOpen(false)}
-                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#eadfcb] bg-white text-[#6c756d] transition-colors duration-200 hover:bg-[#fffaf1] hover:text-[#18231d]"
-                  aria-label="Close quick actions"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-
-              <div className="mt-5 space-y-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsQuickActionsOpen(false);
-                    openDownloadLeadModal('brochure', 'desktop_quick_actions');
-                  }}
-                  className="flex w-full items-center justify-between rounded-[24px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-4 text-left shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white"
-                >
-                  <span className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
-                      <Download className="h-4 w-4" />
-                    </span>
-                    <span>
-                      <span className="block text-sm font-semibold text-[#18231d]">Download Brochure</span>
-                      <span className="block text-xs leading-5 text-[#7a7f77]">Get the full project brochure instantly</span>
-                    </span>
-                  </span>
-                  <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
-                </button>
-
-                <a
-                  href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20please%20contact%20me%20regarding%20Kalpavruksha."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => {
-                    setIsQuickActionsOpen(false);
-                    trackKalpavrukshaWhatsAppClick('mobile_quick_actions');
-                  }}
-                  className="flex w-full items-center justify-between rounded-[24px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-4 text-left shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white"
-                >
-                  <span className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
-                      <FaWhatsapp className="h-4 w-4" />
-                    </span>
-                    <span>
-                      <span className="block text-sm font-semibold text-[#18231d]">Chat on WhatsApp</span>
-                      <span className="block text-xs leading-5 text-[#7a7f77]">Connect with the sales team directly</span>
-                    </span>
-                  </span>
-                  <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
-                </a>
-              </div>
+              <button
+                type="button"
+                onClick={() => launchKalpavrukshaLiveChat('floating_chat_icon')}
+                className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-[#d7ba82] bg-[linear-gradient(180deg,#fffefb_0%,#f4ead8_100%)] text-[#8b6328] shadow-[0_20px_42px_rgba(83,64,31,0.16)] transition-all duration-200 hover:scale-[1.03] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b16f]/24"
+                aria-label="Open live chat"
+                title="Open live chat"
+              >
+                <MessageCircle className="h-5 w-5" />
+              </button>
             </div>
           </div>
         )}
