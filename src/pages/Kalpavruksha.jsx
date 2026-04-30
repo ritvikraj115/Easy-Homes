@@ -37,8 +37,6 @@ import {
   trackWhatsAppClick,
 } from '../utils/analytics';
 import {
-  KALPAVRUKSHA_BELONGING_HERO_IMAGE,
-  KALPAVRUKSHA_BELONGING_HERO_SRC_SET,
   KALPAVRUKSHA_CALM_HERO_IMAGE,
   KALPAVRUKSHA_CALM_HERO_SRC_SET,
   KALPAVRUKSHA_CARE_HERO_IMAGE,
@@ -66,38 +64,7 @@ const VISIT_TIME_SLOTS = Array.from({ length: 33 }, (_, index) => {
 });
 
 const PICKUP_MAP_DEFAULT_CENTER = { lat: 16.553755, lng: 80.570832 };
-const KALPAVRUKSHA_PROPERTY_POSITION = { lat: 16.60108128415813, lng: 80.59797237418302 };
 const PICKUP_MAP_CONTAINER_STYLE = { width: '100%', height: '220px' };
-const KALPAVRUKSHA_TRAVEL_DESTINATIONS = [
-  {
-    id: 'airport',
-    label: 'Gannavaram Airport',
-    address: 'Vijayawada International Airport, Gannavaram, Andhra Pradesh, India',
-    emoji: '✈️',
-    fallbackLabel: 'Approx. 22 mins drive',
-    pinOptions: {
-      background: '#d97706',
-      borderColor: '#fde68a',
-      glyph: 'A',
-      glyphColor: '#ffffff',
-      scale: 1.05,
-    },
-  },
-  {
-    id: 'railway-station',
-    label: 'Vijayawada Railway Station',
-    address: 'Vijayawada Junction railway station, Vijayawada, Andhra Pradesh, India',
-    emoji: '🚆',
-    fallbackLabel: 'Approx. 15 mins drive',
-    pinOptions: {
-      background: '#2563eb',
-      borderColor: '#bfdbfe',
-      glyph: 'R',
-      glyphColor: '#ffffff',
-      scale: 1.05,
-    },
-  },
-];
 const DOWNLOAD_ASSET_CONFIG = {
   layout: {
     url: '/Kalpavruksha Master Layout.pdf',
@@ -149,7 +116,6 @@ const KALPAVRUKSHA_ZOHO_HOME_WIDGETS = [
 
 const ReviewsSection = React.lazy(() => import('../components/ReviewProject'));
 const PickupLocationMap = React.lazy(() => import('../components/PickupLocationMap'));
-const TravelTimesLocationMap = React.lazy(() => import('../components/TravelTimesLocationMap'));
 const DEFERRED_SECTION_STYLE = {
   contentVisibility: 'auto',
   containIntrinsicSize: '1px 960px',
@@ -198,7 +164,6 @@ const KalpavrukshaPage = () => {
   const todayDate = new Date().toISOString().split('T')[0];
   const [pickupMapCenter, setPickupMapCenter] = useState(PICKUP_MAP_DEFAULT_CENTER);
   const [pickupMapLoadError, setPickupMapLoadError] = useState(false);
-  const [shouldLoadTravelMap, setShouldLoadTravelMap] = useState(false);
   const pickupMapApiKey = process.env.REACT_APP_MAP_KEY || '';
   const pickupGeocodeRequestRef = React.useRef(0);
 
@@ -282,37 +247,6 @@ const KalpavrukshaPage = () => {
   }, []);
 
   useEffect(() => {
-    const target = locationRef.current;
-    if (!target || shouldLoadTravelMap || typeof window === 'undefined') {
-      return undefined;
-    }
-
-    if (!('IntersectionObserver' in window)) {
-      setShouldLoadTravelMap(true);
-      return undefined;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) {
-          return;
-        }
-
-        setShouldLoadTravelMap(true);
-        observer.disconnect();
-      },
-      {
-        rootMargin: '320px 0px',
-        threshold: 0.01,
-      },
-    );
-
-    observer.observe(target);
-
-    return () => observer.disconnect();
-  }, [shouldLoadTravelMap]);
-
-  useEffect(() => {
     if (!showVisitModal || form.pickupMode !== 'map') {
       setPickupMapLoadError(false);
     }
@@ -366,7 +300,6 @@ const KalpavrukshaPage = () => {
     'CRDA-approved plotted development near Vijayawada and Amaravati with 105 residential plots across 9.03 acres, plot sizes from 174 to 525 square yards, premium amenities, and strong connectivity.';
   const projectLocationTitle = 'Kalpavruksha, near Vijayawada Nagpur Greenfield Highway, Vemavaram';
   const projectLocationAddress = 'Kalpavruksha, near Vijayawada Nagpur Greenfield Highway, Vemavaram, Vijayawada, Andhra Pradesh';
-  const projectMapEmbedUrl = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3823.5114526053485!2d80.59797237418302!3d16.60108128415813!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a35ef003f891535%3A0xdb8f6ca60fc5d3fe!2sKalpavruksha!5e0!3m2!1sen!2sus!4v1774516140803!5m2!1sen!2sus';
   const projectDirectionsUrl = KALPAVRUKSHA_DIRECTIONS_URL;
   const shouldRenderStructuredData =
     typeof document === 'undefined' ||
@@ -508,6 +441,25 @@ const KalpavrukshaPage = () => {
     },
   ];
 
+  const faqDisplayItems = faqItems.map((item) => {
+    if (item.question === 'What is the average price in Kalpavruksha?') {
+      return {
+        ...item,
+        answer:
+          'The plots are priced between Rs. 30-35 lakhs. Final pricing can vary by plot size, facing, and location within the layout.',
+      };
+    }
+
+    if (item.question === 'When does possession start?') {
+      return {
+        ...item,
+        answer: 'The project possession will start from September 2026.',
+      };
+    }
+
+    return item;
+  });
+
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -570,53 +522,53 @@ const KalpavrukshaPage = () => {
 
   const features = [
     {
-      icon: <CheckCircle className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <CheckCircle className="h-6 w-6 text-[#8b6328]" />,
       title: "Fully Approved. Carefully Maintained.",
       description: "CRDA-approved and backed by 5 years of developer maintenance.",
     },
     {
-      icon: <MapPin className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <MapPin className="h-6 w-6 text-[#8b6328]" />,
       title: "Closer to Everything That Matters",
       description:
         "7.5 km from Vijayawada | 13.5 km from Amaravati Start-up Village & BITS | Near Vijayawada-Nagpur Greenfield Highway",
     },
     {
-      icon: <Car className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <Car className="h-6 w-6 text-[#8b6328]" />,
       title: "Roads That Respect Space and Flow",
       description: "60', 40', and 33' wide internal CC roads, walkways, avenue plantations, and stormwater drains.",
     },
     {
-      icon: <Zap className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <Zap className="h-6 w-6 text-[#8b6328]" />,
       title: "Seamless Systems Beneath the Surface",
       description: "Underground networks for power, water, fiber, and sewage - silent, secure, and future-ready.",
     },
     {
-      icon: <Waves className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <Waves className="h-6 w-6 text-[#8b6328]" />,
       title: "Water That Works, Landscapes That Live",
       description: "Overhead tank with underground supply, STP-connected drainage, and drip irrigation.",
     },
     {
-      icon: <Building className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <Building className="h-6 w-6 text-[#8b6328]" />,
       title: "A Clubhouse That Feels Like a Second Home",
       description: "Infinity pool, yoga room, gym, party lawn, convention hall, private theatre, and guest rooms.",
     },
     {
-      icon: <Users className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <Users className="h-6 w-6 text-[#8b6328]" />,
       title: "Play Isn't Just for Kids - It's for Community",
       description: "Basketball, net cricket, multi-purpose court, children's play zone, and indoor games.",
     },
     {
-      icon: <Trees className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <Trees className="h-6 w-6 text-[#8b6328]" />,
       title: "Where Nature is Always Within Reach",
       description: "Central rivulet garden beside the creek, landscaped arrival court, and edge gardens.",
     },
     {
-      icon: <Shield className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <Shield className="h-6 w-6 text-[#8b6328]" />,
       title: "Protected. Peaceful. Prepared.",
       description: "8' compound wall with 2' solar fencing, 24x7 gated entry with CCTV, and solar lighting.",
     },
     {
-      icon: <Heart className="h-6 w-6 text-[#e3cb98]" />,
+      icon: <Heart className="h-6 w-6 text-[#8b6328]" />,
       title: "Designed Not Just to Last - But to Mean Something",
       description: "More than a layout - a vision grounded in values for your family's legacy.",
     },
@@ -820,29 +772,6 @@ const KalpavrukshaPage = () => {
       summaryTitle: 'Landscape changes the mood',
       summaryText:
         'Landscape and water planning are used to make the site feel greener, softer, and less congested.',
-    },
-    {
-      id: 'connectivity',
-      navLabel: 'Belonging',
-      eyebrow: 'Belonging',
-      title: 'Belonging grows around shared spaces',
-      description:
-        'The clubhouse, pool, play areas, and guest spaces give families more ways to spend time together.',
-      image: KALPAVRUKSHA_BELONGING_HERO_IMAGE,
-      imageSrcSet: KALPAVRUKSHA_BELONGING_HERO_SRC_SET,
-      imageSizes: HERO_IMAGE_SIZES,
-      alt: 'Interwoven illuminated roots expressing belonging and connection',
-      imagePosition: 'center center',
-      imageScale: 1.03,
-      facts: [
-        'Infinity pool',
-        'Guest rooms',
-        'Indoor and outdoor play',
-      ],
-      summaryLabel: 'Belonging in practice',
-      summaryTitle: 'Community feels more natural',
-      summaryText:
-        'The clubhouse mix supports both everyday routines and larger gatherings inside the community.',
     },
     {
       id: 'water',
@@ -1705,7 +1634,7 @@ const KalpavrukshaPage = () => {
         </div>
       </div>
 
-      <div className="min-h-screen overflow-hidden bg-[#f5f1e8]">
+      <div className="min-h-screen overflow-hidden bg-[#f8f4ec]">
         {/* Section 1: Hero Section */}
         <section ref={heroSectionRef} className="relative isolate min-h-[100svh] overflow-hidden bg-[#111712] text-white">
           <div className="absolute inset-0">
@@ -1991,26 +1920,26 @@ const KalpavrukshaPage = () => {
 
         {/* Section 3: Video Walkthrough */}
         <section
-          className="relative overflow-hidden border-t border-[#242c27] bg-[radial-gradient(circle_at_top_left,rgba(203,161,89,0.16),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(203,161,89,0.08),transparent_28%),linear-gradient(180deg,#111713_0%,#0d1310_100%)] py-20 md:py-24"
+          className="relative overflow-hidden border-t border-[#e7dbc2] bg-[radial-gradient(circle_at_top_left,rgba(214,189,130,0.16),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(214,189,130,0.08),transparent_28%),linear-gradient(180deg,#fdf8ef_0%,#f2e7d7_100%)] py-20 md:py-24"
           style={DEFERRED_SECTION_STYLE}
         >
-          <div className="pointer-events-none absolute -left-16 top-12 h-72 w-72 rounded-full bg-[#d7b16f]/10 blur-3xl" />
-          <div className="pointer-events-none absolute right-0 bottom-0 h-80 w-80 rounded-full bg-[#d7b16f]/6 blur-3xl" />
+          <div className="pointer-events-none absolute -left-16 top-12 h-72 w-72 rounded-full bg-[#ead8b1]/28 blur-3xl" />
+          <div className="pointer-events-none absolute right-0 bottom-0 h-80 w-80 rounded-full bg-[#f0e2c6]/24 blur-3xl" />
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center">
-              <div className="inline-flex items-center rounded-full border border-white/[0.14] bg-white/[0.06] px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#e3cb98] backdrop-blur">
+              <div className="inline-flex items-center rounded-full border border-[#d7ba82] bg-[#fff9ef] px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#8b6328] shadow-sm backdrop-blur">
                 Walkthrough
               </div>
-              <h2 className="mt-6 text-3xl font-bold leading-[1.08] tracking-[-0.03em] text-white md:text-[3.4rem]">
-                A Glimpse of What <span className="text-[#e3cb98]">Belonging</span> Looks Like
+              <h2 className="mt-6 text-3xl font-bold leading-[1.08] tracking-[-0.03em] text-[#18231d] md:text-[3.4rem]">
+                A Glimpse of What <span className="text-[#8b6328]">Belonging</span> Looks Like
               </h2>
-              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-[#d4d9d2] md:text-[1.05rem]">
+              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-[#637067] md:text-[1.05rem]">
                 Let Kalpavruksha reveal itself in motion, in flow, and in feeling before you ever visit the site.
               </p>
             </div>
 
-            <div className="mt-12 overflow-hidden rounded-[36px] border border-[#2f3933] bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0.03)_100%)] p-4 shadow-[0_24px_64px_rgba(0,0,0,0.3)] backdrop-blur-xl md:p-5">
-              <div className="relative aspect-video overflow-hidden rounded-[30px] bg-[#171e1a] ring-1 ring-[#39453e]">
+            <div className="mt-12 overflow-hidden rounded-[36px] border border-[#e3d6bd] bg-[linear-gradient(180deg,rgba(255,255,255,0.76)_0%,rgba(248,240,226,0.92)_100%)] p-4 shadow-[0_24px_64px_rgba(83,64,31,0.1)] backdrop-blur-xl md:p-5">
+              <div className="relative aspect-video overflow-hidden rounded-[30px] bg-[#f5ecdd] ring-1 ring-[#eadcc1]">
                 <YouTubeLiteEmbed
                   videoId="mt-G29uakpQ"
                   title="Project Walkthrough Video"
@@ -2126,21 +2055,21 @@ const KalpavrukshaPage = () => {
         <div ref={amenitiesRef} />
         <section
           id="amenities"
-          className="relative overflow-hidden border-t border-[#263129] bg-[linear-gradient(180deg,#111813_0%,#15211a_100%)] py-20 md:py-24"
+          className="relative overflow-hidden border-t border-[#e5d8bf] bg-[radial-gradient(circle_at_top_left,rgba(214,189,130,0.16),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(214,189,130,0.08),transparent_28%),linear-gradient(180deg,#fbf6ec_0%,#f1e5d3_100%)] py-20 md:py-24"
           style={DEFERRED_SECTION_STYLE}
         >
-          <div className="pointer-events-none absolute -left-20 top-24 h-72 w-72 rounded-full bg-[#d7b16f]/14 blur-3xl" />
-          <div className="pointer-events-none absolute right-0 top-1/3 h-80 w-80 rounded-full bg-[#d7b16f]/10 blur-3xl" />
+          <div className="pointer-events-none absolute -left-20 top-24 h-72 w-72 rounded-full bg-[#ead8b1]/30 blur-3xl" />
+          <div className="pointer-events-none absolute right-0 top-1/3 h-80 w-80 rounded-full bg-[#f1dfbd]/24 blur-3xl" />
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="overflow-hidden rounded-[40px] border border-white/[0.08] bg-[radial-gradient(circle_at_top_left,rgba(203,161,89,0.18),transparent_26%),linear-gradient(135deg,#111813_0%,#18271d_52%,#0d1410_100%)] px-6 py-10 shadow-[0_30px_80px_rgba(0,0,0,0.3)] md:px-10 md:py-12 lg:px-12">
+            <div className="overflow-hidden rounded-[40px] border border-[#e3d4b8] bg-[radial-gradient(circle_at_top_left,rgba(214,189,130,0.18),transparent_26%),linear-gradient(135deg,#fffdfa_0%,#f7efe1_52%,#efe3cf_100%)] px-6 py-10 shadow-[0_30px_80px_rgba(83,64,31,0.12)] md:px-10 md:py-12 lg:px-12">
               <div className="mx-auto max-w-3xl text-center">
-                <div className="inline-flex items-center rounded-full border border-white/[0.14] bg-white/[0.06] px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#e3cb98] shadow-sm backdrop-blur">
+                <div className="inline-flex items-center rounded-full border border-[#d7ba82] bg-white/90 px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#8b6328] shadow-sm backdrop-blur">
                   Signature Advantages
                 </div>
-                <h2 className="mt-6 text-3xl font-bold tracking-[-0.03em] text-white md:text-5xl">
-                  What Sets <span className="text-[#e3cb98]">Kalpavruksha</span> Apart
+                <h2 className="mt-6 text-3xl font-bold tracking-[-0.03em] text-[#18231d] md:text-5xl">
+                  What Sets <span className="text-[#8b6328]">Kalpavruksha</span> Apart
                 </h2>
-                <p className="mt-5 text-lg leading-8 text-[#d7ddd4] md:text-xl">
+                <p className="mt-5 text-lg leading-8 text-[#5f6a62] md:text-xl">
                   Some places are where you stay, but some places stay with you. Kalpavruksha is shaped by the quieter assurances that matter after the sale too.
                 </p>
               </div>
@@ -2149,24 +2078,24 @@ const KalpavrukshaPage = () => {
                 {features.map((feature, index) => (
                   <Card
                     key={index}
-                    className="h-full rounded-[30px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_100%)] p-7 text-white shadow-[0_20px_44px_rgba(0,0,0,0.22)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-[#d8b46c]/65 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.1)_0%,rgba(255,255,255,0.05)_100%)] hover:shadow-[0_28px_58px_rgba(0,0,0,0.28)]"
+                    className="h-full rounded-[30px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] p-7 text-[#18231d] shadow-[0_20px_44px_rgba(83,64,31,0.08)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-[#d8b46c]/65 hover:bg-white hover:shadow-[0_28px_58px_rgba(83,64,31,0.12)]"
                   >
                     <CardContent className="p-0">
                       <div className="flex h-full flex-col gap-5">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#d7b16f]/28 bg-[linear-gradient(180deg,rgba(215,177,111,0.18)_0%,rgba(215,177,111,0.08)_100%)] shadow-[0_12px_28px_rgba(203,161,89,0.12)]">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#d7b16f]/28 bg-[linear-gradient(180deg,#fff5de_0%,#f6e6c7_100%)] shadow-[0_12px_28px_rgba(203,161,89,0.12)]">
                           {feature.icon}
                         </div>
 
                         <div className="h-px w-20 bg-gradient-to-r from-[#d7b16f] via-[#c59a55]/45 to-transparent"></div>
 
                         <div>
-                          <div className="mb-3 inline-flex items-center rounded-full bg-white/[0.08] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#e3cb98] ring-1 ring-white/[0.1]">
+                          <div className="mb-3 inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8b6328] ring-1 ring-[#eadfcb]">
                             {String(index + 1).padStart(2, '0')}
                           </div>
-                          <h3 className="mb-3 text-lg font-semibold text-[#f8f7f2]">
+                          <h3 className="mb-3 text-lg font-semibold text-[#18231d]">
                             {feature.title}
                           </h3>
-                          <p className="leading-7 text-[#d7ddd4]">{feature.description}</p>
+                          <p className="leading-7 text-[#5f6a62]">{feature.description}</p>
                         </div>
                       </div>
                     </CardContent>
@@ -2296,79 +2225,48 @@ const KalpavrukshaPage = () => {
             </div>
 
             <div className="mt-14 overflow-hidden rounded-[36px] border border-[#eadfcb] bg-white/[0.95] shadow-[0_24px_68px_rgba(15,23,42,0.07)]">
-              <div className="grid grid-cols-1 lg:grid-cols-[0.86fr,1.14fr]">
-                <div className="border-b border-[#ece4d3] p-6 md:p-8 lg:border-b-0 lg:border-r lg:p-10">
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#fff8ee] text-[#8b6328] ring-1 ring-[#d7ba82]">
-                      <MapPin className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-[#8d8778]">Property Location</p>
-                      <h3 className="mt-1 text-2xl font-bold leading-tight text-[#18231d]">
-                        {projectLocationTitle}
-                      </h3>
-                      <p className="mt-3 text-sm leading-relaxed text-[#627067]">
-                        The project sits on a well-connected corridor near Vijayawada, with practical access to highway links, city infrastructure, and Amaravati-side growth zones.
-                      </p>
-                    </div>
+              <div className="p-6 md:p-8 lg:p-10">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#fff8ee] text-[#8b6328] ring-1 ring-[#d7ba82]">
+                    <MapPin className="h-6 w-6" />
                   </div>
-
-                  <div className="mt-6 rounded-[24px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] p-5">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#8b6328]">Address Summary</p>
-                    <p className="mt-2 text-base font-semibold text-[#18231d]">
-                      {projectLocationAddress}
+                  <div>
+                    <p className="text-sm font-medium text-[#8d8778]">Property Location</p>
+                    <h3 className="mt-1 text-2xl font-bold leading-tight text-[#18231d]">
+                      {projectLocationTitle}
+                    </h3>
+                    <p className="mt-3 text-sm leading-relaxed text-[#627067]">
+                      The project sits on a well-connected corridor near Vijayawada, with practical access to highway links, city infrastructure, and Amaravati-side growth zones.
                     </p>
-                  </div>
-
-                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                    <a
-                      href={projectDirectionsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => trackKalpavrukshaDirectionsClick('location_section')}
-                      className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#cba159] to-[#d7b16f] px-5 py-3 text-sm font-semibold text-[#1d1609] shadow-sm transition-all duration-300 hover:from-[#d2a764] hover:to-[#ddb574] hover:shadow-md"
-                    >
-                      Get Directions
-                      <ArrowUpRight className="h-4 w-4" />
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => openVisitModal('location_section')}
-                      className="inline-flex items-center justify-center gap-2 rounded-full border border-[#d9cfb9] bg-white px-5 py-3 text-sm font-semibold text-[#221c14] transition-all duration-300 hover:border-[#c5ab72] hover:bg-[#fffdf7] hover:shadow-sm"
-                    >
-                      <MapPin className="h-4 w-4" />
-                      Book Site Visit
-                    </button>
                   </div>
                 </div>
 
-                <div className="bg-[linear-gradient(180deg,#faf4e8_0%,#f1e6d0_100%)]">
-                  <div className="h-full min-h-[380px] lg:min-h-[100%]">
-                    {shouldLoadTravelMap ? (
-                      <Suspense
-                        fallback={
-                          <div className="flex h-full min-h-[380px] items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(203,161,89,0.12),_transparent_45%),linear-gradient(180deg,_#faf4e7_0%,_#efe3cd_100%)]">
-                            <div className="rounded-3xl border border-[#eadfcb] bg-white/92 px-5 py-4 text-sm font-medium text-[#627067] shadow-sm backdrop-blur">
-                              Loading live map...
-                            </div>
-                          </div>
-                        }
-                      >
-                        <TravelTimesLocationMap
-                          propertyPosition={KALPAVRUKSHA_PROPERTY_POSITION}
-                          propertyLabel="Kalpavruksha"
-                          destinations={KALPAVRUKSHA_TRAVEL_DESTINATIONS}
-                          fallbackEmbedUrl={projectMapEmbedUrl}
-                        />
-                      </Suspense>
-                    ) : (
-                      <div className="flex h-full min-h-[380px] items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(203,161,89,0.12),_transparent_45%),linear-gradient(180deg,_#faf4e7_0%,_#efe3cd_100%)]">
-                        <div className="rounded-3xl border border-[#eadfcb] bg-white/92 px-5 py-4 text-sm font-medium text-[#627067] shadow-sm backdrop-blur">
-                          Preparing interactive map...
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                <div className="mt-6 rounded-[24px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#8b6328]">Address Summary</p>
+                  <p className="mt-2 text-base font-semibold text-[#18231d]">
+                    {projectLocationAddress}
+                  </p>
+                </div>
+
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <a
+                    href={projectDirectionsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => trackKalpavrukshaDirectionsClick('location_section')}
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#cba159] to-[#d7b16f] px-5 py-3 text-sm font-semibold text-[#1d1609] shadow-sm transition-all duration-300 hover:from-[#d2a764] hover:to-[#ddb574] hover:shadow-md"
+                  >
+                    Get Directions
+                    <ArrowUpRight className="h-4 w-4" />
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => openVisitModal('location_section')}
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-[#d9cfb9] bg-white px-5 py-3 text-sm font-semibold text-[#221c14] transition-all duration-300 hover:border-[#c5ab72] hover:bg-[#fffdf7] hover:shadow-sm"
+                  >
+                    <MapPin className="h-4 w-4" />
+                    Book Site Visit
+                  </button>
                 </div>
               </div>
             </div>
@@ -2427,7 +2325,7 @@ const KalpavrukshaPage = () => {
             </div>
 
             <div className="mt-12 space-y-3">
-              {faqItems.map((item, index) => {
+              {faqDisplayItems.map((item, index) => {
                 const isOpen = openFaqIndex === index;
 
                 return (
@@ -2467,14 +2365,14 @@ const KalpavrukshaPage = () => {
         {/* Section 9: Journey Home */}
         <section className="border-t border-[#e0cfa8] bg-[linear-gradient(180deg,#fbf5e9_0%,#f0dfbf_100%)] py-20 md:py-24" style={DEFERRED_SECTION_STYLE}>
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="overflow-hidden rounded-[40px] border border-[#d5c29a] bg-[radial-gradient(circle_at_top_left,rgba(214,189,130,0.16),transparent_24%),linear-gradient(135deg,#111712_0%,#173325_42%,#0f1a14_100%)] px-6 py-10 text-center shadow-[0_28px_70px_rgba(0,0,0,0.26)] md:px-10 md:py-14 lg:px-14">
-              <div className="inline-flex items-center rounded-full border border-white/[0.12] bg-white/[0.08] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#e3cb98] backdrop-blur">
+            <div className="overflow-hidden rounded-[40px] border border-[#dcc9a3] bg-[radial-gradient(circle_at_top_left,rgba(214,189,130,0.18),transparent_24%),linear-gradient(135deg,#fffdfa_0%,#f7efe1_48%,#efe1c5_100%)] px-6 py-10 text-center shadow-[0_28px_70px_rgba(83,64,31,0.14)] md:px-10 md:py-14 lg:px-14">
+              <div className="inline-flex items-center rounded-full border border-[#d7ba82] bg-white/88 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#8b6328] backdrop-blur">
                 Next Step
               </div>
-              <h2 className="mt-6 text-3xl font-bold tracking-[-0.03em] text-white md:text-5xl">
-                Your Journey Home <span className="text-[#e3cb98]">Begins Here</span>
+              <h2 className="mt-6 text-3xl font-bold tracking-[-0.03em] text-[#18231d] md:text-5xl">
+                Your Journey Home <span className="text-[#8b6328]">Begins Here</span>
               </h2>
-              <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-white/[0.84] md:text-xl">
+              <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-[#5e6961] md:text-xl">
                 Every lasting story begins with one step. This section keeps the next actions clear, simple, and reassuring.
               </p>
 
@@ -2492,19 +2390,19 @@ const KalpavrukshaPage = () => {
                     icon={<MessageCircle className="w-5 h-5" />}
                     text="Start Live Chat"
                     onClick={() => launchKalpavrukshaLiveChat('journey_home')}
-                    className="w-full justify-center !border-white/[0.16] !bg-white/[0.10] !text-white hover:!bg-white/[0.14] hover:!text-white"
+                    className="w-full justify-center"
                   />
                   <CTAButton
                     icon={<Phone className="w-5 h-5" />}
                     text="Request a Callback"
                     onClick={goToHomeCallToAction}
-                    className="w-full justify-center !border-white/[0.16] !bg-white/[0.10] !text-white hover:!bg-white/[0.14] hover:!text-white"
+                    className="w-full justify-center"
                   />
                   <CTAButton
                     icon={<Download className="w-5 h-5" />}
                     text="Download Project Brochure"
                     onClick={() => openDownloadLeadModal('brochure', 'journey_home')}
-                    className="w-full justify-center !border-white/[0.16] !bg-white/[0.10] !text-white hover:!bg-white/[0.14] hover:!text-white"
+                    className="w-full justify-center"
                   />
                 </div>
               </div>
@@ -2616,46 +2514,6 @@ const KalpavrukshaPage = () => {
                         type="button"
                         onClick={() => {
                           setIsQuickActionsOpen(false);
-                          openVisitModal('desktop_quick_actions');
-                        }}
-                        className="flex w-full items-center justify-between rounded-[22px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-3 text-left text-[#4b5750] shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white hover:shadow-md"
-                      >
-                        <span className="flex items-center gap-3">
-                          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
-                            <MapPin className="h-4 w-4" />
-                          </span>
-                          <span>
-                            <span className="block text-sm font-semibold text-[#18231d]">Schedule Site Visit</span>
-                            <span className="block text-xs text-[#7a7f77]">Pick your preferred day and time</span>
-                          </span>
-                        </span>
-                        <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsQuickActionsOpen(false);
-                          openDownloadLeadModal('layout', 'desktop_quick_actions');
-                        }}
-                        className="flex w-full items-center justify-between rounded-[22px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-3 text-left text-[#4b5750] shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white hover:shadow-md"
-                      >
-                        <span className="flex items-center gap-3">
-                          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
-                            <Download className="h-4 w-4" />
-                          </span>
-                          <span>
-                            <span className="block text-sm font-semibold text-[#18231d]">Download Layout PDF</span>
-                            <span className="block text-xs text-[#7a7f77]">Get the approved master layout</span>
-                          </span>
-                        </span>
-                        <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsQuickActionsOpen(false);
                           openDownloadLeadModal('brochure', 'desktop_quick_actions');
                         }}
                         className="flex w-full items-center justify-between rounded-[22px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-3 text-left text-[#4b5750] shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white hover:shadow-md"
@@ -2671,28 +2529,6 @@ const KalpavrukshaPage = () => {
                         </span>
                         <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
                       </button>
-
-                      <a
-                        href={projectDirectionsUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => {
-                          setIsQuickActionsOpen(false);
-                          trackKalpavrukshaDirectionsClick('desktop_quick_actions');
-                        }}
-                        className="flex w-full items-center justify-between rounded-[22px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-3 text-left text-[#4b5750] shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white hover:shadow-md"
-                      >
-                        <span className="flex items-center gap-3">
-                          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
-                            <ArrowUpRight className="h-4 w-4" />
-                          </span>
-                          <span>
-                            <span className="block text-sm font-semibold text-[#18231d]">Get Directions</span>
-                            <span className="block text-xs text-[#7a7f77]">Open the route in Google Maps</span>
-                          </span>
-                        </span>
-                        <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
-                      </a>
 
                       <a
                         href={KALPAVRUKSHA_WHATSAPP_URL}
@@ -2761,7 +2597,7 @@ const KalpavrukshaPage = () => {
           <button
             type="button"
             onClick={() => launchKalpavrukshaLiveChat('floating_chat_icon')}
-            className="fixed bottom-5 right-4 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full border border-[#d7ba82] bg-[linear-gradient(180deg,#18261d_0%,#101712_100%)] text-[#e3cb98] shadow-[0_20px_42px_rgba(16,23,18,0.32)] transition-all duration-200 hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b16f]/24"
+            className="fixed bottom-5 right-4 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full border border-[#d7ba82] bg-[linear-gradient(180deg,#fffefb_0%,#f4ead8_100%)] text-[#8b6328] shadow-[0_20px_42px_rgba(83,64,31,0.16)] transition-all duration-200 hover:scale-[1.03] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b16f]/24"
             aria-label="Open live chat"
           >
             <MessageCircle className="h-5 w-5" />
@@ -2790,7 +2626,7 @@ const KalpavrukshaPage = () => {
                     Everything important in one place
                   </h3>
                   <p className="mt-1 text-sm leading-6 text-[#68736b]">
-                    Fast actions for site visit, layout, directions, and direct contact.
+                    Fast actions for brochure access and direct contact.
                   </p>
                 </div>
                 <button
@@ -2804,46 +2640,6 @@ const KalpavrukshaPage = () => {
               </div>
 
               <div className="mt-5 space-y-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsQuickActionsOpen(false);
-                    openVisitModal('desktop_quick_actions');
-                  }}
-                  className="flex w-full items-center justify-between rounded-[24px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-4 text-left shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white"
-                >
-                  <span className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
-                      <MapPin className="h-4 w-4" />
-                    </span>
-                    <span>
-                      <span className="block text-sm font-semibold text-[#18231d]">Schedule Site Visit</span>
-                      <span className="block text-xs leading-5 text-[#7a7f77]">Choose a day and time that suits you</span>
-                    </span>
-                  </span>
-                  <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsQuickActionsOpen(false);
-                    openDownloadLeadModal('layout', 'desktop_quick_actions');
-                  }}
-                  className="flex w-full items-center justify-between rounded-[24px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-4 text-left shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white"
-                >
-                  <span className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
-                      <Download className="h-4 w-4" />
-                    </span>
-                    <span>
-                      <span className="block text-sm font-semibold text-[#18231d]">Download Layout PDF</span>
-                      <span className="block text-xs leading-5 text-[#7a7f77]">Get the approved master layout instantly</span>
-                    </span>
-                  </span>
-                  <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
-                </button>
-
                 <button
                   type="button"
                   onClick={() => {
@@ -2863,28 +2659,6 @@ const KalpavrukshaPage = () => {
                   </span>
                   <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
                 </button>
-
-                <a
-                  href={projectDirectionsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                      onClick={() => {
-                        setIsQuickActionsOpen(false);
-                        trackKalpavrukshaDirectionsClick('desktop_quick_actions');
-                      }}
-                  className="flex w-full items-center justify-between rounded-[24px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] px-4 py-4 text-left shadow-sm transition-all duration-200 hover:border-[#d6b171] hover:bg-white"
-                >
-                  <span className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#8b6328] ring-1 ring-[#d7ba82]">
-                      <ArrowUpRight className="h-4 w-4" />
-                    </span>
-                    <span>
-                      <span className="block text-sm font-semibold text-[#18231d]">Get Directions</span>
-                      <span className="block text-xs leading-5 text-[#7a7f77]">Open the route directly in Google Maps</span>
-                    </span>
-                  </span>
-                  <ArrowUpRight className="h-4 w-4 text-[#8b887d]" />
-                </a>
 
                 <a
                   href="https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20please%20contact%20me%20regarding%20Kalpavruksha."

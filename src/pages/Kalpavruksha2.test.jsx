@@ -167,6 +167,11 @@ beforeEach(() => {
     value: jest.fn(),
   });
 
+  Object.defineProperty(window, 'open', {
+    writable: true,
+    value: jest.fn(),
+  });
+
   Object.defineProperty(window, 'requestAnimationFrame', {
     writable: true,
     value: (callback) => {
@@ -375,27 +380,15 @@ test('gallery cards use descriptive alt text for SEO and accessibility', () => {
   ).toBeInTheDocument();
 });
 
-test('location and quick action directions use the exact shared map URL', async () => {
-  const restoreLayout = mockScrolledHeroLayout();
-  const { container } = renderPage();
+test('location keeps the shared directions link and no longer renders the travel map', () => {
+  renderPage();
 
+  expect(screen.queryByTestId('travel-map')).not.toBeInTheDocument();
   const locationDirectionsLink = screen.getAllByRole('link', { name: /Get Directions/i })[0];
   expect(locationDirectionsLink).toHaveAttribute('href', 'https://maps.app.goo.gl/dNA1KdiDNuLjTthG8');
-
-  await waitFor(() => {
-    expect(screen.getAllByRole('button', { name: /Quick Actions/i }).length).toBeGreaterThan(0);
-  });
-  fireEvent.click(screen.getAllByRole('button', { name: /Quick Actions/i })[0]);
-
-  const quickActionsPanel = container.querySelector('#kalpavruksha-quick-actions');
-  expect(quickActionsPanel).not.toBeNull();
-
-  const quickActionsDirectionsLink = within(quickActionsPanel).getByRole('link', { name: /Get Directions/i });
-  expect(quickActionsDirectionsLink).toHaveAttribute('href', 'https://maps.app.goo.gl/dNA1KdiDNuLjTthG8');
-  restoreLayout();
 });
 
-test('quick actions become available after the hero is scrolled and can open the layout modal', async () => {
+test('quick actions become available after the hero is scrolled with only brochure and whatsapp actions', async () => {
   const restoreLayout = mockScrolledHeroLayout();
   const { container } = renderPage();
 
@@ -405,15 +398,21 @@ test('quick actions become available after the hero is scrolled and can open the
   fireEvent.click(screen.getAllByRole('button', { name: /Quick Actions/i })[0]);
 
   const quickActionsPanel = container.querySelector('#kalpavruksha-quick-actions');
-  const layoutButton = within(quickActionsPanel).getByRole('button', { name: /Download Layout PDF/i });
-  fireEvent.click(layoutButton);
+  expect(within(quickActionsPanel).queryByRole('button', { name: /Schedule Site Visit/i })).not.toBeInTheDocument();
+  expect(within(quickActionsPanel).queryByRole('button', { name: /Download Layout PDF/i })).not.toBeInTheDocument();
+  expect(within(quickActionsPanel).queryByRole('link', { name: /Get Directions/i })).not.toBeInTheDocument();
 
-  expect(await screen.findByText('Download Master Layout PDF')).toBeInTheDocument();
+  const brochureButton = within(quickActionsPanel).getByRole('button', { name: /Download Brochure/i });
+  expect(within(quickActionsPanel).getByRole('link', { name: /Chat on WhatsApp/i })).toBeInTheDocument();
+
+  fireEvent.click(brochureButton);
+
+  expect(await screen.findByRole('heading', { name: 'Download Project Brochure' })).toBeInTheDocument();
   expect(trackEvent).toHaveBeenCalledWith(
     'form_open',
     expect.objectContaining({
       form_name: 'kalpavruksha_download_form',
-      lead_type: 'master_layout_download',
+      lead_type: 'brochure_download',
       project: 'Kalpavruksha',
     }),
   );
