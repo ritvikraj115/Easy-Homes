@@ -84,11 +84,8 @@ const DOWNLOAD_ASSET_CONFIG = {
   }
 };
 const KALPAVRUKSHA_CALL_URL = 'tel:+918988896666';
-const KALPAVRUKSHA_CALL_NUMBER = 918988896666;
 const KALPAVRUKSHA_WHATSAPP_URL =
   'https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20Kalpavruksha%20project.';
-const KALPAVRUKSHA_WHATSAPP_VISIT_URL =
-  'https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20I%20want%20to%20book%20a%20site%20visit%20for%20Kalpavruksha.';
 const KALPAVRUKSHA_DIRECTIONS_URL = 'https://maps.app.goo.gl/dNA1KdiDNuLjTthG8';
 const KALPAVRUKSHA_ZOHO_CHAT_QUESTION =
   'Hi Easy Homes, I want details about Kalpavruksha open plots, pricing, and site visit availability.';
@@ -135,8 +132,15 @@ const DEFAULT_SITE_VISIT_FORM = {
   pickupLat: '',
   pickupLng: ''
 };
+const DEFAULT_LAYOUT_LEAD_FORM = {
+  name: '',
+  phone: '',
+  email: ''
+};
+const HASH_ACTION_DELAY_MS = 120;
 
 const SITE_VISIT_ZOHO_NOTE = 'Site visit scheduled from website.';
+const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
 
 const KalpavrukshaPage = () => {
   // ...existing code...
@@ -150,11 +154,7 @@ const KalpavrukshaPage = () => {
   const [isProjectNavOpen, setIsProjectNavOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
   const [form, setForm] = useState(DEFAULT_SITE_VISIT_FORM);
-  const [layoutLeadForm, setLayoutLeadForm] = useState({
-    name: '',
-    phone: '',
-    email: ''
-  });
+  const [layoutLeadForm, setLayoutLeadForm] = useState(DEFAULT_LAYOUT_LEAD_FORM);
   const activeDownloadAsset = downloadAssetKey ? DOWNLOAD_ASSET_CONFIG[downloadAssetKey] : null;
   const isModalOpen = showVisitModal || Boolean(activeDownloadAsset);
   const shouldShowFloatingActions = showFloatingActions && !isModalOpen;
@@ -163,8 +163,13 @@ const KalpavrukshaPage = () => {
   const todayDate = new Date().toISOString().split('T')[0];
   const [pickupMapCenter, setPickupMapCenter] = useState(PICKUP_MAP_DEFAULT_CENTER);
   const [pickupMapLoadError, setPickupMapLoadError] = useState(false);
+  const [projectNavScrollState, setProjectNavScrollState] = useState({
+    heroBlend: 0,
+    pageProgress: 0
+  });
   const pickupMapApiKey = process.env.REACT_APP_MAP_KEY || '';
   const pickupGeocodeRequestRef = React.useRef(0);
+  const lastHandledHashRef = React.useRef('');
 
   // Footer quick link refs and scroll handlers (like Home page)
   const aboutRef = React.useRef(null);
@@ -230,6 +235,55 @@ const KalpavrukshaPage = () => {
       }
 
       frameId = window.requestAnimationFrame(updateFloatingActions);
+    };
+
+    requestUpdate();
+    window.addEventListener('scroll', requestUpdate, { passive: true });
+    window.addEventListener('resize', requestUpdate);
+
+    return () => {
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
+      window.removeEventListener('scroll', requestUpdate);
+      window.removeEventListener('resize', requestUpdate);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    let frameId = null;
+
+    const updateProjectNavScrollState = () => {
+      frameId = null;
+
+      const scrollY = window.scrollY || window.pageYOffset || 0;
+      const heroHeight = heroSectionRef.current?.offsetHeight || window.innerHeight || 1;
+      const heroBlend = clamp(scrollY / Math.max(heroHeight * 0.68, 1));
+      const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const pageProgress = scrollableHeight > 0 ? clamp(scrollY / scrollableHeight) : 0;
+
+      setProjectNavScrollState((current) => {
+        if (
+          Math.abs(current.heroBlend - heroBlend) < 0.01 &&
+          Math.abs(current.pageProgress - pageProgress) < 0.005
+        ) {
+          return current;
+        }
+
+        return { heroBlend, pageProgress };
+      });
+    };
+
+    const requestUpdate = () => {
+      if (frameId !== null) {
+        return;
+      }
+
+      frameId = window.requestAnimationFrame(updateProjectNavScrollState);
     };
 
     requestUpdate();
@@ -902,10 +956,85 @@ const KalpavrukshaPage = () => {
       source,
       asset_type: assetType,
     });
-    setLayoutLeadForm({ name: '', phone: '', email: '' });
+    setLayoutLeadForm(DEFAULT_LAYOUT_LEAD_FORM);
     setDownloadAssetKey(assetKey);
   };
   const closeDownloadLeadModal = () => setDownloadAssetKey(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const normalizedHash = String(location.hash || '').trim().toLowerCase();
+
+    if (!normalizedHash) {
+      lastHandledHashRef.current = '';
+      return undefined;
+    }
+
+    if (lastHandledHashRef.current === normalizedHash) {
+      return undefined;
+    }
+
+    lastHandledHashRef.current = normalizedHash;
+
+    const timeoutId = window.setTimeout(() => {
+      if (normalizedHash === '#site-visit' || normalizedHash === '#visit-site' || normalizedHash === '#book-visit') {
+        trackEvent('form_open', {
+          form_name: 'kalpavruksha_site_visit_form',
+          lead_type: 'site_visit',
+          project: 'Kalpavruksha',
+          source: 'hash_site_visit',
+        });
+        setDownloadAssetKey(null);
+        setShowVisitModal(true);
+        return;
+      }
+
+      if (normalizedHash === '#brochure' || normalizedHash === '#download-brochure') {
+        trackEvent('form_open', {
+          form_name: 'kalpavruksha_download_form',
+          lead_type: 'brochure_download',
+          project: 'Kalpavruksha',
+          source: 'hash_brochure',
+          asset_type: 'brochure',
+        });
+        setShowVisitModal(false);
+        setLayoutLeadForm(DEFAULT_LAYOUT_LEAD_FORM);
+        setDownloadAssetKey('brochure');
+        return;
+      }
+
+      if (normalizedHash === '#layout' || normalizedHash === '#master-plan' || normalizedHash === '#master-layout') {
+        masterPlanRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+
+      if (normalizedHash === '#location') {
+        locationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+
+      if (normalizedHash === '#amenities') {
+        amenitiesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+
+      if (normalizedHash === '#gallery') {
+        galleryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+
+      if (normalizedHash === '#about') {
+        aboutRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, HASH_ACTION_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [location.hash]);
 
   const onLayoutLeadChange = (e) => {
     const { name, value } = e.target;
@@ -1198,6 +1327,41 @@ const KalpavrukshaPage = () => {
     isActive
       ? 'flex cursor-pointer flex-col rounded-[20px] border border-[#cba159] bg-[linear-gradient(180deg,#fff4dc_0%,#f7ebd0_100%)] px-4 py-3 shadow-[0_14px_28px_rgba(203,161,89,0.14)]'
       : 'flex cursor-pointer flex-col rounded-[20px] border border-[#e3d4b9] bg-white px-4 py-3 transition-all duration-200 hover:border-[#cba159] hover:bg-[#fffaf1]';
+  const projectNavHeroBlend = projectNavScrollState.heroBlend;
+  const projectNavLightLayerOpacity = clamp((projectNavHeroBlend - 0.06) / 0.58);
+  const projectNavDarkLayerOpacity = clamp(1 - (projectNavHeroBlend * 1.1), 0.12, 1);
+  const isProjectNavOnLightSurface = projectNavHeroBlend > 0.54;
+  const projectNavShellStyle = {
+    borderColor: isProjectNavOnLightSurface
+      ? `rgba(207, 178, 123, ${0.48 + (projectNavLightLayerOpacity * 0.14)})`
+      : `rgba(255, 248, 230, ${0.18 + (projectNavDarkLayerOpacity * 0.12)})`,
+    boxShadow: isProjectNavOnLightSurface
+      ? `0 24px 56px rgba(92, 67, 36, ${0.14 + (projectNavLightLayerOpacity * 0.08)})`
+      : `0 24px 52px rgba(0, 0, 0, ${0.16 + (projectNavDarkLayerOpacity * 0.14)})`,
+    backdropFilter: `blur(${12 + (projectNavHeroBlend * 9)}px)`,
+    WebkitBackdropFilter: `blur(${12 + (projectNavHeroBlend * 9)}px)`,
+    transform: `translateY(${(1 - projectNavHeroBlend) * 2}px)`
+  };
+  const projectNavLinkClassName = isProjectNavOnLightSurface
+    ? 'text-[#514839] hover:text-[#8b6328]'
+    : 'text-white/[0.92] hover:text-[#f6e6bf]';
+  const projectNavBackButtonClassName = isProjectNavOnLightSurface
+    ? 'border-[#ddcaa7] bg-white/[0.82] text-[#8b6328] hover:border-[#d1b178] hover:bg-white'
+    : 'border-[#d7bd86]/40 bg-white/[0.08] text-[#f0ddb3] hover:bg-white/[0.14]';
+  const projectNavGhostButtonClassName = isProjectNavOnLightSurface
+    ? 'border-[#ddcaa7] bg-white/[0.72] text-[#3f3528] hover:border-[#d1b178] hover:bg-white'
+    : 'border-white/[0.2] bg-white/[0.08] text-white/[0.92] hover:bg-white/[0.14]';
+  const projectNavMenuButtonClassName = isProjectNavOnLightSurface
+    ? 'border-[#ddcaa7] bg-white/[0.76] text-[#6b4a24] hover:border-[#d1b178] hover:bg-white'
+    : 'border-white/[0.16] bg-white/[0.08] text-white hover:bg-white/[0.14]';
+  const projectNavPanelClassName = isProjectNavOnLightSurface
+    ? 'border-[#e7d8bd] bg-[#fffaf1]/92'
+    : 'border-white/10 bg-transparent';
+  const projectNavMobileItemClassName = isProjectNavOnLightSurface
+    ? 'border-[#eadfcb] bg-white/[0.82] text-[#3f3528] hover:border-[#d1b178] hover:bg-white'
+    : 'border-white/10 bg-white/[0.06] text-white hover:bg-white/[0.1]';
+  const projectNavWordmarkClassName = isProjectNavOnLightSurface ? 'text-[#8b6328]' : 'text-[#dbc58f]';
+  const projectNavTrackColor = isProjectNavOnLightSurface ? 'rgba(139, 99, 40, 0.12)' : 'rgba(255, 255, 255, 0.08)';
   return (
     <>
       <ZohoSalesIQWidgetLoader
@@ -1514,110 +1678,143 @@ const KalpavrukshaPage = () => {
       </h1>
 
       <div className="fixed inset-x-0 top-0 z-[90] px-3 pt-3 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl rounded-[24px] border border-white/[0.22] bg-[linear-gradient(180deg,rgba(7,11,9,0.96)_0%,rgba(10,14,12,0.92)_100%)] shadow-[0_26px_60px_rgba(0,0,0,0.32)] backdrop-blur-xl">
-          <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-5 lg:px-6">
-            <div className="flex min-w-0 items-center gap-3">
-              <Link
-                to="/"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#d7bd86]/40 bg-white/[0.08] text-[#f0ddb3] transition-colors duration-300 hover:bg-white/[0.14]"
-                aria-label="Back to Easy Homes home"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </Link>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium uppercase tracking-[0.3em] text-[#dbc58f] sm:text-[0.95rem]">
-                  Kalpavruksha
-                </p>
-              </div>
+        <div className="mx-auto max-w-7xl">
+          <div
+            className="relative overflow-hidden rounded-[24px] border transition-[border-color,box-shadow,transform] duration-500"
+            style={projectNavShellStyle}
+          >
+            <div className="pointer-events-none absolute inset-0">
+              <div
+                className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,11,9,0.4)_0%,rgba(10,14,12,0.14)_100%)] transition-opacity duration-500"
+                style={{ opacity: projectNavDarkLayerOpacity }}
+              />
+              <div
+                className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,250,242,0.94)_0%,rgba(246,236,221,0.9)_100%)] transition-opacity duration-500"
+                style={{ opacity: projectNavLightLayerOpacity }}
+              />
+              <div
+                className="absolute inset-0 bg-[radial-gradient(circle_at_left_top,rgba(223,195,137,0.18),transparent_30%),radial-gradient(circle_at_right_bottom,rgba(118,86,46,0.12),transparent_30%)] transition-opacity duration-500"
+                style={{ opacity: 0.18 + (projectNavLightLayerOpacity * 0.54) }}
+              />
             </div>
 
-            <nav className="hidden items-center gap-5 lg:flex xl:gap-6">
-              {projectNavItems.map((item) => (
-                <button
-                  key={item.label}
-                  type="button"
-                  onClick={item.onClick}
-                  className="text-sm font-medium text-white/[0.92] transition-colors duration-300 hover:text-[#f6e6bf]"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </nav>
+            <div className="relative">
+              <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-5 lg:px-6">
+                <div className="flex min-w-0 items-center gap-3">
+                  <Link
+                    to="/"
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition-colors duration-300 ${projectNavBackButtonClassName}`}
+                    aria-label="Back to Easy Homes home"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </Link>
+                  <div className="min-w-0">
+                    <p className={`truncate text-sm font-medium uppercase tracking-[0.3em] transition-colors duration-300 sm:text-[0.95rem] ${projectNavWordmarkClassName}`}>
+                      Kalpavruksha
+                    </p>
+                  </div>
+                </div>
 
-            <div className="flex items-center gap-2 sm:gap-3">
-              <a
-                href="tel:+918988896666"
-                onClick={() => trackKalpavrukshaCallClick('header_cta')}
-                className="hidden items-center gap-2 rounded-full border border-white/[0.2] bg-white/[0.08] px-4 py-2 text-sm font-medium text-white/[0.92] transition-all duration-300 hover:bg-white/[0.14] md:inline-flex"
-              >
-                <Phone className="h-4 w-4" />
-                <span>Call Now</span>
-              </a>
-              <button
-                type="button"
-                onClick={() => openVisitModal()}
-                className="hidden rounded-xl bg-[#cba159] px-4 py-2.5 text-sm font-semibold text-[#1d1609] shadow-[0_16px_34px_rgba(203,161,89,0.3)] transition-all duration-300 hover:bg-[#d4ab68] lg:inline-flex"
-              >
-                Schedule a Visit
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsProjectNavOpen((current) => !current)}
-                aria-expanded={isProjectNavOpen}
-                aria-controls="kalpavruksha-project-nav"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.16] bg-white/[0.08] text-white transition-colors duration-300 hover:bg-white/[0.14] lg:hidden"
-              >
-                {isProjectNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </button>
+                <nav className="hidden items-center gap-5 lg:flex xl:gap-6">
+                  {projectNavItems.map((item) => (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={item.onClick}
+                      className={`text-sm font-medium transition-colors duration-300 ${projectNavLinkClassName}`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </nav>
+
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <a
+                    href="tel:+918988896666"
+                    onClick={() => trackKalpavrukshaCallClick('header_cta')}
+                    className={`hidden items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-all duration-300 md:inline-flex ${projectNavGhostButtonClassName}`}
+                  >
+                    <Phone className="h-4 w-4" />
+                    <span>Call Now</span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => openVisitModal()}
+                    className="hidden rounded-xl bg-[#cba159] px-4 py-2.5 text-sm font-semibold text-[#1d1609] shadow-[0_16px_34px_rgba(203,161,89,0.3)] transition-all duration-300 hover:bg-[#d4ab68] lg:inline-flex"
+                  >
+                    Schedule a Visit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsProjectNavOpen((current) => !current)}
+                    aria-expanded={isProjectNavOpen}
+                    aria-controls="kalpavruksha-project-nav"
+                    className={`inline-flex h-11 w-11 items-center justify-center rounded-full border transition-colors duration-300 lg:hidden ${projectNavMenuButtonClassName}`}
+                  >
+                    {isProjectNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                  </button>
+                </div>
+              </div>
+
+              {isProjectNavOpen && (
+                <div
+                  id="kalpavruksha-project-nav"
+                  className={`border-t px-4 pb-4 pt-3 transition-colors duration-300 lg:hidden ${projectNavPanelClassName}`}
+                >
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {projectNavItems.map((item) => (
+                      <button
+                        key={item.label}
+                        type="button"
+                        onClick={() => {
+                          setIsProjectNavOpen(false);
+                          item.onClick();
+                        }}
+                        className={`rounded-2xl border px-3 py-3 text-sm font-medium transition-all duration-300 ${projectNavMobileItemClassName}`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <a
+                      href="tel:+918988896666"
+                      onClick={() => {
+                        setIsProjectNavOpen(false);
+                        trackKalpavrukshaCallClick('header_mobile_cta');
+                      }}
+                      className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition-all duration-300 ${projectNavMobileItemClassName}`}
+                    >
+                      <Phone className="h-4 w-4" />
+                      <span>Call Now</span>
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProjectNavOpen(false);
+                        openVisitModal();
+                      }}
+                      className="inline-flex items-center justify-center rounded-2xl bg-[#cba159] px-4 py-3 text-sm font-semibold text-[#1d1609] transition-all duration-300 hover:bg-[#d4ab68]"
+                    >
+                      Schedule a Visit
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-[3px] overflow-hidden"
+            >
+              <div className="absolute inset-0" style={{ backgroundColor: projectNavTrackColor }} />
+              <div
+                className="h-full origin-left rounded-r-full bg-[linear-gradient(90deg,#9f4d3f_0%,#c88663_48%,#dfc78b_100%)] shadow-[0_0_18px_rgba(200,134,99,0.34)] transition-transform duration-200 ease-out"
+                style={{ transform: `scaleX(${projectNavScrollState.pageProgress})` }}
+              />
             </div>
           </div>
-
-          {isProjectNavOpen && (
-            <div
-              id="kalpavruksha-project-nav"
-              className="border-t border-white/10 px-4 pb-4 pt-3 lg:hidden"
-            >
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {projectNavItems.map((item) => (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={() => {
-                      setIsProjectNavOpen(false);
-                      item.onClick();
-                    }}
-                    className="rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-white/[0.1]"
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <a
-                  href="tel:+918988896666"
-                  onClick={() => {
-                    setIsProjectNavOpen(false);
-                    trackKalpavrukshaCallClick('header_mobile_cta');
-                  }}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-white/[0.1]"
-                >
-                  <Phone className="h-4 w-4" />
-                  <span>Call Now</span>
-                </a>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsProjectNavOpen(false);
-                    openVisitModal();
-                  }}
-                  className="inline-flex items-center justify-center rounded-2xl bg-[#cba159] px-4 py-3 text-sm font-semibold text-[#1d1609] transition-all duration-300 hover:bg-[#d4ab68]"
-                >
-                  Schedule a Visit
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -2095,7 +2292,7 @@ const KalpavrukshaPage = () => {
 
         {/* Section 6: Community Details */}
         <div ref={masterPlanRef} />
-        <section className="border-t border-[#e3d2b4] bg-[linear-gradient(180deg,#fcf4e6_0%,#efdfc5_100%)] py-20 md:py-24" style={DEFERRED_SECTION_STYLE}>
+        <section id="master-plan" className="border-t border-[#e3d2b4] bg-[linear-gradient(180deg,#fcf4e6_0%,#efdfc5_100%)] py-20 md:py-24" style={DEFERRED_SECTION_STYLE}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mx-auto mb-14 max-w-3xl text-center">
               <div className="inline-flex items-center rounded-full border border-[#d7ba82] bg-[#fff9ef] px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#8b6328] shadow-sm">

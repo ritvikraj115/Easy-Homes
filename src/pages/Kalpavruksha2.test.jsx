@@ -13,6 +13,7 @@ import {
 
 const mockNavigate = jest.fn();
 let mockPathname = '/kalpavruksha/';
+let mockHash = '';
 
 jest.mock('../api', () => ({
   __esModule: true,
@@ -62,7 +63,7 @@ jest.mock(
     useLocation: () => ({
       pathname: mockPathname,
       search: '',
-      hash: '',
+      hash: mockHash,
       state: null,
     }),
   }),
@@ -141,6 +142,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   api.post.mockResolvedValue({ data: { ok: true } });
   mockPathname = '/kalpavruksha/';
+  mockHash = '';
   mockNavigate.mockImplementation((to) => {
     mockPathname = typeof to === 'string' ? to : to?.pathname || mockPathname;
   });
@@ -253,6 +255,60 @@ test('project nav links scroll to the matching section', () => {
   HTMLElement.prototype.scrollIntoView.mockClear();
 
   fireEvent.click(screen.getAllByRole('button', { name: 'Location' })[0]);
+
+  expect(HTMLElement.prototype.scrollIntoView).toHaveBeenCalled();
+});
+
+test('site visit hash link opens the form directly for ad landing flows', async () => {
+  mockHash = '#site-visit';
+
+  renderPage();
+
+  expect(await screen.findByRole('heading', { name: 'Book a Site Visit' })).toBeInTheDocument();
+  expect(trackEvent).toHaveBeenCalledWith(
+    'form_open',
+    expect.objectContaining({
+      form_name: 'kalpavruksha_site_visit_form',
+      lead_type: 'site_visit',
+      source: 'hash_site_visit',
+    }),
+  );
+});
+
+test('brochure hash link opens the brochure form directly', async () => {
+  mockHash = '#brochure';
+
+  renderPage();
+
+  expect(await screen.findByRole('heading', { name: 'Download Project Brochure' })).toBeInTheDocument();
+  expect(trackEvent).toHaveBeenCalledWith(
+    'form_open',
+    expect.objectContaining({
+      form_name: 'kalpavruksha_download_form',
+      lead_type: 'brochure_download',
+      source: 'hash_brochure',
+    }),
+  );
+});
+
+test('location hash link scrolls to the location section', () => {
+  mockHash = '#location';
+
+  renderPage();
+  act(() => {
+    jest.runOnlyPendingTimers();
+  });
+
+  expect(HTMLElement.prototype.scrollIntoView).toHaveBeenCalled();
+});
+
+test('amenities hash link scrolls to the amenities section', () => {
+  mockHash = '#amenities';
+
+  renderPage();
+  act(() => {
+    jest.runOnlyPendingTimers();
+  });
 
   expect(HTMLElement.prototype.scrollIntoView).toHaveBeenCalled();
 });

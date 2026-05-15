@@ -12,7 +12,7 @@ const MENU_ITEMS = [
   { label: 'Featured Projects', to: '/kalpavruksha/' },
   { label: 'Search Properties', to: '/searchProperties' },
   { label: 'About', to: '/about', isStub: true },
-  { label: 'Contact', to: '/contact', isStub: true },
+  { label: 'Contact', to: '/contact' },
 ];
 
 export default function Navbar() {
@@ -70,8 +70,7 @@ export default function Navbar() {
 
         <nav className="navbar__menu">
           {MENU_ITEMS.map(item => {
-            // For About and Contact, scroll to section if on home page
-            if (item.label === 'About' || item.label === 'Contact') {
+            if (item.label === 'About') {
               return (
                 <button
                   key={item.label}
@@ -81,11 +80,9 @@ export default function Navbar() {
                     showToast(`${item.label} page is under development.`);
                     if (typeof window !== 'undefined') {
                       if (window.location.pathname === '/') {
-                        if (item.label === 'About' && window.scrollToAbout) window.scrollToAbout();
-                        if (item.label === 'Contact' && window.scrollToContact) window.scrollToContact();
+                        if (window.scrollToAbout) window.scrollToAbout();
                       } else if (window.location.pathname.toLowerCase().includes('kalpavruksha')) {
-                        if (item.label === 'About' && window.scrollToAmenities) window.scrollToAmenities();
-                        if (item.label === 'Contact' && window.scrollToContact) window.scrollToContact();
+                        if (window.scrollToAmenities) window.scrollToAmenities();
                       }
                     }
                   }}
@@ -176,7 +173,7 @@ export default function Navbar() {
         {openMobile && (
           <nav className="navbar__menu navbar__menu--mobile open">
             {MENU_ITEMS.map(item => {
-              if (item.label === 'About' || item.label === 'Contact') {
+              if (item.label === 'About') {
                 return (
                   <button
                     key={item.label}
@@ -186,11 +183,9 @@ export default function Navbar() {
                       showToast(`${item.label} page is under development.`);
                       if (typeof window !== 'undefined') {
                         if (window.location.pathname === '/') {
-                          if (item.label === 'About' && window.scrollToAbout) window.scrollToAbout();
-                          if (item.label === 'Contact' && window.scrollToContact) window.scrollToContact();
+                          if (window.scrollToAbout) window.scrollToAbout();
                         } else if (window.location.pathname.toLowerCase().includes('kalpavruksha')) {
-                          if (item.label === 'About' && window.scrollToAmenities) window.scrollToAmenities();
-                          if (item.label === 'Contact' && window.scrollToContact) window.scrollToContact();
+                          if (window.scrollToAmenities) window.scrollToAmenities();
                         }
                       }
                       setOpenMobile(false);

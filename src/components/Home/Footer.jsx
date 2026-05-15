@@ -31,7 +31,7 @@ const Footer = ({ onAboutClick, onContactClick, onTermsClick, onPrivacyClick }) 
               <a href="https://www.instagram.com/easyhomesofficial/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-10 h-10 bg-gray-700 hover:bg-pink-600 rounded-md flex items-center justify-center">
                 <Instagram size={20} />
               </a>
-              <a href="https://www.youtube.com/@easyhomes8" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="w-10 h-10 bg-gray-700 hover:bg-red-600 rounded-md flex items-center justify-center">
+              <a href="https://www.youtube.com/@Easyhomesofficial" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="w-10 h-10 bg-gray-700 hover:bg-red-600 rounded-md flex items-center justify-center">
                 <FaYoutube size={20} />
               </a>
             </div>

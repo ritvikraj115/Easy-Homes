@@ -54,7 +54,7 @@ const ThankYou = () => {
                             <FaInstagram />
                         </a>
                         <a
-                            href="https://www.youtube.com/@easyhomes8"
+                            href="https://www.youtube.com/@Easyhomesofficial"
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label="YouTube"

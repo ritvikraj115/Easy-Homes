@@ -82,6 +82,7 @@ function App() {
           <Route path="/profile" element={withSuspense(<ProfilePage />)} />
           {/* Kalpavruksha page */}
           <Route path="/kalpavruksha" element={withSuspense(<KalpavrukshaPage />)} />
+           <Route path="/kalpavruksha2" element={withSuspense(<KalpavrukshaPage />)} />
           <Route path="/projects" element={<Navigate to="/kalpavruksha/" replace />} />
           {/* Thankyou page */}
           <Route path="/thank-you" element={withSuspense(<ThankYouPage />)} />
