@@ -12,6 +12,7 @@ function YouTubeLiteEmbed({
 }) {
   const [isPlayerVisible, setIsPlayerVisible] = useState(false);
   const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&playsinline=1&rel=0&modestbranding=1`;
+  const resolvedPosterSrc = posterSrc || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 
   if (isPlayerVisible) {
     return (
@@ -30,7 +31,7 @@ function YouTubeLiteEmbed({
   return (
     <div className={`relative h-full w-full overflow-hidden ${className}`.trim()}>
       <img
-        src={posterSrc}
+        src={resolvedPosterSrc}
         srcSet={posterSrcSet}
         sizes={posterSizes}
         alt={title}

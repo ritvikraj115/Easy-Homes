@@ -17,6 +17,7 @@ import belonging1920 from './kalpavruksha-hero/belonging-1920.webp';
 import care768 from './kalpavruksha-hero/care-768.webp';
 import care1440 from './kalpavruksha-hero/care-1440.webp';
 import care1920 from './kalpavruksha-hero/care-1920.webp';
+import walkthroughBrochureCover from './kalpavruksha-hero/walkthrough-brochure-cover.webp';
 
 export const KALPAVRUKSHA_OVERVIEW_HERO_IMAGE = overview1280;
 export const KALPAVRUKSHA_OVERVIEW_HERO_PRELOAD = overview1280;
@@ -37,3 +38,5 @@ export const KALPAVRUKSHA_BELONGING_HERO_SRC_SET = `${belonging768} 768w, ${belo
 
 export const KALPAVRUKSHA_CARE_HERO_IMAGE = care1440;
 export const KALPAVRUKSHA_CARE_HERO_SRC_SET = `${care768} 768w, ${care1440} 1440w, ${care1920} 1920w`;
+
+export const KALPAVRUKSHA_WALKTHROUGH_BROCHURE_COVER = walkthroughBrochureCover;

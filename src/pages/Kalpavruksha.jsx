@@ -42,13 +42,13 @@ import {
   KALPAVRUKSHA_CARE_HERO_IMAGE,
   KALPAVRUKSHA_CARE_HERO_SRC_SET,
   KALPAVRUKSHA_OVERVIEW_HERO_IMAGE,
-  KALPAVRUKSHA_OVERVIEW_HERO_POSTER,
   KALPAVRUKSHA_OVERVIEW_HERO_PRELOAD,
   KALPAVRUKSHA_OVERVIEW_HERO_SRC_SET,
   KALPAVRUKSHA_PEACE_HERO_IMAGE,
   KALPAVRUKSHA_PEACE_HERO_SRC_SET,
   KALPAVRUKSHA_TRUST_HERO_IMAGE,
   KALPAVRUKSHA_TRUST_HERO_SRC_SET,
+  KALPAVRUKSHA_WALKTHROUGH_BROCHURE_COVER,
 } from '../assets/kalpavrukshaHeroAssets';
 
 const VISIT_TIME_SLOTS = Array.from({ length: 33 }, (_, index) => {
@@ -119,7 +119,6 @@ const DEFERRED_SECTION_STYLE = {
 };
 const HERO_IMAGE_SIZES = '100vw';
 const HERO_SUPPORT_LINE = 'CRDA approved | 9.03 acres | 105 plots';
-const WALKTHROUGH_POSTER_SIZES = '(max-width: 768px) 100vw, 960px';
 const DEFAULT_SITE_VISIT_FORM = {
   name: '',
   phone: '',
@@ -2128,9 +2127,7 @@ const KalpavrukshaPage = () => {
                   videoId="mt-G29uakpQ"
                   title="Project Walkthrough Video"
                   description="Experience Kalpavruksha before you visit"
-                  posterSrc={KALPAVRUKSHA_OVERVIEW_HERO_POSTER}
-                  posterSrcSet={KALPAVRUKSHA_OVERVIEW_HERO_SRC_SET}
-                  posterSizes={WALKTHROUGH_POSTER_SIZES}
+                  posterSrc={KALPAVRUKSHA_WALKTHROUGH_BROCHURE_COVER}
                 />
               </div>
             </div>
