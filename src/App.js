@@ -5,6 +5,7 @@ import './index.css'
 import MainLayout from './layouts/MainLayout';
 import PlainLayout from './layouts/PlainLayout';
 import { trackPageView } from './utils/analytics';
+import { captureGoogleAdsAttributionFromLocation } from './utils/googleAdsAttribution';
 
 const SearchResults = lazy(() => import('./pages/SearchProperties'));
 const Favourites = lazy(() => import('./pages/Favourites'));
@@ -33,15 +34,19 @@ function withSuspense(element) {
 
 function App() {
   function ScrollToTop() {
-    const { pathname } = useLocation();
+    const { pathname, search } = useLocation();
 
-  useEffect(() => {
-    trackPageView({
-      page_path: pathname,
-      page_location: typeof window !== 'undefined' ? window.location.href : undefined,
-      page_title: typeof document !== 'undefined' ? document.title : undefined,
-    });
-  }, [pathname]);
+    useEffect(() => {
+      trackPageView({
+        page_path: pathname,
+        page_location: typeof window !== 'undefined' ? window.location.href : undefined,
+        page_title: typeof document !== 'undefined' ? document.title : undefined,
+      });
+    }, [pathname]);
+
+    useEffect(() => {
+      captureGoogleAdsAttributionFromLocation();
+    }, [pathname, search]);
 
     useEffect(() => {
       window.scrollTo(0, 0);
@@ -95,4 +100,3 @@ function App() {
 }
 
 export default App;
-

@@ -330,7 +330,7 @@ test('site visit form validates and submits successfully', async () => {
 
   fireEvent.click(screen.getByRole('button', { name: 'Submit Request' }));
   expect(
-    screen.getByText('Please fill name, phone, date and time slot.'),
+    screen.getByText('Please fill name, phone, email, date and time slot.'),
   ).toBeInTheDocument();
   act(() => {
     jest.runOnlyPendingTimers();
@@ -342,6 +342,9 @@ test('site visit form validates and submits successfully', async () => {
   });
   fireEvent.change(siteVisitForm.querySelector('input[name="phone"]'), {
     target: { name: 'phone', value: '9876543210' },
+  });
+  fireEvent.change(siteVisitForm.querySelector('input[name="email"]'), {
+    target: { name: 'email', value: 'test@example.com' },
   });
   fireEvent.change(siteVisitForm.querySelector('input[name="preferredDate"]'), {
     target: { name: 'preferredDate', value: '2099-01-01' },
@@ -357,10 +360,11 @@ test('site visit form validates and submits successfully', async () => {
       project: 'Kalpavruksha',
       name: 'Test User',
       phone: '9876543210',
-      email: undefined,
+      email: 'test@example.com',
       preferredDate: '2099-01-01T09:00',
       transportRequired: 'No',
       notes: 'Site visit scheduled from website.',
+      platformSource: 'Website',
       pickupAddress: undefined,
       pickupMode: undefined,
       pickupLat: undefined,
@@ -410,6 +414,7 @@ test('brochure download form submits and triggers the file download flow', async
     expect(api.post).toHaveBeenCalledWith('/api/leads/layout-download', {
       project: 'Kalpavruksha',
       source: 'Website',
+      platformSource: 'Website',
       leadStatus: 'Downloaded Brochure',
       name: 'Brochure User',
       phone: '9123456789',

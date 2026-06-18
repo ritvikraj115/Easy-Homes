@@ -3,6 +3,7 @@ import { Phone, Mail, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api";
 import { trackGenerateLead } from "../../utils/analytics";
+import { getGoogleAdsAttributionPayload } from "../../utils/googleAdsAttribution";
 
 const CallToAction = ({
   formName = "home_callback_form",
@@ -28,6 +29,8 @@ const CallToAction = ({
     setMessage({ type: "", text: "" });
 
     try {
+      const googleAdsAttribution = getGoogleAdsAttributionPayload();
+
       await api.post("/api/leads/enquiry", {
         project: "General Inquiry",
         name: formData.name,
@@ -35,14 +38,20 @@ const CallToAction = ({
         email: "",
         requirements: formData.requirements,
         placement,
+        platformSource: "Website",
+        googleAdsAttribution: googleAdsAttribution || undefined,
       });
 
       trackGenerateLead({
         form_name: formName,
         lead_type: "callback_request",
+        lead_status: "Callback Requested",
         project: "General Inquiry",
         source: placement,
         contact_method: "zoho_crm_backend",
+        google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
+        google_ads_click_id_type: googleAdsAttribution?.clickIdType,
+        google_ads_campaign_id: googleAdsAttribution?.campaignId,
       });
 
       setFormData({

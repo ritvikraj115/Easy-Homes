@@ -36,6 +36,7 @@ import {
   trackScheduleVisit,
   trackWhatsAppClick,
 } from '../utils/analytics';
+import { getGoogleAdsAttributionPayload } from '../utils/googleAdsAttribution';
 import {
   KALPAVRUKSHA_CALM_HERO_IMAGE,
   KALPAVRUKSHA_CALM_HERO_SRC_SET,
@@ -1200,12 +1201,12 @@ const KalpavrukshaPage = () => {
   const submitSiteVisit = async (e) => {
     e?.preventDefault?.();
     const pickupRequired = form.transportRequired === 'Yes';
-    if (!form.name || !form.phone || !form.preferredDate || !form.preferredTime || (pickupRequired && !form.pickupAddress.trim())) {
+    if (!form.name || !form.phone || !form.email.trim() || !form.preferredDate || !form.preferredTime || (pickupRequired && !form.pickupAddress.trim())) {
       setToast({
         type: 'error',
         msg: pickupRequired
-          ? 'Please fill name, phone, date, time slot and pickup address.'
-          : 'Please fill name, phone, date and time slot.'
+          ? 'Please fill name, phone, email, date, time slot and pickup address.'
+          : 'Please fill name, phone, email, date and time slot.'
       });
       setTimeout(() => setToast(null), 4000);
       return;
@@ -1213,35 +1214,46 @@ const KalpavrukshaPage = () => {
     try {
       setSubmitting(true);
       const preferredDateTime = `${form.preferredDate}T${form.preferredTime}`;
+      const googleAdsAttribution = getGoogleAdsAttributionPayload();
       await api.post('/api/site-visits', {
         project: 'Kalpavruksha',
         name: form.name,
         phone: form.phone,
-        email: form.email || undefined,
+        email: form.email.trim(),
         preferredDate: preferredDateTime,
         transportRequired: form.transportRequired,
         notes: SITE_VISIT_ZOHO_NOTE,
+        platformSource: 'Website',
         pickupAddress: pickupRequired ? form.pickupAddress.trim() : undefined,
         pickupMode: pickupRequired ? form.pickupMode : undefined,
         pickupLat: pickupRequired ? (form.pickupLat || undefined) : undefined,
-        pickupLng: pickupRequired ? (form.pickupLng || undefined) : undefined
+        pickupLng: pickupRequired ? (form.pickupLng || undefined) : undefined,
+        googleAdsAttribution: googleAdsAttribution || undefined,
       });
       trackGenerateLead({
         form_name: 'kalpavruksha_site_visit_form',
         lead_type: 'site_visit',
+        lead_status: 'Visit Scheduled',
         project: 'Kalpavruksha',
         source: 'kalpavruksha_site_visit_modal',
         transport_required: form.transportRequired,
         pickup_mode: pickupRequired ? form.pickupMode : undefined,
+        google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
+        google_ads_click_id_type: googleAdsAttribution?.clickIdType,
+        google_ads_campaign_id: googleAdsAttribution?.campaignId,
       });
       trackScheduleVisit({
         form_name: 'kalpavruksha_site_visit_form',
+        lead_status: 'Visit Scheduled',
         project: 'Kalpavruksha',
         source: 'kalpavruksha_site_visit_modal',
         preferred_date: form.preferredDate,
         preferred_time: form.preferredTime,
         transport_required: form.transportRequired,
         pickup_mode: pickupRequired ? form.pickupMode : undefined,
+        google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
+        google_ads_click_id_type: googleAdsAttribution?.clickIdType,
+        google_ads_campaign_id: googleAdsAttribution?.campaignId,
       });
       setShowVisitModal(false);
       setForm(DEFAULT_SITE_VISIT_FORM);
@@ -1271,13 +1283,16 @@ const KalpavrukshaPage = () => {
 
     try {
       setDownloadSubmitting(true);
+      const googleAdsAttribution = getGoogleAdsAttributionPayload();
       await api.post('/api/leads/layout-download', {
         project: 'Kalpavruksha',
         source: activeDownloadAsset.source,
+        platformSource: 'Website',
         leadStatus: activeDownloadAsset.leadStatus,
         name: layoutLeadForm.name.trim(),
         phone: layoutLeadForm.phone.trim(),
         email: layoutLeadForm.email.trim() || undefined,
+        googleAdsAttribution: googleAdsAttribution || undefined,
       });
 
   const assetType = downloadAssetKey === 'layout' ? 'master_layout' : 'brochure';
@@ -1288,14 +1303,21 @@ const KalpavrukshaPage = () => {
         source: activeDownloadAsset.source || 'Website',
         asset_type: assetType,
         lead_status: activeDownloadAsset.leadStatus,
+        google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
+        google_ads_click_id_type: googleAdsAttribution?.clickIdType,
+        google_ads_campaign_id: googleAdsAttribution?.campaignId,
       });
       trackFileDownload({
         project: 'Kalpavruksha',
         source: 'kalpavruksha_download_form',
         asset_type: assetType,
+        lead_status: activeDownloadAsset.leadStatus,
         file_name: activeDownloadAsset.fileName,
         file_extension: 'pdf',
         link_url: activeDownloadAsset.url,
+        google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
+        google_ads_click_id_type: googleAdsAttribution?.clickIdType,
+        google_ads_campaign_id: googleAdsAttribution?.campaignId,
       });
 
       closeDownloadLeadModal();
@@ -1456,7 +1478,7 @@ const KalpavrukshaPage = () => {
                 <div className={formSectionClass}>
                   <p className={formSectionEyebrowClass}>Contact Details</p>
                   <h4 className={formSectionTitleClass}>Contact Details</h4>
-                  <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
                     <div>
                       <label className={formLabelClass}>Full Name</label>
                       <input name="name" value={form.name} onChange={onChange} className={formInputClass} placeholder="Your name" required />
@@ -1464,6 +1486,10 @@ const KalpavrukshaPage = () => {
                     <div>
                       <label className={formLabelClass}>Phone Number</label>
                       <input name="phone" value={form.phone} onChange={onChange} className={formInputClass} placeholder="e.g., 9898899666" required />
+                    </div>
+                    <div>
+                      <label className={formLabelClass}>Email Address</label>
+                      <input type="email" name="email" value={form.email} onChange={onChange} className={formInputClass} placeholder="you@example.com" required />
                     </div>
                   </div>
                 </div>
