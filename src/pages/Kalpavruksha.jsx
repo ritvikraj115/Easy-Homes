@@ -1284,6 +1284,13 @@ const KalpavrukshaPage = () => {
     try {
       setDownloadSubmitting(true);
       const googleAdsAttribution = getGoogleAdsAttributionPayload();
+      const urlParams = new URLSearchParams(window.location.search);
+
+      // --- DEBUGGING LOGS START ---
+      console.log("=== DEBUG: Brochure/Layout Download ===");
+      console.log("1. Raw URL gclid:", urlParams.get('gclid'));
+      console.log("2. Raw URL campaign:", urlParams.get('utm_campaign'));
+      console.log("3. Parsed Google Ads Data:", googleAdsAttribution);
       await api.post('/api/leads/layout-download', {
         project: 'Kalpavruksha',
         source: activeDownloadAsset.source,
