@@ -36,7 +36,7 @@ import {
   trackScheduleVisit,
   trackWhatsAppClick,
 } from '../utils/analytics';
-import { getGoogleAdsAttributionPayload } from '../utils/googleAdsAttribution';
+import { getGoogleAdsAttributionPayload, captureGoogleAdsAttribution } from '../utils/googleAdsAttribution';
 import {
   KALPAVRUKSHA_CALM_HERO_IMAGE,
   KALPAVRUKSHA_CALM_HERO_SRC_SET,
@@ -310,6 +310,11 @@ const KalpavrukshaPage = () => {
       setIsProjectNavOpen(false);
     }
   }, [isModalOpen]);
+
+  useEffect(() => {
+    // Silently scans the URL on load and updates localStorage if gclid/utm data exists
+    captureGoogleAdsAttribution();
+  }, []);
 
   useEffect(() => {
     if (typeof document === 'undefined') {

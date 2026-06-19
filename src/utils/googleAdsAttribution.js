@@ -6,6 +6,7 @@ const URL_PARAM_TO_FIELD = Object.freeze({
   gbraid: 'gbraid',
   wbraid: 'wbraid',
   campaignid: 'campaignId',
+  campaign_id: 'campaignId', // Added for Google Ads standard ValueTrack
   adgroupid: 'adGroupId',
   creative: 'creativeId',
   targetid: 'targetId',
@@ -48,6 +49,16 @@ function sanitizeAttribution(raw) {
       sanitized[field] = value;
     }
   });
+
+  // CRITICAL FIX: Cross-populate Campaign ID and UTM Campaign
+  // This ensures your backend and WhatsApp link ALWAYS find 'campaignId' 
+  // regardless of whether the URL used ?campaignid= or ?utm_campaign=
+  if (sanitized.utmCampaign && !sanitized.campaignId) {
+    sanitized.campaignId = sanitized.utmCampaign;
+  }
+  if (sanitized.campaignId && !sanitized.utmCampaign) {
+    sanitized.utmCampaign = sanitized.campaignId;
+  }
 
   const landingPage = normalizeText(raw.landingPage);
   if (landingPage) {
@@ -112,6 +123,10 @@ export function getGoogleAdsAttributionPayload() {
 
   const lastCapturedAtMs = Date.parse(stored.lastCapturedAt || stored.firstCapturedAt || '');
   if (Number.isFinite(lastCapturedAtMs) && (Date.now() - lastCapturedAtMs) > STORAGE_MAX_AGE_MS) {
+    // Auto-expire data older than 90 days
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem(STORAGE_KEY);
+    }
     return null;
   }
 
@@ -135,16 +150,16 @@ export function captureGoogleAdsAttributionFromLocation(locationLike) {
     }
   });
 
-  const stored = getGoogleAdsAttributionPayload();
+  const stored = getGoogleAdsAttributionPayload() || {};
   if (!Object.keys(captured).length) {
-    return stored;
+    return Object.keys(stored).length ? stored : null;
   }
 
   const now = new Date().toISOString();
   const nextValue = sanitizeAttribution({
     ...stored,
     ...captured,
-    landingPage: normalizeText(currentLocation?.href) || stored?.landingPage,
+    landingPage: normalizeText(currentLocation?.href?.split('?')[0]) || stored?.landingPage,
     firstCapturedAt: stored?.firstCapturedAt || now,
     lastCapturedAt: now,
   });
@@ -154,4 +169,9 @@ export function captureGoogleAdsAttributionFromLocation(locationLike) {
   }
 
   return nextValue;
+}
+
+// Helper export to easily trigger without passing window.location manually
+export function captureGoogleAdsAttribution() {
+  return captureGoogleAdsAttributionFromLocation();
 }
