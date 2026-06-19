@@ -1089,6 +1089,7 @@ const KalpavrukshaPage = () => {
     if (attribution?.gclid || attribution?.utmCampaign) {
       const gclidStr = attribution.gclid || 'NA';
       const campStr = attribution.utmCampaign || 'NA';
+      console.log(`Appending attribution to WhatsApp message: gclid=${gclidStr}, utm_campaign=${campStr}`);
       
       // Append the reference tag to the end of the text
       messageText = `${messageText} [Ref: ${gclidStr}_${campStr}]`;
