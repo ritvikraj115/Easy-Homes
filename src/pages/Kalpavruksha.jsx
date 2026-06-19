@@ -1094,7 +1094,7 @@ const KalpavrukshaPage = () => {
       // Append the reference tag to the end of the text
       messageText = `${messageText} [Ref: ${gclidStr}_${campStr}]`;
     }
-    window.open(KALPAVRUKSHA_WHATSAPP_URL, '_blank', 'noopener,noreferrer');
+    window.open(KALPAVRUKSHA_WHATSAPP_URL + encodeURIComponent(messageText), '_blank', 'noopener,noreferrer');
   };
 
   const launchKalpavrukshaLiveChat = async (placement) => {
