@@ -1079,6 +1079,20 @@ const KalpavrukshaPage = () => {
 
   const openKalpavrukshaWhatsApp = (placement) => {
     trackKalpavrukshaWhatsAppClick(placement);
+    // 1. Fetch the stored attribution data
+    const attribution = getGoogleAdsAttributionPayload();
+    
+    // 2. Define the core message the user will send
+    let messageText = "Hi Easy Homes, I am interested in Kalpavruksha project.";
+    
+    // 3. Append the tracking data if it exists
+    if (attribution?.gclid || attribution?.utmCampaign) {
+      const gclidStr = attribution.gclid || 'NA';
+      const campStr = attribution.utmCampaign || 'NA';
+      
+      // Append the reference tag to the end of the text
+      messageText = `${messageText} [Ref: ${gclidStr}_${campStr}]`;
+    }
     window.open(KALPAVRUKSHA_WHATSAPP_URL, '_blank', 'noopener,noreferrer');
   };
 
