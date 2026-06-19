@@ -1496,7 +1496,7 @@ const KalpavrukshaPage = () => {
       </Helmet>
       {/* Toast */}
       {toast && (
-        <div className={`fixed top-4 left-1/2 z-50 -translate-x-1/2 rounded-full border px-4 py-2 text-sm font-medium shadow-lg ${toast.type === 'success' ? 'border-[#d3b57c] bg-[#162118] text-[#f5ebd2]' : 'border-[#8f4a4a] bg-[#5d2626] text-[#fff1ee]'}`}>
+        <div className={`fixed top-4 left-1/2 z-[150] -translate-x-1/2 rounded-full border px-4 py-2 text-sm font-medium shadow-lg ${toast.type === 'success' ? 'border-[#d3b57c] bg-[#162118] text-[#f5ebd2]' : 'border-[#8f4a4a] bg-[#5d2626] text-[#fff1ee]'}`}>
           {toast.msg}
         </div>
       )}
