@@ -1231,6 +1231,13 @@ const KalpavrukshaPage = () => {
       setTimeout(() => setToast(null), 4000);
       return;
     }
+    // === ADD THIS 10-DIGIT VALIDATION HERE ===
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(form.phone.trim())) {
+      setToast({ type: 'error', msg: 'Please enter a valid 10-digit phone number.' });
+      setTimeout(() => setToast(null), 4000);
+      return;
+    }
     try {
       setSubmitting(true);
       const preferredDateTime = `${form.preferredDate}T${form.preferredTime}`;
@@ -1295,8 +1302,15 @@ const KalpavrukshaPage = () => {
       setTimeout(() => setToast(null), 4000);
       return;
     }
+
     if (!activeDownloadAsset) {
       setToast({ type: 'error', msg: 'Please select a valid download option.' });
+      setTimeout(() => setToast(null), 4000);
+      return;
+    }
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(layoutLeadForm.phone.trim())) {
+      setToast({ type: 'error', msg: 'Please enter a valid 10-digit phone number.' });
       setTimeout(() => setToast(null), 4000);
       return;
     }
