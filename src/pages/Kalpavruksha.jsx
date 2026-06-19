@@ -86,7 +86,7 @@ const DOWNLOAD_ASSET_CONFIG = {
 };
 const KALPAVRUKSHA_CALL_URL = 'tel:+918988896666';
 const KALPAVRUKSHA_WHATSAPP_URL =
-  'https://wa.me/918019298488?text=Hi%20Easy%20Homes,%20I%20am%20interested%20in%20Kalpavruksha%20project.';
+  'https://wa.me/918019298488';
 const KALPAVRUKSHA_DIRECTIONS_URL = 'https://maps.app.goo.gl/dNA1KdiDNuLjTthG8';
 const KALPAVRUKSHA_ZOHO_CHAT_QUESTION =
   'Hi Easy Homes, I want details about Kalpavruksha open plots, pricing, and site visit availability.';
@@ -1092,7 +1092,7 @@ const KalpavrukshaPage = () => {
       console.log(`Appending attribution to WhatsApp message: gclid=${gclidStr}, utm_campaign=${campStr}`);
       
       // Append the reference tag to the end of the text
-      messageText = `${messageText} [Ref: ${gclidStr}_${campStr}]`;
+      messageText = `${messageText} [Ref: ${gclidStr},${campStr}]`;
     }
     window.open(KALPAVRUKSHA_WHATSAPP_URL + encodeURIComponent(messageText), '_blank', 'noopener,noreferrer');
   };
