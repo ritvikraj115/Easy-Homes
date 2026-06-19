@@ -86,7 +86,7 @@ const DOWNLOAD_ASSET_CONFIG = {
 };
 const KALPAVRUKSHA_CALL_URL = 'tel:+918988896666';
 const KALPAVRUKSHA_WHATSAPP_URL =
-  'https://wa.me/918019298488';
+  'https://wa.me/918019298488?text=';
 const KALPAVRUKSHA_DIRECTIONS_URL = 'https://maps.app.goo.gl/dNA1KdiDNuLjTthG8';
 const KALPAVRUKSHA_ZOHO_CHAT_QUESTION =
   'Hi Easy Homes, I want details about Kalpavruksha open plots, pricing, and site visit availability.';
