@@ -37,6 +37,7 @@ import {
   trackWhatsAppClick,
 } from '../utils/analytics';
 import { getGoogleAdsAttributionPayload, captureGoogleAdsAttribution } from '../utils/googleAdsAttribution';
+import { buildKalpavrukshaWhatsAppUrl } from '../utils/kalpavrukshaWhatsapp';
 import {
   KALPAVRUKSHA_CALM_HERO_IMAGE,
   KALPAVRUKSHA_CALM_HERO_SRC_SET,
@@ -106,8 +107,6 @@ const DOWNLOAD_ASSET_CONFIG = {
   }
 };
 const KALPAVRUKSHA_CALL_URL = 'tel:+918988896666';
-const KALPAVRUKSHA_WHATSAPP_URL =
-  'https://wa.me/918019298488?text=';
 const KALPAVRUKSHA_DIRECTIONS_URL = 'https://maps.app.goo.gl/dNA1KdiDNuLjTthG8';
 const KALPAVRUKSHA_ZOHO_CHAT_QUESTION =
   'Hi Easy Homes, I want details about Kalpavruksha open plots, pricing, and site visit availability.';
@@ -1449,11 +1448,24 @@ const KalpavrukshaPage = () => {
     link.remove();
   };
 
-  const trackKalpavrukshaWhatsAppClick = (placement) => {
+  const trackKalpavrukshaWhatsAppClick = (placement, attribution = null) => {
     trackWhatsAppClick(withLandingVariant({
       project: 'Kalpavruksha',
       source: 'kalpavruksha',
       placement,
+      lead_type: 'whatsapp_price',
+      google_ads_attributed: attribution?.hasGoogleAdsClick || undefined,
+      google_ads_click_id_type: attribution?.clickIdType,
+      google_ads_campaign_id: attribution?.campaignId,
+    }));
+    trackEvent('click_whatsapp', withLandingVariant({
+      project: 'Kalpavruksha',
+      source: 'kalpavruksha',
+      placement,
+      lead_type: 'whatsapp_price',
+      google_ads_attributed: attribution?.hasGoogleAdsClick || undefined,
+      google_ads_click_id_type: attribution?.clickIdType,
+      google_ads_campaign_id: attribution?.campaignId,
     }));
   };
 
@@ -1476,23 +1488,12 @@ const KalpavrukshaPage = () => {
   };
 
   const openKalpavrukshaWhatsApp = (placement) => {
-    trackKalpavrukshaWhatsAppClick(placement);
-    // 1. Fetch the stored attribution data
-    const attribution = getGoogleAdsAttributionPayload();
-    
-    // 2. Define the core message the user will send
-    let messageText = "Hi Easy Homes, I am interested in Kalpavruksha project.";
-    
-    // 3. Append the tracking data if it exists
-    if (attribution?.gclid || attribution?.utmCampaign) {
-      const gclidStr = attribution.gclid || 'NA';
-      const campStr = attribution.utmCampaign || 'NA';
-      console.log(`Appending attribution to WhatsApp message: gclid=${gclidStr}, utm_campaign=${campStr}`);
-      
-      // Append the reference tag to the end of the text
-      messageText = `${messageText} [Ref: ${gclidStr},${campStr}]`;
-    }
-    window.open(KALPAVRUKSHA_WHATSAPP_URL + encodeURIComponent(messageText), '_blank', 'noopener,noreferrer');
+    const { url, attribution } = buildKalpavrukshaWhatsAppUrl({
+      projectName: 'Kalpavruksha',
+      pageUrl: typeof window !== 'undefined' ? window.location.href : undefined,
+    });
+    trackKalpavrukshaWhatsAppClick(placement, attribution);
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const launchKalpavrukshaLiveChat = async (placement) => {
@@ -3954,17 +3955,15 @@ const KalpavrukshaPage = () => {
                 <Download className="h-5 w-5" />
               </button>
 
-              <a
-                href={KALPAVRUKSHA_WHATSAPP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => trackKalpavrukshaWhatsAppClick('floating_whatsapp_icon')}
+              <button
+                type="button"
+                onClick={() => openKalpavrukshaWhatsApp('floating_whatsapp_icon')}
                 className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-[#d7ba82] bg-[linear-gradient(180deg,#fffefb_0%,#f4ead8_100%)] text-[#8b6328] shadow-[0_20px_42px_rgba(83,64,31,0.16)] transition-all duration-200 hover:-translate-y-1 hover:scale-[1.03] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b16f]/24"
                 aria-label="Open WhatsApp chat"
                 title="Open WhatsApp chat"
               >
                 <FaWhatsapp className="h-5 w-5" />
-              </a>
+              </button>
 
               <button
                 type="button"
@@ -4020,9 +4019,7 @@ const KalpavrukshaPage = () => {
                     className="w-full !border-white/[0.14] !bg-white/[0.10] !text-white hover:!bg-white/[0.14] hover:!text-white"
                   />
                   <CTAButton
-                    href={KALPAVRUKSHA_WHATSAPP_URL}
-                    target="_blank"
-                    onClick={() => trackKalpavrukshaWhatsAppClick('footer_contact_whatsapp')}
+                    onClick={() => openKalpavrukshaWhatsApp('footer_contact_whatsapp')}
                     icon={<FaWhatsapp className="w-4 h-4" />}
                     text="WhatsApp"
                     className="w-full !border-white/[0.14] !bg-white/[0.10] !text-white hover:!bg-white/[0.14] hover:!text-white"

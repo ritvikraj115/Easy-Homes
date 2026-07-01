@@ -540,7 +540,7 @@ test('floating action icons become available after the hero is scrolled', async 
   });
 
   expect(screen.queryByRole('button', { name: /Quick Actions/i })).not.toBeInTheDocument();
-  expect(screen.getByRole('link', { name: 'Open WhatsApp chat' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Open WhatsApp chat' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Open live chat' })).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole('button', { name: 'Open brochure download' }));

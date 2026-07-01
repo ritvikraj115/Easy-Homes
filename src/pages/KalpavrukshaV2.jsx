@@ -33,6 +33,7 @@ import {
   trackWhatsAppClick,
 } from '../utils/analytics';
 import { captureGoogleAdsAttribution, getGoogleAdsAttributionPayload } from '../utils/googleAdsAttribution';
+import { buildKalpavrukshaWhatsAppUrl } from '../utils/kalpavrukshaWhatsapp';
 import {
   KALPAVRUKSHA_CALM_HERO_IMAGE,
   KALPAVRUKSHA_CALM_HERO_SRC_SET,
@@ -85,7 +86,6 @@ const PROJECT = {
 const FOUNDER_MESSAGE = '';
 
 const CALL_URL = 'tel:+918988896666';
-const WHATSAPP_NUMBER = '918019298488';
 const DIRECTIONS_URL = 'https://maps.app.goo.gl/dNA1KdiDNuLjTthG8';
 const KALPAVRUKSHA_ZOHO_CHAT_QUESTION =
   'Hi Easy Homes, I want details about Kalpavruksha open plots, pricing, and site visit availability.';
@@ -900,23 +900,30 @@ export default function KalpavrukshaV2() {
   };
 
   const openWhatsApp = (placement) => {
-    const message = [
-      `Hi Easy Homes, I want current price and available plots for ${PROJECT.name}.`,
-      `Page: ${window.location.href}`,
-    ].join('\n');
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    const { url, attribution } = buildKalpavrukshaWhatsAppUrl({
+      projectName: PROJECT.name,
+      pageUrl: typeof window !== 'undefined' ? window.location.href : undefined,
+    });
 
     trackWhatsAppClick(withTrackingContext({
       project: PROJECT.name,
+      source: 'kalpavruksha',
       placement,
       lead_type: 'whatsapp_price',
+      google_ads_attributed: attribution?.hasGoogleAdsClick || undefined,
+      google_ads_click_id_type: attribution?.clickIdType,
+      google_ads_campaign_id: attribution?.campaignId,
     }));
     trackEvent('click_whatsapp', withTrackingContext({
       project: PROJECT.name,
+      source: 'kalpavruksha',
       placement,
       lead_type: 'whatsapp_price',
+      google_ads_attributed: attribution?.hasGoogleAdsClick || undefined,
+      google_ads_click_id_type: attribution?.clickIdType,
+      google_ads_campaign_id: attribution?.campaignId,
     }));
-    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const launchLiveChat = async (placement) => {
