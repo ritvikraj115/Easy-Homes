@@ -24,7 +24,8 @@ const CallToAction = () => {
         email: '',
         preferredDate: new Date().toISOString(),
         notes: formData.requirements,
-        platformSource: 'Website'
+        platformSource: 'Website',
+        platform_source: 'website'
       });
       setMessage({ type: 'success', text: 'Request received! We will call you back shortly.' });
       setFormData({ name: '', phone: '', requirements: '' });

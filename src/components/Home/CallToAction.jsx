@@ -39,6 +39,7 @@ const CallToAction = ({
         requirements: formData.requirements,
         placement,
         platformSource: "Website",
+        platform_source: "website",
         googleAdsAttribution: googleAdsAttribution || undefined,
       });
 

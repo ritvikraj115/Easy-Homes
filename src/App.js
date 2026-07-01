@@ -18,7 +18,8 @@ const PropertyDetails = lazy(() => import('./pages/Propertydetails'));
 const Compare = lazy(() => import('./pages/Compare'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const Home = lazy(() => import('./pages/Home'));
-const KalpavrukshaPage = lazy(() => import('./pages/Kalpavruksha'));
+const KalpavrukshaExperimentPage = lazy(() => import('./pages/KalpavrukshaExperiment'));
+const KalpavrukshaV2Page = lazy(() => import('./pages/KalpavrukshaV2'));
 const ThankYouPage = lazy(() => import('./pages/ThankYouPage'));
 const AdminPanel = lazy(() => import('./pages/AdminPanel'));
 const About = lazy(() => import('./pages/About'));
@@ -37,12 +38,17 @@ function App() {
     const { pathname, search } = useLocation();
 
     useEffect(() => {
+      const normalizedPath = pathname.replace(/\/+$/, '').toLowerCase() || '/';
+      if (normalizedPath === '/kalpavruksha' || normalizedPath === '/kalpavruksha2') {
+        return;
+      }
+
       trackPageView({
         page_path: pathname,
         page_location: typeof window !== 'undefined' ? window.location.href : undefined,
         page_title: typeof document !== 'undefined' ? document.title : undefined,
       });
-    }, [pathname]);
+    }, [pathname, search]);
 
     useEffect(() => {
       captureGoogleAdsAttributionFromLocation();
@@ -86,8 +92,8 @@ function App() {
           <Route path="/compare" element={withSuspense(<Compare />)} />
           <Route path="/profile" element={withSuspense(<ProfilePage />)} />
           {/* Kalpavruksha page */}
-          <Route path="/kalpavruksha" element={withSuspense(<KalpavrukshaPage />)} />
-           <Route path="/kalpavruksha2" element={withSuspense(<KalpavrukshaPage />)} />
+          <Route path="/kalpavruksha" element={withSuspense(<KalpavrukshaExperimentPage />)} />
+          <Route path="/kalpavruksha2" element={withSuspense(<KalpavrukshaV2Page />)} />
           <Route path="/projects" element={<Navigate to="/kalpavruksha/" replace />} />
           {/* Thankyou page */}
           <Route path="/thank-you" element={withSuspense(<ThankYouPage />)} />

@@ -222,11 +222,12 @@ export function trackEvent(eventName, params = {}) {
   window.gtag('event', eventName, sanitizeParams(params));
 }
 
-export function trackPageView({ page_path, page_location, page_title } = {}) {
+export function trackPageView({ page_path, page_location, page_title, ...params } = {}) {
   trackEvent('page_view', {
     page_path,
     page_location,
     page_title,
+    ...params,
   });
 }
 

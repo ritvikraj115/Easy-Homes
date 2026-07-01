@@ -11,6 +11,8 @@ import {
   trackWhatsAppClick,
 } from '../utils/analytics';
 
+jest.setTimeout(15000);
+
 const mockNavigate = jest.fn();
 let mockPathname = '/kalpavruksha/';
 let mockHash = '';
@@ -18,6 +20,7 @@ let mockHash = '';
 jest.mock('../api', () => ({
   __esModule: true,
   default: {
+    get: jest.fn(),
     post: jest.fn(),
   },
 }));
@@ -140,6 +143,7 @@ function mockScrolledHeroLayout() {
 beforeEach(() => {
   jest.useFakeTimers();
   jest.clearAllMocks();
+  api.get.mockResolvedValue({ data: { success: true, slots: ['9:00 AM', '10:00 AM'] } });
   api.post.mockResolvedValue({ data: { ok: true } });
   mockPathname = '/kalpavruksha/';
   mockHash = '';
@@ -227,13 +231,16 @@ test('hero next/previous controls change slides', async () => {
 test('hero WhatsApp CTA tracks the same placement flow as Kalpa', () => {
   renderPage();
 
-  fireEvent.click(screen.getAllByRole('button', { name: 'Talk on WhatsApp' })[0]);
+  fireEvent.click(screen.getAllByRole('button', { name: 'Get Current Price on WhatsApp' })[0]);
 
-  expect(trackWhatsAppClick).toHaveBeenCalledWith({
-    project: 'Kalpavruksha',
-    source: 'kalpavruksha',
-    placement: 'hero_cta_whatsapp',
-  });
+  expect(trackWhatsAppClick).toHaveBeenCalledWith(
+    expect.objectContaining({
+      landing_variant: 'A',
+      project: 'Kalpavruksha',
+      source: 'kalpavruksha',
+      placement: 'hero_price_whatsapp',
+    }),
+  );
 });
 
 test('zoho salesiq widget script is added when live chat is opened', () => {
@@ -257,6 +264,20 @@ test('project nav links scroll to the matching section', () => {
   fireEvent.click(screen.getAllByRole('button', { name: 'Location' })[0]);
 
   expect(HTMLElement.prototype.scrollIntoView).toHaveBeenCalled();
+});
+
+test('conversion-first sections show verified project essentials near the top', () => {
+  renderPage();
+
+  expect(screen.getByRole('button', { name: 'Book Free Site Visit' })).toBeInTheDocument();
+  expect(screen.getAllByText('CRDA Approved').length).toBeGreaterThan(0);
+  expect(screen.getByText('RERA Approved')).toBeInTheDocument();
+  expect(screen.getByText('Buyer Essentials')).toBeInTheDocument();
+  expect(screen.getByText('Honest Availability')).toBeInTheDocument();
+  expect(screen.getAllByText('Rs. 30 Lakhs').length).toBeGreaterThan(0);
+  expect(screen.getAllByText('P06160035909').length).toBeGreaterThan(0);
+  expect(screen.getAllByText('September 2026').length).toBeGreaterThan(0);
+  expect(screen.getByText('17')).toBeInTheDocument();
 });
 
 test('site visit hash link opens the form directly for ad landing flows', async () => {
@@ -328,9 +349,9 @@ test('site visit form validates and submits successfully', async () => {
 
   fireEvent.click(screen.getAllByRole('button', { name: 'Schedule a Visit' })[0]);
 
-  fireEvent.click(screen.getByRole('button', { name: 'Submit Request' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
   expect(
-    screen.getByText('Please fill name, phone, email, date and time slot.'),
+    screen.getByText('Please enter name, phone, and what you are looking for.'),
   ).toBeInTheDocument();
   act(() => {
     jest.runOnlyPendingTimers();
@@ -343,13 +364,13 @@ test('site visit form validates and submits successfully', async () => {
   fireEvent.change(siteVisitForm.querySelector('input[name="phone"]'), {
     target: { name: 'phone', value: '9876543210' },
   });
-  fireEvent.change(siteVisitForm.querySelector('input[name="email"]'), {
-    target: { name: 'email', value: 'test@example.com' },
-  });
+  fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+  expect(await screen.findByText('Pick a suitable slot')).toBeInTheDocument();
+
   fireEvent.change(siteVisitForm.querySelector('input[name="preferredDate"]'), {
     target: { name: 'preferredDate', value: '2099-01-01' },
   });
-  fireEvent.click(screen.getByRole('button', { name: '9:00 AM' }));
+  fireEvent.click(await screen.findByRole('button', { name: '9:00 AM' }));
 
   await act(async () => {
     fireEvent.submit(siteVisitForm);
@@ -360,18 +381,35 @@ test('site visit form validates and submits successfully', async () => {
       project: 'Kalpavruksha',
       name: 'Test User',
       phone: '9876543210',
-      email: 'test@example.com',
+      email: undefined,
+      interest: 'Book Visit',
       preferredDate: '2099-01-01T09:00',
       transportRequired: 'No',
-      notes: 'Site visit scheduled from website.',
+      notes: 'Site visit scheduled from website.\nLanding Variant: A\nWebsite Version: v1\nInterest: Book Visit',
       platformSource: 'Website',
+      platform_source: 'website',
+      landingVariant: 'A',
+      landing_variant: 'A',
+      landingVersion: 'v1',
+      landing_version: 'v1',
+      version: 'v1',
       pickupAddress: undefined,
       pickupMode: undefined,
       pickupLat: undefined,
       pickupLng: undefined,
+      googleAdsAttribution: undefined,
     });
   });
 
+  expect(trackEvent).toHaveBeenCalledWith(
+    'form_submit',
+    expect.objectContaining({
+      form_name: 'kalpavruksha_site_visit_form',
+      lead_type: 'site_visit',
+      landing_variant: 'A',
+      landing_version: 'v1',
+    }),
+  );
   expect(trackGenerateLead).toHaveBeenCalled();
   expect(trackScheduleVisit).toHaveBeenCalled();
   expect(mockNavigate).toHaveBeenCalledWith('/thank-you');
@@ -381,6 +419,15 @@ test('site visit map pickup mode can populate the pickup address', async () => {
   renderPage();
 
   fireEvent.click(screen.getAllByRole('button', { name: 'Schedule a Visit' })[0]);
+  const siteVisitForm = document.querySelector('form');
+  fireEvent.change(siteVisitForm.querySelector('input[name="name"]'), {
+    target: { name: 'name', value: 'Pickup User' },
+  });
+  fireEvent.change(siteVisitForm.querySelector('input[name="phone"]'), {
+    target: { name: 'phone', value: '9876543210' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+
   fireEvent.click(screen.getByRole('button', { name: 'Yes' }));
   fireEvent.click(screen.getByText('Select on Map'));
   fireEvent.click(await screen.findByTestId('pickup-map'));
@@ -396,7 +443,7 @@ test('brochure download form submits and triggers the file download flow', async
   const anchorClickSpy = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
   renderPage();
 
-  fireEvent.click(screen.getByRole('button', { name: 'Download Brochure' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Download Project Brochure' }));
 
   const downloadForm = document.querySelector('form');
   fireEvent.change(downloadForm.querySelector('input[name="name"]'), {
@@ -415,13 +462,29 @@ test('brochure download form submits and triggers the file download flow', async
       project: 'Kalpavruksha',
       source: 'Website',
       platformSource: 'Website',
+      platform_source: 'website',
+      landingVariant: 'A',
+      landing_variant: 'A',
+      landingVersion: 'v1',
+      landing_version: 'v1',
+      version: 'v1',
       leadStatus: 'Downloaded Brochure',
       name: 'Brochure User',
       phone: '9123456789',
       email: undefined,
+      googleAdsAttribution: undefined,
     });
   });
 
+  expect(trackEvent).toHaveBeenCalledWith(
+    'form_submit',
+    expect.objectContaining({
+      form_name: 'kalpavruksha_download_form',
+      lead_type: 'brochure_download',
+      landing_variant: 'A',
+      landing_version: 'v1',
+    }),
+  );
   expect(trackGenerateLead).toHaveBeenCalled();
   expect(trackFileDownload).toHaveBeenCalled();
   expect(anchorClickSpy).toHaveBeenCalled();
@@ -439,6 +502,25 @@ test('gallery cards use descriptive alt text for SEO and accessibility', () => {
   expect(
     screen.getByAltText('Kalpavruksha clubhouse exterior with landscaped lawns and premium lifestyle amenities'),
   ).toBeInTheDocument();
+});
+
+test('gallery modal next and previous controls keep sliding through images', () => {
+  renderPage();
+
+  fireEvent.click(
+    screen.getByAltText('Kalpavruksha grand entrance for the CRDA-approved plotted community in Vijayawada'),
+  );
+
+  expect(screen.getByText('1 / 6')).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole('button', { name: 'Show next gallery image' }));
+  expect(screen.getByText('2 / 6')).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole('button', { name: 'Show next gallery image' }));
+  expect(screen.getByText('3 / 6')).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole('button', { name: 'Show previous gallery image' }));
+  expect(screen.getByText('2 / 6')).toBeInTheDocument();
 });
 
 test('location keeps the shared directions link and no longer renders the travel map', () => {
