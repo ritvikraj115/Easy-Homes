@@ -26,10 +26,7 @@ import api from '../api';
 import ZohoSalesIQWidgetLoader, { openZohoSalesIQChat } from '../components/ZohoSalesIQWidgetLoader';
 import {
   trackEvent,
-  trackFileDownload,
-  trackGenerateLead,
   trackPageView,
-  trackScheduleVisit,
   trackWhatsAppClick,
 } from '../utils/analytics';
 import { captureGoogleAdsAttribution, getGoogleAdsAttributionPayload } from '../utils/googleAdsAttribution';
@@ -657,10 +654,6 @@ export default function KalpavrukshaV2() {
 
   useEffect(() => {
     captureGoogleAdsAttribution();
-    trackEvent('landing_variant_view', withTrackingContext({
-      project: PROJECT.name,
-      page_name: 'kalpavruksha_lp_b',
-    }));
 
     const normalizedPath = location.pathname.replace(/\/+$/, '').toLowerCase() || '/';
     if (normalizedPath === '/kalpavruksha2') {
@@ -674,7 +667,6 @@ export default function KalpavrukshaV2() {
       });
 
       trackPageView(pagePayload);
-      trackEvent('kalpavruksha_ab_page_view', pagePayload);
     }
   }, [location.pathname, location.search]);
 
@@ -914,15 +906,6 @@ export default function KalpavrukshaV2() {
       google_ads_click_id_type: attribution?.clickIdType,
       google_ads_campaign_id: attribution?.campaignId,
     }));
-    trackEvent('click_whatsapp', withTrackingContext({
-      project: PROJECT.name,
-      source: 'kalpavruksha',
-      placement,
-      lead_type: 'whatsapp_price',
-      google_ads_attributed: attribution?.hasGoogleAdsClick || undefined,
-      google_ads_click_id_type: attribution?.clickIdType,
-      google_ads_campaign_id: attribution?.campaignId,
-    }));
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
@@ -954,16 +937,19 @@ export default function KalpavrukshaV2() {
 
   const downloadLayoutPdf = (placement) => {
     const trackingPayload = withTrackingContext({
+      event_category: 'conversion',
+      conversion_type: 'master_layout_download',
+      lead_type: 'master_layout_download',
       file_name: LAYOUT_ASSET.fileName,
-      file_url: LAYOUT_ASSET.url,
+      file_extension: 'pdf',
+      link_url: LAYOUT_ASSET.url,
       project: PROJECT.name,
       source: LAYOUT_ASSET.source,
       placement,
-      asset_type: 'layout_pdf',
+      asset_type: 'master_layout',
     });
 
-    trackEvent('click_download_layout', trackingPayload);
-    trackFileDownload(trackingPayload);
+    trackEvent('master_layout_downloaded', trackingPayload);
     downloadFile(LAYOUT_ASSET.url, LAYOUT_ASSET.fileName);
   };
 
@@ -973,8 +959,8 @@ export default function KalpavrukshaV2() {
     const trimmedPhone = visitForm.phone.trim();
     const selectedInterest = visitForm.interest || VISIT_INTEREST_OPTIONS[0];
 
-    if (!trimmedName || !trimmedPhone || !selectedInterest) {
-      showToast('Please enter name, phone, and what you are looking for.');
+    if (!trimmedName || !trimmedPhone) {
+      showToast('Please enter your name and phone number.');
       return;
     }
 
@@ -1046,17 +1032,12 @@ export default function KalpavrukshaV2() {
         google_ads_click_id_type: googleAdsAttribution?.clickIdType,
         google_ads_campaign_id: googleAdsAttribution?.campaignId,
       });
-      trackEvent('form_submit', trackingPayload);
-      trackGenerateLead(trackingPayload);
-      trackScheduleVisit(withTrackingContext({
-        form_name: 'kalpavruksha_site_visit_form',
-        lead_status: 'Visit Scheduled',
-        project: PROJECT.name,
-        source: visitSource,
-        interest: selectedInterest,
+      trackEvent('book_site_visit_submitted', withTrackingContext({
+        ...trackingPayload,
+        event_category: 'conversion',
+        conversion_type: 'book_site_visit',
         preferred_date: visitForm.preferredDate,
         preferred_time: visitForm.preferredTime,
-        transport_required: visitForm.transportRequired,
       }));
 
       setVisitModalOpen(false);
@@ -1116,14 +1097,13 @@ export default function KalpavrukshaV2() {
         google_ads_click_id_type: googleAdsAttribution?.clickIdType,
         google_ads_campaign_id: googleAdsAttribution?.campaignId,
       });
-      trackEvent('form_submit', trackingPayload);
-      trackGenerateLead(trackingPayload);
-      trackFileDownload(withTrackingContext({
+      trackEvent('brochure_downloaded', withTrackingContext({
+        ...trackingPayload,
+        event_category: 'conversion',
+        conversion_type: 'brochure_download',
         file_name: BROCHURE_ASSET.fileName,
-        file_url: BROCHURE_ASSET.url,
-        project: PROJECT.name,
-        source: BROCHURE_ASSET.source,
-        asset_type: 'brochure',
+        file_extension: 'pdf',
+        link_url: BROCHURE_ASSET.url,
       }));
 
       downloadFile(BROCHURE_ASSET.url, BROCHURE_ASSET.fileName);
@@ -2097,16 +2077,6 @@ export default function KalpavrukshaV2() {
                       <div>
                         <label className={formLabelClass}>Phone</label>
                         <input name="phone" value={visitForm.phone} onChange={handleVisitInput} className={formInputClass} inputMode="tel" maxLength={10} placeholder="10-digit mobile number" />
-                      </div>
-                      <div>
-                        <label className={formLabelClass}>I am looking for</label>
-                        <div className="grid gap-2 sm:grid-cols-3">
-                          {VISIT_INTEREST_OPTIONS.map((value) => (
-                            <button key={value} type="button" onClick={() => setVisitForm((current) => ({ ...current, interest: value }))} className={chipClass(visitForm.interest === value)}>
-                              {value}
-                            </button>
-                          ))}
-                        </div>
                       </div>
                     </>
                   ) : (

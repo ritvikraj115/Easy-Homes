@@ -2,7 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import KalpavrukshaPage from './Kalpavruksha';
 import KalpavrukshaV2 from './KalpavrukshaV2';
-import { trackEvent, trackPageView } from '../utils/analytics';
+import { trackPageView } from '../utils/analytics';
 
 const STORAGE_KEY = 'kalpavruksha_landing_variant';
 const AB_TEST_NAME = 'kalpavruksha_landing_page';
@@ -74,7 +74,6 @@ export default function KalpavrukshaExperiment() {
     };
 
     trackPageView(pagePayload);
-    trackEvent('kalpavruksha_ab_page_view', pagePayload);
   }, [activeVariant, location.pathname, location.search]);
 
   return activeVariant === 'B' ? <KalpavrukshaV2 /> : <KalpavrukshaPage />;

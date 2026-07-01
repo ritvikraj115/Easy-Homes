@@ -30,10 +30,7 @@ import { FaWhatsapp } from 'react-icons/fa';
 import YouTubeLiteEmbed from '../components/YouTubeLiteEmbed';
 import ZohoSalesIQWidgetLoader, { openZohoSalesIQChat } from '../components/ZohoSalesIQWidgetLoader';
 import {
-  trackFileDownload,
   trackEvent,
-  trackGenerateLead,
-  trackScheduleVisit,
   trackWhatsAppClick,
 } from '../utils/analytics';
 import { getGoogleAdsAttributionPayload, captureGoogleAdsAttribution } from '../utils/googleAdsAttribution';
@@ -1458,15 +1455,6 @@ const KalpavrukshaPage = () => {
       google_ads_click_id_type: attribution?.clickIdType,
       google_ads_campaign_id: attribution?.campaignId,
     }));
-    trackEvent('click_whatsapp', withLandingVariant({
-      project: 'Kalpavruksha',
-      source: 'kalpavruksha',
-      placement,
-      lead_type: 'whatsapp_price',
-      google_ads_attributed: attribution?.hasGoogleAdsClick || undefined,
-      google_ads_click_id_type: attribution?.clickIdType,
-      google_ads_campaign_id: attribution?.campaignId,
-    }));
   };
 
   const trackKalpavrukshaDirectionsClick = (placement) => {
@@ -1618,8 +1606,8 @@ const KalpavrukshaPage = () => {
     const trimmedPhone = form.phone.trim();
     const selectedInterest = form.interest || VISIT_INTEREST_OPTIONS[0];
 
-    if (!trimmedName || !trimmedPhone || !selectedInterest) {
-      setToast({ type: 'error', msg: 'Please enter name, phone, and what you are looking for.' });
+    if (!trimmedName || !trimmedPhone) {
+      setToast({ type: 'error', msg: 'Please enter your name and phone number.' });
       setTimeout(() => setToast(null), 4000);
       return;
     }
@@ -1686,34 +1674,11 @@ const KalpavrukshaPage = () => {
         pickupLng: pickupRequired ? (form.pickupLng || undefined) : undefined,
         googleAdsAttribution: googleAdsAttribution || undefined,
       });
-      trackEvent('form_submit', withLandingVariant({
+      trackEvent('book_site_visit_submitted', withLandingVariant({
+        event_category: 'conversion',
+        conversion_type: 'book_site_visit',
         form_name: 'kalpavruksha_site_visit_form',
         lead_type: 'site_visit',
-        lead_status: 'Visit Scheduled',
-        project: 'Kalpavruksha',
-        source: 'kalpavruksha_site_visit_modal',
-        interest: selectedInterest,
-        transport_required: form.transportRequired,
-        pickup_mode: pickupRequired ? form.pickupMode : undefined,
-        google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
-        google_ads_click_id_type: googleAdsAttribution?.clickIdType,
-        google_ads_campaign_id: googleAdsAttribution?.campaignId,
-      }));
-      trackGenerateLead(withLandingVariant({
-        form_name: 'kalpavruksha_site_visit_form',
-        lead_type: 'site_visit',
-        lead_status: 'Visit Scheduled',
-        project: 'Kalpavruksha',
-        source: 'kalpavruksha_site_visit_modal',
-        interest: selectedInterest,
-        transport_required: form.transportRequired,
-        pickup_mode: pickupRequired ? form.pickupMode : undefined,
-        google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
-        google_ads_click_id_type: googleAdsAttribution?.clickIdType,
-        google_ads_campaign_id: googleAdsAttribution?.campaignId,
-      }));
-      trackScheduleVisit(withLandingVariant({
-        form_name: 'kalpavruksha_site_visit_form',
         lead_status: 'Visit Scheduled',
         project: 'Kalpavruksha',
         source: 'kalpavruksha_site_visit_modal',
@@ -1781,29 +1746,11 @@ const KalpavrukshaPage = () => {
       });
 
       const assetType = downloadAssetKey === 'layout' ? 'master_layout' : 'brochure';
-      trackEvent('form_submit', withLandingVariant({
+      trackEvent(`${assetType}_downloaded`, withLandingVariant({
+        event_category: 'conversion',
+        conversion_type: `${assetType}_download`,
         form_name: 'kalpavruksha_download_form',
         lead_type: `${assetType}_download`,
-        project: 'Kalpavruksha',
-        source: activeDownloadAsset.source || 'Website',
-        asset_type: assetType,
-        lead_status: activeDownloadAsset.leadStatus,
-        google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
-        google_ads_click_id_type: googleAdsAttribution?.clickIdType,
-        google_ads_campaign_id: googleAdsAttribution?.campaignId,
-      }));
-      trackGenerateLead(withLandingVariant({
-        form_name: 'kalpavruksha_download_form',
-        lead_type: `${assetType}_download`,
-        project: 'Kalpavruksha',
-        source: activeDownloadAsset.source || 'Website',
-        asset_type: assetType,
-        lead_status: activeDownloadAsset.leadStatus,
-        google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
-        google_ads_click_id_type: googleAdsAttribution?.clickIdType,
-        google_ads_campaign_id: googleAdsAttribution?.campaignId,
-      }));
-      trackFileDownload(withLandingVariant({
         project: 'Kalpavruksha',
         source: 'kalpavruksha_download_form',
         asset_type: assetType,
@@ -2236,30 +2183,12 @@ const KalpavrukshaPage = () => {
                       </div>
                     </div>
 
-                    <div className={formSectionClass}>
-                      <p className={formSectionEyebrowClass}>Intent</p>
-                      <h4 className={formSectionTitleClass}>What are you looking for?</h4>
-                      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                        {VISIT_INTEREST_OPTIONS.map((value) => (
-                          <button
-                            key={value}
-                            type="button"
-                            onClick={() => onChange({ target: { name: 'interest', value } })}
-                            className={formChipClass(form.interest === value)}
-                          >
-                            {value}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
                   </>
                 ) : (
                   <>
                     <div className="rounded-[24px] border border-[#eadfcb] bg-[#fffaf1] px-4 py-3 text-sm text-[#5f6a62]">
                       <span className="font-semibold text-[#18231d]">{form.name || 'Buyer'}</span>
-                      <span> is looking for </span>
-                      <span className="font-semibold text-[#8b6328]">{form.interest || VISIT_INTEREST_OPTIONS[0]}</span>
-                      <span>. Choose a visit slot to continue.</span>
+                      <span>, choose an available visit slot to continue.</span>
                     </div>
 
                     <div className={formSectionClass}>

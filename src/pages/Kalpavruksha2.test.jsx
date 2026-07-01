@@ -5,9 +5,6 @@ import KalpavrukshaPage from './Kalpavruksha';
 import api from '../api';
 import {
   trackEvent,
-  trackFileDownload,
-  trackGenerateLead,
-  trackScheduleVisit,
   trackWhatsAppClick,
 } from '../utils/analytics';
 
@@ -27,9 +24,6 @@ jest.mock('../api', () => ({
 
 jest.mock('../utils/analytics', () => ({
   trackEvent: jest.fn(),
-  trackFileDownload: jest.fn(),
-  trackGenerateLead: jest.fn(),
-  trackScheduleVisit: jest.fn(),
   trackWhatsAppClick: jest.fn(),
 }));
 
@@ -351,7 +345,7 @@ test('site visit form validates and submits successfully', async () => {
 
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
   expect(
-    screen.getByText('Please enter name, phone, and what you are looking for.'),
+    screen.getByText('Please enter your name and phone number.'),
   ).toBeInTheDocument();
   act(() => {
     jest.runOnlyPendingTimers();
@@ -402,16 +396,18 @@ test('site visit form validates and submits successfully', async () => {
   });
 
   expect(trackEvent).toHaveBeenCalledWith(
-    'form_submit',
+    'book_site_visit_submitted',
     expect.objectContaining({
       form_name: 'kalpavruksha_site_visit_form',
-      lead_type: 'site_visit',
+      conversion_type: 'book_site_visit',
+      lead_status: 'Visit Scheduled',
       landing_variant: 'A',
       landing_version: 'v1',
     }),
   );
-  expect(trackGenerateLead).toHaveBeenCalled();
-  expect(trackScheduleVisit).toHaveBeenCalled();
+  expect(trackEvent).not.toHaveBeenCalledWith('form_submit', expect.anything());
+  expect(trackEvent).not.toHaveBeenCalledWith('generate_lead', expect.anything());
+  expect(trackEvent).not.toHaveBeenCalledWith('schedule_visit', expect.anything());
   expect(mockNavigate).toHaveBeenCalledWith('/thank-you');
 });
 
@@ -477,16 +473,18 @@ test('brochure download form submits and triggers the file download flow', async
   });
 
   expect(trackEvent).toHaveBeenCalledWith(
-    'form_submit',
+    'brochure_downloaded',
     expect.objectContaining({
       form_name: 'kalpavruksha_download_form',
+      conversion_type: 'brochure_download',
       lead_type: 'brochure_download',
       landing_variant: 'A',
       landing_version: 'v1',
     }),
   );
-  expect(trackGenerateLead).toHaveBeenCalled();
-  expect(trackFileDownload).toHaveBeenCalled();
+  expect(trackEvent).not.toHaveBeenCalledWith('form_submit', expect.anything());
+  expect(trackEvent).not.toHaveBeenCalledWith('generate_lead', expect.anything());
+  expect(trackEvent).not.toHaveBeenCalledWith('file_download', expect.anything());
   expect(anchorClickSpy).toHaveBeenCalled();
   expect(mockNavigate).toHaveBeenCalledWith('/thank-you');
 

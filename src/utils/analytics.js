@@ -4,6 +4,99 @@ const THIRD_PARTY_LOAD_DELAY_MS = 6000;
 const KALPAVRUKSHA_THIRD_PARTY_LOAD_DELAY_MS = 12000;
 const GTM_CONTAINER_ID = String(process.env.REACT_APP_GTM_ID || '').trim();
 const GTM_ID_PATTERN = /^GTM-[A-Z0-9]+$/i;
+const KALPAVRUKSHA_VARIANT_STORAGE_KEY = 'kalpavruksha_landing_variant';
+const KALPAVRUKSHA_AB_TEST_NAME = 'kalpavruksha_landing_page';
+
+function normalizeLandingVariant(value) {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (normalized === 'a' || normalized === 'lp_a' || normalized === 'v1') return 'A';
+  if (normalized === 'b' || normalized === 'lp_b' || normalized === 'v2') return 'B';
+  return undefined;
+}
+
+function normalizeLandingVersion(value, variant) {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (normalized === 'v1' || normalized === 'version_1' || normalized === 'version 1') return 'v1';
+  if (normalized === 'v2' || normalized === 'version_2' || normalized === 'version 2') return 'v2';
+  if (variant === 'A') return 'v1';
+  if (variant === 'B') return 'v2';
+  return undefined;
+}
+
+function getKalpavrukshaRouteVariant() {
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+
+  const path = String(window.location.pathname || '').replace(/\/+$/, '').toLowerCase();
+  if (path === '/kalpavruksha2') {
+    return 'B';
+  }
+
+  const params = new URLSearchParams(window.location.search || '');
+  const requestedVariant = normalizeLandingVariant(
+    params.get('variant') || params.get('lp') || params.get('ab')
+  );
+  if (requestedVariant) {
+    return requestedVariant;
+  }
+
+  if (path !== '/kalpavruksha') {
+    return undefined;
+  }
+
+  try {
+    return normalizeLandingVariant(window.localStorage.getItem(KALPAVRUKSHA_VARIANT_STORAGE_KEY));
+  } catch {
+    return undefined;
+  }
+}
+
+function addVersionAliases(params = {}) {
+  const explicitVariant = normalizeLandingVariant(
+    params.landing_variant ||
+    params.landingVariant ||
+    params.ab_variant ||
+    params.variant
+  );
+  const routeVariant = getKalpavrukshaRouteVariant();
+  const landingVariant = explicitVariant || routeVariant;
+  const landingVersion = normalizeLandingVersion(
+    params.website_version ||
+    params.landing_page_version ||
+    params.landing_version ||
+    params.landingVersion ||
+    params.version ||
+    params.version_name,
+    landingVariant,
+  );
+
+  if (!landingVariant && !landingVersion) {
+    return params;
+  }
+
+  const resolvedVersion = landingVersion || normalizeLandingVersion(undefined, landingVariant);
+  const resolvedVariant = landingVariant || normalizeLandingVariant(resolvedVersion);
+  const websiteVersionName = resolvedVersion
+    ? `Kalpavruksha ${String(resolvedVersion).toUpperCase()}`
+    : undefined;
+
+  return {
+    ...params,
+    ab_test_name: params.ab_test_name || KALPAVRUKSHA_AB_TEST_NAME,
+    experiment_name: params.experiment_name || KALPAVRUKSHA_AB_TEST_NAME,
+    landing_variant: params.landing_variant || resolvedVariant,
+    landing_version: params.landing_version || resolvedVersion,
+    version: params.version || resolvedVersion,
+    website_version: params.website_version || resolvedVersion,
+    landing_page_version: params.landing_page_version || resolvedVersion,
+    version_name: params.version_name || resolvedVersion,
+    website_version_name: params.website_version_name || websiteVersionName,
+    content_group: params.content_group || websiteVersionName,
+    ab_variant: params.ab_variant || resolvedVariant,
+    variant_name: params.variant_name || (resolvedVariant ? `Variant ${resolvedVariant}` : undefined),
+  };
+}
 
 function sanitizeValue(value) {
   if (value === undefined || value === null) {
@@ -55,7 +148,7 @@ function pushDataLayerEvent(eventName, params = {}) {
 
   dataLayer.push({
     event: eventName,
-    ...sanitizeParams(params),
+    ...sanitizeParams(addVersionAliases(params)),
   });
 }
 
@@ -213,13 +306,15 @@ export function trackEvent(eventName, params = {}) {
     return;
   }
 
-  pushDataLayerEvent(eventName, params);
+  const analyticsParams = addVersionAliases(params);
+
+  pushDataLayerEvent(eventName, analyticsParams);
 
   if (isTagManagerEnabled() || typeof window.gtag !== 'function') {
     return;
   }
 
-  window.gtag('event', eventName, sanitizeParams(params));
+  window.gtag('event', eventName, sanitizeParams(analyticsParams));
 }
 
 export function trackPageView({ page_path, page_location, page_title, ...params } = {}) {
