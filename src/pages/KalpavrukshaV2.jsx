@@ -12,6 +12,7 @@ import {
   Landmark,
   Layers,
   MapPin,
+  MessageCircle,
   Phone,
   Route,
   Shield,
@@ -22,6 +23,7 @@ import {
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import api from '../api';
+import ZohoSalesIQWidgetLoader, { openZohoSalesIQChat } from '../components/ZohoSalesIQWidgetLoader';
 import {
   trackEvent,
   trackFileDownload,
@@ -34,9 +36,13 @@ import { captureGoogleAdsAttribution, getGoogleAdsAttributionPayload } from '../
 import {
   KALPAVRUKSHA_CALM_HERO_IMAGE,
   KALPAVRUKSHA_CALM_HERO_SRC_SET,
+  KALPAVRUKSHA_CARE_HERO_IMAGE,
+  KALPAVRUKSHA_CARE_HERO_SRC_SET,
   KALPAVRUKSHA_OVERVIEW_HERO_IMAGE,
   KALPAVRUKSHA_OVERVIEW_HERO_PRELOAD,
   KALPAVRUKSHA_OVERVIEW_HERO_SRC_SET,
+  KALPAVRUKSHA_PEACE_HERO_IMAGE,
+  KALPAVRUKSHA_PEACE_HERO_SRC_SET,
   KALPAVRUKSHA_TRUST_HERO_IMAGE,
   KALPAVRUKSHA_TRUST_HERO_SRC_SET,
 } from '../assets/kalpavrukshaHeroAssets';
@@ -81,6 +87,29 @@ const FOUNDER_MESSAGE = '';
 const CALL_URL = 'tel:+918988896666';
 const WHATSAPP_NUMBER = '918019298488';
 const DIRECTIONS_URL = 'https://maps.app.goo.gl/dNA1KdiDNuLjTthG8';
+const KALPAVRUKSHA_ZOHO_CHAT_QUESTION =
+  'Hi Easy Homes, I want details about Kalpavruksha open plots, pricing, and site visit availability.';
+const KALPAVRUKSHA_ZOHO_THEME = {
+  color: '#cba159',
+  primary: '#cba159',
+  accent: '#d7b16f',
+  title: '#1d1609',
+  text: '#221c14',
+  background: '#fff9ef',
+  surface: '#fffaf1',
+};
+const KALPAVRUKSHA_ZOHO_HOME_WIDGETS = [
+  {
+    type: 'command_panel',
+    title: 'Start a conversation with Easy Bot',
+    actions: [
+      {
+        type: 'chat',
+        label: 'Start Live Chat',
+      },
+    ],
+  },
+];
 
 const VISIT_INTEREST_OPTIONS = ['Book Visit', 'Current Price', 'Available Plots'];
 const DEFAULT_SITE_VISIT_FORM = {
@@ -142,29 +171,47 @@ const heroSlides = [
   {
     id: 'overview',
     label: 'Overview',
-    eyebrow: 'Premium plotted community',
-    title: 'Open plots planned for calm gated living',
+    eyebrow: 'CRDA-approved open plots in Vijayawada',
+    title: "Where You Don't Just Arrive - You Belong",
     image: KALPAVRUKSHA_OVERVIEW_HERO_IMAGE,
     imageSrcSet: KALPAVRUKSHA_OVERVIEW_HERO_SRC_SET,
-    alt: 'Kalpavruksha plotted development overview near Vijayawada',
+    alt: 'Kalpavruksha plotted community overview',
   },
   {
-    id: 'layout',
-    label: 'Approvals',
-    eyebrow: 'CRDA & RERA listed',
-    title: 'Clear layout facts before you visit',
+    id: 'trust',
+    label: 'Trust',
+    eyebrow: 'Approval clarity',
+    title: 'Trust begins with clarity',
     image: KALPAVRUKSHA_TRUST_HERO_IMAGE,
     imageSrcSet: KALPAVRUKSHA_TRUST_HERO_SRC_SET,
-    alt: 'Kalpavruksha trusted residential plotted community',
+    alt: 'Interlocking wooden beams representing trust, stability, and structure',
   },
   {
-    id: 'amenities',
-    label: 'Amenities',
-    eyebrow: 'Built for daily comfort',
-    title: 'Roads, gardens, utilities and gated comfort',
+    id: 'space',
+    label: 'Calm',
+    eyebrow: 'Roads and utilities',
+    title: 'Calm starts with space',
     image: KALPAVRUKSHA_CALM_HERO_IMAGE,
     imageSrcSet: KALPAVRUKSHA_CALM_HERO_SRC_SET,
-    alt: 'Kalpavruksha premium open plots with green surroundings',
+    alt: 'Soft misty hills and layered gradients expressing calm and ease',
+  },
+  {
+    id: 'landscape',
+    label: 'Peace',
+    eyebrow: 'Landscape planning',
+    title: 'Peace comes from green edges',
+    image: KALPAVRUKSHA_PEACE_HERO_IMAGE,
+    imageSrcSet: KALPAVRUKSHA_PEACE_HERO_SRC_SET,
+    alt: 'Concentric sand circles and stones representing peace and stillness',
+  },
+  {
+    id: 'care',
+    label: 'Care',
+    eyebrow: 'Long-term infrastructure',
+    title: 'Care shows in what lasts',
+    image: KALPAVRUKSHA_CARE_HERO_IMAGE,
+    imageSrcSet: KALPAVRUKSHA_CARE_HERO_SRC_SET,
+    alt: 'Soft luminous flowing forms representing care, continuity, and attention',
   },
 ];
 
@@ -199,7 +246,7 @@ const snapshotCards = [
   {
     label: 'Project Area',
     value: PROJECT.projectArea,
-    detail: `${PROJECT.totalPlots} plotted units in the current overview.`,
+    detail: `${PROJECT.totalPlots} residential plot units in the project plan.`,
     icon: <Trees className="h-5 w-5" />,
   },
 ];
@@ -208,7 +255,7 @@ const availabilityCards = [
   {
     label: 'Booked So Far',
     value: `${PROJECT.bookedPlots} plots`,
-    detail: 'Shown as transparent booking progress, not fake scarcity.',
+    detail: 'Booking progress is shown transparently from available project data.',
   },
   {
     label: 'Possession',
@@ -872,6 +919,32 @@ export default function KalpavrukshaV2() {
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   };
 
+  const launchLiveChat = async (placement) => {
+    trackEvent('live_chat_open', withTrackingContext({
+      project: PROJECT.name,
+      source: 'kalpavruksha',
+      placement,
+      provider: 'zoho_salesiq',
+    }));
+
+    const opened = await openZohoSalesIQChat({
+      question: KALPAVRUKSHA_ZOHO_CHAT_QUESTION,
+      timeoutMs: 12000,
+    });
+
+    if (opened) {
+      return;
+    }
+
+    trackEvent('live_chat_unavailable', withTrackingContext({
+      project: PROJECT.name,
+      source: 'kalpavruksha',
+      placement,
+      provider: 'zoho_salesiq',
+    }));
+    showToast('Live chat is temporarily unavailable. Please try again.');
+  };
+
   const downloadLayoutPdf = (placement) => {
     const trackingPayload = withTrackingContext({
       file_name: LAYOUT_ASSET.fileName,
@@ -1101,11 +1174,17 @@ export default function KalpavrukshaV2() {
 
   return (
     <>
+      <ZohoSalesIQWidgetLoader
+        hideFloatButton
+        homeWidgets={KALPAVRUKSHA_ZOHO_HOME_WIDGETS}
+        theme={KALPAVRUKSHA_ZOHO_THEME}
+        autoLoad={false}
+      />
       <Helmet>
-        <title>Kalpavruksha LP B | Premium Open Plots Near Vijayawada</title>
+        <title>Kalpavruksha Open Plots in Vijayawada | CRDA Approved Plots Near Amaravati | Easy Homes</title>
         <meta
           name="description"
-          content="Book a free site visit for Kalpavruksha, a CRDA and RERA approved premium residential plotted development near Vijayawada."
+          content="Explore Kalpavruksha by Easy Homes, a CRDA-approved residential plotted community with 105 open plots across 9.03 acres near Vijayawada and Amaravati, with plot sizes from 174 to 525 square yards, premium infrastructure, and clubhouse amenities."
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -1461,11 +1540,11 @@ export default function KalpavrukshaV2() {
                     Honest Availability
                   </div>
                   <h2 className="mt-4 max-w-xl text-[1.58rem] font-bold leading-[1.12] tracking-[-0.04em] md:text-[2.65rem]">
-                    Clear progress, no fake urgency
+                    Clear availability, no pressure
                   </h2>
                 </div>
                 <p className="kv2-reveal-target max-w-xl text-sm leading-7 text-[#52684a] md:text-base md:leading-8 lg:justify-self-end">
-                  No countdown timers and no artificial offers. These are the current project facts available on the page.
+                  Current project facts are shown plainly so buyers can compare, ask questions, and plan a visit with confidence.
                 </p>
               </div>
               <div className="mt-7 grid gap-3 sm:grid-cols-3">
@@ -1485,7 +1564,7 @@ export default function KalpavrukshaV2() {
               <SectionHeader
                 eyebrow="Project Gallery"
                 title="See the layout, lifestyle, and arrival experience"
-                description="Swipe on mobile or scan the premium gallery on desktop before planning the visit."
+                description="Swipe on mobile or explore the premium gallery on desktop before planning the visit."
               />
 
               <div ref={galleryTrackRef} className="kv2-mobile-gallery mt-8 flex snap-x gap-4 overflow-x-auto pb-3 lg:grid lg:grid-cols-3 lg:overflow-visible">
@@ -1632,7 +1711,7 @@ export default function KalpavrukshaV2() {
               <SectionHeader
                 eyebrow="Infrastructure & Amenities"
                 title="Premium plotted development essentials"
-                description="A concise amenities grid, designed for scanning rather than long reading."
+                description="Core infrastructure and lifestyle features, kept easy to compare before a site visit."
               />
               <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
                 {amenities.map((item) => (
@@ -1674,8 +1753,8 @@ export default function KalpavrukshaV2() {
             <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6">
               <SectionHeader
                 eyebrow="Reviews"
-                title="Trust signals stay lower, after the booking path"
-                description="The primary page flow leads to site visit first. Google reviews remain available for reassurance."
+                title="Voices that speak for Kalpavruksha"
+                description="See what customers are saying on Google Reviews, then choose the next step with confidence."
               />
               <div className="kv2-reveal-target mt-8 grid gap-4 rounded-[30px] border border-[#fff7e8]/75 bg-[#fff7e8]/58 p-4 shadow-[0_24px_60px_rgba(82,104,74,0.12)] backdrop-blur md:grid-cols-[0.82fr,1.18fr] md:p-5 lg:p-6">
                 <div className="rounded-[24px] bg-[linear-gradient(135deg,#52684a_0%,#7f8d62_100%)] p-5 text-[#fff7e8] md:p-6">
@@ -1862,6 +1941,16 @@ export default function KalpavrukshaV2() {
                 <FaWhatsapp className="h-5 w-5" />
               </button>
 
+              <button
+                type="button"
+                onClick={() => launchLiveChat('lp_b_floating_chat')}
+                className="kv2-float-action inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#b56f37]/28 bg-[#fff7e8] text-[#8b5526] shadow-[0_18px_38px_rgba(82,104,74,0.18)] transition-all duration-200 hover:scale-[1.04] hover:bg-[#f4e6cc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b56f37]/24"
+                aria-label="Open live chat"
+                title="Open live chat"
+              >
+                <MessageCircle className="h-5 w-5" />
+              </button>
+
               <a
                 href={CALL_URL}
                 onClick={() => trackCallClick('lp_b_floating_call')}
@@ -1909,6 +1998,13 @@ export default function KalpavrukshaV2() {
                   className="mt-2 block text-left text-sm font-semibold text-[#fff7e8]/72 transition hover:text-[#f1cf8f]"
                 >
                   WhatsApp: +91 80192 98488
+                </button>
+                <button
+                  type="button"
+                  onClick={() => launchLiveChat('lp_b_footer_chat')}
+                  className="mt-2 block text-left text-sm font-semibold text-[#fff7e8]/72 transition hover:text-[#f1cf8f]"
+                >
+                  Start Live Chat
                 </button>
               </div>
               <div>
