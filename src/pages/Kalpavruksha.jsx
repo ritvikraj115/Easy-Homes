@@ -182,6 +182,8 @@ const DEFAULT_LAYOUT_LEAD_FORM = {
 const HASH_ACTION_DELAY_MS = 120;
 
 const SITE_VISIT_ZOHO_NOTE = 'Site visit scheduled from website.';
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+const isValidEmail = (value) => EMAIL_PATTERN.test(String(value || '').trim());
 const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
 const getLandingTrackingContext = () => {
   if (typeof window === 'undefined') {
@@ -1604,10 +1606,11 @@ const KalpavrukshaPage = () => {
     e?.preventDefault?.();
     const trimmedName = form.name.trim();
     const trimmedPhone = form.phone.trim();
+    const trimmedEmail = form.email.trim();
     const selectedInterest = form.interest || VISIT_INTEREST_OPTIONS[0];
 
-    if (!trimmedName || !trimmedPhone) {
-      setToast({ type: 'error', msg: 'Please enter your name and phone number.' });
+    if (!trimmedName || !trimmedPhone || !trimmedEmail) {
+      setToast({ type: 'error', msg: 'Please enter your name, phone number, and email address.' });
       setTimeout(() => setToast(null), 4000);
       return;
     }
@@ -1615,6 +1618,12 @@ const KalpavrukshaPage = () => {
     const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(trimmedPhone)) {
       setToast({ type: 'error', msg: 'Please enter a valid 10-digit phone number.' });
+      setTimeout(() => setToast(null), 4000);
+      return;
+    }
+
+    if (!isValidEmail(trimmedEmail)) {
+      setToast({ type: 'error', msg: 'Please enter a valid email address.' });
       setTimeout(() => setToast(null), 4000);
       return;
     }
@@ -1656,7 +1665,7 @@ const KalpavrukshaPage = () => {
         project: 'Kalpavruksha',
         name: trimmedName,
         phone: trimmedPhone,
-        email: form.email.trim() || undefined,
+        email: trimmedEmail,
         interest: selectedInterest,
         preferredDate: preferredDateTime,
         transportRequired: form.transportRequired,
@@ -1707,8 +1716,12 @@ const KalpavrukshaPage = () => {
 
   const submitLayoutLead = async (e) => {
     e?.preventDefault?.();
-    if (!layoutLeadForm.name.trim() || !layoutLeadForm.phone.trim()) {
-      setToast({ type: 'error', msg: 'Please enter your name and phone number to continue.' });
+    const trimmedName = layoutLeadForm.name.trim();
+    const trimmedPhone = layoutLeadForm.phone.trim();
+    const trimmedEmail = layoutLeadForm.email.trim();
+
+    if (!trimmedName || !trimmedPhone || !trimmedEmail) {
+      setToast({ type: 'error', msg: 'Please enter your name, phone number, and email address to continue.' });
       setTimeout(() => setToast(null), 4000);
       return;
     }
@@ -1719,8 +1732,14 @@ const KalpavrukshaPage = () => {
       return;
     }
     const phoneRegex = /^\d{10}$/;
-    if (!phoneRegex.test(layoutLeadForm.phone.trim())) {
+    if (!phoneRegex.test(trimmedPhone)) {
       setToast({ type: 'error', msg: 'Please enter a valid 10-digit phone number.' });
+      setTimeout(() => setToast(null), 4000);
+      return;
+    }
+
+    if (!isValidEmail(trimmedEmail)) {
+      setToast({ type: 'error', msg: 'Please enter a valid email address.' });
       setTimeout(() => setToast(null), 4000);
       return;
     }
@@ -1739,9 +1758,9 @@ const KalpavrukshaPage = () => {
         landing_version: LANDING_VERSION,
         version: LANDING_VERSION,
         leadStatus: activeDownloadAsset.leadStatus,
-        name: layoutLeadForm.name.trim(),
-        phone: layoutLeadForm.phone.trim(),
-        email: layoutLeadForm.email.trim() || undefined,
+        name: trimmedName,
+        phone: trimmedPhone,
+        email: trimmedEmail,
         googleAdsAttribution: googleAdsAttribution || undefined,
       });
 
@@ -2180,6 +2199,19 @@ const KalpavrukshaPage = () => {
                             required
                           />
                         </div>
+                        <div>
+                          <label className={formLabelClass}>Email Address</label>
+                          <input
+                            name="email"
+                            value={form.email}
+                            onChange={onChange}
+                            className={formInputClass}
+                            placeholder="you@example.com"
+                            type="email"
+                            autoComplete="email"
+                            required
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -2401,6 +2433,19 @@ const KalpavrukshaPage = () => {
                         onChange={onLayoutLeadChange}
                         className={formInputClass}
                         placeholder="e.g., 9898899666"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className={formLabelClass}>Email Address</label>
+                      <input
+                        name="email"
+                        value={layoutLeadForm.email}
+                        onChange={onLayoutLeadChange}
+                        className={formInputClass}
+                        placeholder="you@example.com"
+                        type="email"
+                        autoComplete="email"
                         required
                       />
                     </div>

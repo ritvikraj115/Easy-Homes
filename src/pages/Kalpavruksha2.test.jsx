@@ -345,7 +345,7 @@ test('site visit form validates and submits successfully', async () => {
 
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
   expect(
-    screen.getByText('Please enter your name and phone number.'),
+    screen.getByText('Please enter your name, phone number, and email address.'),
   ).toBeInTheDocument();
   act(() => {
     jest.runOnlyPendingTimers();
@@ -357,6 +357,17 @@ test('site visit form validates and submits successfully', async () => {
   });
   fireEvent.change(siteVisitForm.querySelector('input[name="phone"]'), {
     target: { name: 'phone', value: '9876543210' },
+  });
+  fireEvent.change(siteVisitForm.querySelector('input[name="email"]'), {
+    target: { name: 'email', value: 'bad-email' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+  expect(screen.getByText('Please enter a valid email address.')).toBeInTheDocument();
+  act(() => {
+    jest.runOnlyPendingTimers();
+  });
+  fireEvent.change(siteVisitForm.querySelector('input[name="email"]'), {
+    target: { name: 'email', value: 'test.user@example.com' },
   });
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
   expect(await screen.findByText('Pick a suitable slot')).toBeInTheDocument();
@@ -375,7 +386,7 @@ test('site visit form validates and submits successfully', async () => {
       project: 'Kalpavruksha',
       name: 'Test User',
       phone: '9876543210',
-      email: undefined,
+      email: 'test.user@example.com',
       interest: 'Book Visit',
       preferredDate: '2099-01-01T09:00',
       transportRequired: 'No',
@@ -422,6 +433,9 @@ test('site visit map pickup mode can populate the pickup address', async () => {
   fireEvent.change(siteVisitForm.querySelector('input[name="phone"]'), {
     target: { name: 'phone', value: '9876543210' },
   });
+  fireEvent.change(siteVisitForm.querySelector('input[name="email"]'), {
+    target: { name: 'email', value: 'pickup.user@example.com' },
+  });
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
   fireEvent.click(screen.getByRole('button', { name: 'Yes' }));
@@ -448,6 +462,9 @@ test('brochure download form submits and triggers the file download flow', async
   fireEvent.change(downloadForm.querySelector('input[name="phone"]'), {
     target: { name: 'phone', value: '9123456789' },
   });
+  fireEvent.change(downloadForm.querySelector('input[name="email"]'), {
+    target: { name: 'email', value: 'brochure.user@example.com' },
+  });
 
   await act(async () => {
     fireEvent.submit(downloadForm);
@@ -467,7 +484,7 @@ test('brochure download form submits and triggers the file download flow', async
       leadStatus: 'Downloaded Brochure',
       name: 'Brochure User',
       phone: '9123456789',
-      email: undefined,
+      email: 'brochure.user@example.com',
       googleAdsAttribution: undefined,
     });
   });

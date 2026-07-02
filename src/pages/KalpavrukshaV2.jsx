@@ -124,6 +124,8 @@ const DEFAULT_BROCHURE_FORM = {
   phone: '',
   email: '',
 };
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+const isValidEmail = (value) => EMAIL_PATTERN.test(String(value || '').trim());
 
 const galleryImages = [
   {
@@ -957,15 +959,21 @@ export default function KalpavrukshaV2() {
     event.preventDefault();
     const trimmedName = visitForm.name.trim();
     const trimmedPhone = visitForm.phone.trim();
+    const trimmedEmail = visitForm.email.trim();
     const selectedInterest = visitForm.interest || VISIT_INTEREST_OPTIONS[0];
 
-    if (!trimmedName || !trimmedPhone) {
-      showToast('Please enter your name and phone number.');
+    if (!trimmedName || !trimmedPhone || !trimmedEmail) {
+      showToast('Please enter your name, phone number, and email address.');
       return;
     }
 
     if (!/^\d{10}$/.test(trimmedPhone)) {
       showToast('Please enter a valid 10-digit phone number.');
+      return;
+    }
+
+    if (!isValidEmail(trimmedEmail)) {
+      showToast('Please enter a valid email address.');
       return;
     }
 
@@ -1000,7 +1008,7 @@ export default function KalpavrukshaV2() {
         project: PROJECT.name,
         name: trimmedName,
         phone: trimmedPhone,
-        email: visitForm.email.trim() || undefined,
+        email: trimmedEmail,
         interest: selectedInterest,
         preferredDate: `${visitForm.preferredDate}T${visitForm.preferredTime}`,
         transportRequired: visitForm.transportRequired,
@@ -1055,14 +1063,20 @@ export default function KalpavrukshaV2() {
     event.preventDefault();
     const trimmedName = brochureForm.name.trim();
     const trimmedPhone = brochureForm.phone.trim();
+    const trimmedEmail = brochureForm.email.trim();
 
-    if (!trimmedName || !trimmedPhone) {
-      showToast('Please enter your name and phone number to continue.');
+    if (!trimmedName || !trimmedPhone || !trimmedEmail) {
+      showToast('Please enter your name, phone number, and email address to continue.');
       return;
     }
 
     if (!/^\d{10}$/.test(trimmedPhone)) {
       showToast('Please enter a valid 10-digit phone number.');
+      return;
+    }
+
+    if (!isValidEmail(trimmedEmail)) {
+      showToast('Please enter a valid email address.');
       return;
     }
 
@@ -1082,7 +1096,7 @@ export default function KalpavrukshaV2() {
         leadStatus: BROCHURE_ASSET.leadStatus,
         name: trimmedName,
         phone: trimmedPhone,
-        email: brochureForm.email.trim() || undefined,
+        email: trimmedEmail,
         googleAdsAttribution: googleAdsAttribution || undefined,
       });
 
@@ -1121,14 +1135,20 @@ export default function KalpavrukshaV2() {
     event.preventDefault();
     const trimmedName = visitForm.name.trim();
     const trimmedPhone = visitForm.phone.trim();
+    const trimmedEmail = visitForm.email.trim();
 
-    if (!trimmedName || !trimmedPhone) {
-      showToast('Please enter your name and phone number to continue.');
+    if (!trimmedName || !trimmedPhone || !trimmedEmail) {
+      showToast('Please enter your name, phone number, and email address to continue.');
       return;
     }
 
     if (!/^\d{10}$/.test(trimmedPhone)) {
       showToast('Please enter a valid 10-digit phone number.');
+      return;
+    }
+
+    if (!isValidEmail(trimmedEmail)) {
+      showToast('Please enter a valid email address.');
       return;
     }
 
@@ -1836,6 +1856,7 @@ export default function KalpavrukshaV2() {
                   onChange={handleVisitInput}
                   className="min-h-[2.95rem] w-full rounded-2xl border border-[#fff7e8]/20 bg-[#fff7e8] px-4 text-sm font-medium text-[#27382c] outline-none transition focus:border-[#f1cf8f] focus:ring-4 focus:ring-[#fff7e8]/20"
                   placeholder="Your Name"
+                  required
                 />
                 <input
                   name="phone"
@@ -1845,6 +1866,17 @@ export default function KalpavrukshaV2() {
                   inputMode="tel"
                   maxLength={10}
                   placeholder="Mobile Number"
+                  required
+                />
+                <input
+                  name="email"
+                  value={visitForm.email}
+                  onChange={handleVisitInput}
+                  className="min-h-[2.95rem] w-full rounded-2xl border border-[#fff7e8]/20 bg-[#fff7e8] px-4 text-sm font-medium text-[#27382c] outline-none transition focus:border-[#f1cf8f] focus:ring-4 focus:ring-[#fff7e8]/20"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="Email Address"
+                  required
                 />
                 <label className="block text-xs font-semibold text-[#fff7e8]/82">
                   Looking For:
@@ -2072,11 +2104,15 @@ export default function KalpavrukshaV2() {
                     <>
                       <div>
                         <label className={formLabelClass}>Name</label>
-                        <input name="name" value={visitForm.name} onChange={handleVisitInput} className={formInputClass} autoFocus placeholder="Your name" />
+                        <input name="name" value={visitForm.name} onChange={handleVisitInput} className={formInputClass} autoFocus placeholder="Your name" required />
                       </div>
                       <div>
                         <label className={formLabelClass}>Phone</label>
-                        <input name="phone" value={visitForm.phone} onChange={handleVisitInput} className={formInputClass} inputMode="tel" maxLength={10} placeholder="10-digit mobile number" />
+                        <input name="phone" value={visitForm.phone} onChange={handleVisitInput} className={formInputClass} inputMode="tel" maxLength={10} placeholder="10-digit mobile number" required />
+                      </div>
+                      <div>
+                        <label className={formLabelClass}>Email</label>
+                        <input name="email" value={visitForm.email} onChange={handleVisitInput} className={formInputClass} type="email" autoComplete="email" placeholder="Email address" required />
                       </div>
                     </>
                   ) : (
@@ -2158,15 +2194,15 @@ export default function KalpavrukshaV2() {
               <form onSubmit={submitBrochure} className="space-y-5 px-6 py-5">
                 <div>
                   <label className={formLabelClass}>Name</label>
-                  <input name="name" value={brochureForm.name} onChange={handleBrochureInput} className={formInputClass} autoFocus placeholder="Your name" />
+                  <input name="name" value={brochureForm.name} onChange={handleBrochureInput} className={formInputClass} autoFocus placeholder="Your name" required />
                 </div>
                 <div>
                   <label className={formLabelClass}>Phone</label>
-                  <input name="phone" value={brochureForm.phone} onChange={handleBrochureInput} className={formInputClass} inputMode="tel" maxLength={10} placeholder="10-digit mobile number" />
+                  <input name="phone" value={brochureForm.phone} onChange={handleBrochureInput} className={formInputClass} inputMode="tel" maxLength={10} placeholder="10-digit mobile number" required />
                 </div>
                 <div>
-                  <label className={formLabelClass}>Email Optional</label>
-                  <input name="email" value={brochureForm.email} onChange={handleBrochureInput} className={formInputClass} type="email" placeholder="Email address" />
+                  <label className={formLabelClass}>Email</label>
+                  <input name="email" value={brochureForm.email} onChange={handleBrochureInput} className={formInputClass} type="email" autoComplete="email" placeholder="Email address" required />
                 </div>
                 <button type="submit" disabled={brochureSubmitting} className="inline-flex min-h-[3.25rem] w-full items-center justify-center rounded-2xl bg-[#b56f37] px-6 font-semibold text-[#fff7e8] shadow-[0_14px_30px_rgba(181,111,55,0.24)] disabled:opacity-70">
                   {brochureSubmitting ? 'Submitting...' : 'Download Brochure'}
