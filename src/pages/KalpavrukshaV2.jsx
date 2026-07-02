@@ -885,7 +885,7 @@ export default function KalpavrukshaV2() {
   };
 
   const trackCallClick = (placement) => {
-    trackEvent('click_call', withTrackingContext({
+    trackEvent('phone_click', withTrackingContext({
       project: PROJECT.name,
       placement,
     }));
