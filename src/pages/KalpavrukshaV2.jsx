@@ -1035,6 +1035,15 @@ export default function KalpavrukshaV2() {
     }));
   };
 
+  const trackDirectionsClick = (placement) => {
+    trackEvent('directions_click', withTrackingContext({
+      project: PROJECT.name,
+      source: 'kalpavruksha',
+      placement,
+      destination: 'kalpavruksha',
+    }));
+  };
+
   const openWhatsApp = (placement) => {
     const { url, attribution } = buildKalpavrukshaWhatsAppUrl({
       projectName: PROJECT.name,
@@ -1918,7 +1927,13 @@ export default function KalpavrukshaV2() {
                       Positioned in Vemavaram with practical access to West Bypass, Rayanapadu, Vijayawada, Hyderabad Highway and Amaravati-side destinations.
                     </p>
                     <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                      <CtaButton href={DIRECTIONS_URL} target="_blank" variant="gold" icon={<MapPin className="h-5 w-5" />}>
+                      <CtaButton
+                        href={DIRECTIONS_URL}
+                        target="_blank"
+                        onClick={() => trackDirectionsClick('lp_b_location')}
+                        variant="gold"
+                        icon={<MapPin className="h-5 w-5" />}
+                      >
                         Get Directions
                       </CtaButton>
                       <CtaButton onClick={() => openVisitModal('lp_b_location')} icon={<CalendarDays className="h-5 w-5" />}>
