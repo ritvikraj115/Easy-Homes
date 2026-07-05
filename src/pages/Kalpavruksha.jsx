@@ -5,13 +5,10 @@ import {
   MapPin,
   MessageCircle,
   Phone,
-  Heart,
-  Trees,
   Building,
   Waves,
   Car,
   Shield,
-  Zap,
   CheckCircle,
   Users,
   TreePine,
@@ -20,7 +17,8 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Menu
+  Menu,
+  Star
 } from 'lucide-react';
 import { Card, CardContent } from '../components/card';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -105,6 +103,25 @@ const DOWNLOAD_ASSET_CONFIG = {
 };
 const KALPAVRUKSHA_CALL_URL = 'tel:+918988896666';
 const KALPAVRUKSHA_DIRECTIONS_URL = 'https://maps.app.goo.gl/dNA1KdiDNuLjTthG8';
+const KALPAVRUKSHA_GOOGLE_RATING = {
+  rating: '5.0',
+  reviewCount: '22',
+  reviewUrl: 'https://share.google/OHvpBdiGZ7sqZGHYR',
+  source: 'fallback',
+};
+const normalizeGoogleReviewSummary = (reviewData, fallback = KALPAVRUKSHA_GOOGLE_RATING) => {
+  const ratingValue = Number(reviewData?.rating);
+  const reviewCountValue = Number(reviewData?.reviewCount);
+
+  return {
+    rating: Number.isFinite(ratingValue) ? ratingValue.toFixed(1) : fallback.rating,
+    reviewCount: Number.isFinite(reviewCountValue)
+      ? String(Math.max(0, Math.round(reviewCountValue)))
+      : fallback.reviewCount,
+    reviewUrl: reviewData?.reviewUrl || fallback.reviewUrl,
+    source: reviewData?.source || fallback.source,
+  };
+};
 const KALPAVRUKSHA_ZOHO_CHAT_QUESTION =
   'Hi Easy Homes, I want details about Kalpavruksha open plots, pricing, and site visit availability.';
 const KALPAVRUKSHA_ZOHO_THEME = {
@@ -137,24 +154,25 @@ const DEFERRED_SECTION_STYLE = {
   containIntrinsicSize: '1px 960px',
 };
 const HERO_IMAGE_SIZES = '100vw';
-const HERO_SUPPORT_LINE = 'CRDA approved | 9.03 acres | 105 plots';
+const HERO_SUPPORT_LINE = 'CRDA approved | 11 acres | Vemavaram';
 const LANDING_VARIANT = 'A';
 const LANDING_VERSION = 'v1';
 const KALPAVRUKSHA_TRUTH = {
-  priceFrom: 'Rs. 30 Lakhs',
-  priceRange: 'Rs. 30-35 Lakhs',
+  priceFrom: 'Rs. 31 Lakhs',
+  priceRange: 'Rs. 31 Lakhs onwards',
   plotSizes: '174-525',
   plotSizeUnit: 'Sq.yd.',
-  projectArea: '9.03',
+  projectArea: '11',
   projectAreaUnit: 'Acres',
   totalPlots: '105',
   bookedPlots: '17',
   reraId: 'P06160035909',
   possession: 'September 2026',
+  maintenance: 'Developer maintenance till Dec 2030',
   configuration: 'Residential plots',
   communityType: 'Gated residential layout',
-  location: 'Near Vijayawada-Nagpur Greenfield Highway',
-  locationShort: 'Near Vijayawada',
+  location: 'Vemavaram, 5 km from West Bypass & Rayanapadu',
+  locationShort: 'Vemavaram',
 };
 const VISIT_INTEREST_OPTIONS = [
   'Book Visit',
@@ -212,13 +230,13 @@ const withLandingVariant = (payload = {}) => ({
 });
 
 const KALPAVRUKSHA_GALLERY_IMAGES = [
-  { title: "Grand Entrance", image: require("../assets/kalpavruksha/Entry-000.webp"), alt: "Kalpavruksha grand entrance for the CRDA-approved plotted community in Vijayawada", maskEmbeddedLabel: true },
   { title: "Modern Clubhouse", image: require("../assets/kalpavruksha/club house.webp"), alt: "Kalpavruksha clubhouse exterior with landscaped lawns and premium lifestyle amenities", maskEmbeddedLabel: true },
   { title: "Contour Garden", image: require("../assets/kalpavruksha/contour garden.webp"), alt: "Kalpavruksha contour garden with landscaped pathways and open recreational greens", maskEmbeddedLabel: true },
   { title: "Arrival Court", image: require("../assets/kalpavruksha/arrival court.webp"), alt: "Kalpavruksha arrival court with landscaped entry features inside the gated layout", maskEmbeddedLabel: true },
-  { title: "Lotus Pond Retreat", image: require("../assets/kalpavruksha/lotus pond 2.webp"), alt: "Kalpavruksha lotus pond water feature with curved walkways and reflective landscaping", maskEmbeddedLabel: true },
-  { title: "Seating Area", image: require("../assets/kalpavruksha/seating area.webp"), alt: "Kalpavruksha seating area overlooking the water feature and garden edges", maskEmbeddedLabel: true }
+  { title: "Lotus Pond Retreat", image: require("../assets/kalpavruksha/lotus pond 2.webp"), alt: "Kalpavruksha lotus pond water feature with curved walkways and reflective landscaping", maskEmbeddedLabel: true }
 ];
+const CROPPED_GALLERY_IMAGE_STYLE = { height: '124%', objectPosition: 'center top' };
+const getGalleryImageStyle = (item) => (item?.maskEmbeddedLabel ? CROPPED_GALLERY_IMAGE_STYLE : undefined);
 
 const AnimatedNumber = ({ value, suffix = '', decimals, className = '', style }) => {
   const numericValue = Number(value);
@@ -323,6 +341,7 @@ const KalpavrukshaPage = () => {
   const [toast, setToast] = useState(null);
   const [activeHeroSlideIndex, setActiveHeroSlideIndex] = useState(0);
   const [shouldRenderReviews, setShouldRenderReviews] = useState(false);
+  const [googleReviewSummary, setGoogleReviewSummary] = useState(KALPAVRUKSHA_GOOGLE_RATING);
   const todayDate = new Date().toISOString().split('T')[0];
   const [pickupMapCenter, setPickupMapCenter] = useState(PICKUP_MAP_DEFAULT_CENTER);
   const [pickupMapLoadError, setPickupMapLoadError] = useState(false);
@@ -343,10 +362,6 @@ const KalpavrukshaPage = () => {
   const heroSectionRef = React.useRef(null);
   const footerRef = React.useRef(null);
   const reviewsRef = React.useRef(null);
-  // For Home page CallToAction scroll (no reload)
-  const goToHomeCallToAction = () => {
-    window.location.href = "/#contact";
-  };
 
   const scrollToAbout = () => {
     aboutRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -365,6 +380,15 @@ const KalpavrukshaPage = () => {
   };
   const scrollToContact = () => {
     footerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  const trackGoogleReviewsClick = (placement = 'hero_review_pill') => {
+    trackEvent('google_reviews_click', withLandingVariant({
+      project: 'Kalpavruksha',
+      source: 'kalpavruksha',
+      placement,
+      rating_source: googleReviewSummary.source,
+      review_url: googleReviewSummary.reviewUrl,
+    }));
   };
   // Expose scroll handlers globally for Navbar (after function declarations)
   if (typeof window !== 'undefined') {
@@ -400,6 +424,24 @@ const KalpavrukshaPage = () => {
 
     observer.observe(reviewsNode);
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    let isActive = true;
+
+    api.get('/api/google-reviews/kalpavruksha')
+      .then((response) => {
+        const reviewData = response.data?.data;
+        if (!isActive || !response.data?.success || !reviewData) return;
+        setGoogleReviewSummary(normalizeGoogleReviewSummary(reviewData));
+      })
+      .catch(() => {
+        // Keep the verified Google link visible even when live Places data is not configured yet.
+      });
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -601,16 +643,16 @@ const KalpavrukshaPage = () => {
   const projectTitle =
     'Kalpavruksha Open Plots in Vijayawada | CRDA Approved Plots Near Amaravati | Easy Homes';
   const projectDescription =
-    'Explore Kalpavruksha by Easy Homes, a CRDA-approved residential plotted community with 105 open plots across 9.03 acres near Vijayawada and Amaravati, with plot sizes from 174 to 525 square yards, premium infrastructure, and clubhouse amenities.';
+    'Explore Kalpavruksha by Easy Homes, a CRDA-approved residential plotted community with 105 open plots across 11 acres in Vemavaram, 5 km from West Bypass and Rayanapadu, with plot sizes from 174 to 525 square yards, premium infrastructure, and clubhouse amenities.';
   const projectKeywords =
     'Kalpavruksha, Kalpavruksha plots, CRDA approved plots Vijayawada, open plots near Amaravati, Easy Homes projects, residential plots Andhra Pradesh';
   const projectCanonicalUrl = 'https://easyhomess.com/kalpavruksha/';
   const projectImageUrl = 'https://easyhomess.com/kalpPcImg.webp';
   const projectShareTitle = 'Kalpavruksha Open Plots in Vijayawada | Easy Homes';
   const projectShareDescription =
-    'CRDA-approved plotted development near Vijayawada and Amaravati with 105 residential plots across 9.03 acres, plot sizes from 174 to 525 square yards, premium amenities, and strong connectivity.';
-  const projectLocationTitle = 'Kalpavruksha, near Vijayawada Nagpur Greenfield Highway, Vemavaram';
-  const projectLocationAddress = 'Kalpavruksha, near Vijayawada Nagpur Greenfield Highway, Vemavaram, Vijayawada, Andhra Pradesh';
+    'CRDA-approved plotted development in Vemavaram with 105 residential plots across 11 acres, plot sizes from 174 to 525 square yards, premium amenities, and strong connectivity to West Bypass and Rayanapadu.';
+  const projectLocationTitle = 'Kalpavruksha, Vemavaram, 5 km from West Bypass and Rayanapadu';
+  const projectLocationAddress = 'Kalpavruksha, Vemavaram, 5 km from West Bypass and Rayanapadu, Vijayawada, Andhra Pradesh';
   const projectDirectionsUrl = KALPAVRUKSHA_DIRECTIONS_URL;
   const shouldRenderStructuredData =
     typeof document === 'undefined' ||
@@ -703,7 +745,7 @@ const KalpavrukshaPage = () => {
     {
       question: 'What is the total size of the project?',
       answer:
-        'The project spans 9.03 acres and is planned as a gated residential plotted community.',
+        'The project spans 11 acres and is planned as a gated residential plotted community.',
     },
     {
       question: 'How many plots are available in Kalpavruksha?',
@@ -723,7 +765,7 @@ const KalpavrukshaPage = () => {
     {
       question: 'What is the average price in Kalpavruksha?',
       answer:
-        'The plots are priced between Rs. 30-35 lakhs. Final pricing can vary by plot size, facing, and location within the layout.',
+        'The current starting price is Rs. 31 lakhs onwards. Final pricing can vary by plot size, facing, and location within the layout.',
     },
     {
       question: 'When does possession start?',
@@ -743,7 +785,7 @@ const KalpavrukshaPage = () => {
     {
       question: 'Where is Kalpavruksha located?',
       answer:
-        'The project is near the Vijayawada Nagpur Greenfield Highway in Vemavaram, with connectivity to Vijayawada, Western Bypass, Hyderabad Highway (NH 65), and Amaravati-side destinations.',
+        'The project is in Vemavaram, around 5 km from West Bypass and Rayanapadu, with connectivity to Vijayawada, Hyderabad Highway (NH 65), and Amaravati-side destinations.',
     },
     {
       question: 'How can I get the brochure or schedule a visit?',
@@ -811,83 +853,75 @@ const KalpavrukshaPage = () => {
       "Layout and Infrastructure",
       "Buyer Verification Checklist"
     ],
-    "articleBody": "Kalpavruksha is presented as a CRDA-approved plotted development by Easy Homes near Vijayawada, planned across approximately 9.03 acres with 105 residential plots. Buyers looking for open plots near Amaravati often evaluate three factors first: approval clarity, location practicality, and ground-level infrastructure readiness. The project is structured around those priorities with a planned layout, internal circulation, and community-focused zoning. Plot dimensions in Kalpavruksha are positioned for multiple buyer goals, from long-term land holding to future home construction. Along with plot planning, the project narrative highlights amenities such as landscaped zones, clubhouse-oriented lifestyle components, utility-ready roads, and access-led design. From a connectivity standpoint, Kalpavruksha is positioned near the Vijayawada-Nagpur Greenfield Highway influence zone in Vemavaram, with practical travel links toward Vijayawada city, railway access points, airport routes, and Amaravati-side expansion areas. Buyers usually verify CRDA and statutory approval status, plot dimensions and road-width access, infrastructure progress, travel-time feasibility, and final documentation and registration process before booking."
+    "articleBody": "Kalpavruksha is presented as a CRDA-approved plotted development by Easy Homes in Vemavaram, planned across approximately 11 acres with 105 residential plots. Buyers looking for open plots near Amaravati often evaluate three factors first: approval clarity, location practicality, and ground-level infrastructure readiness. The project is structured around those priorities with a planned layout, internal circulation, and community-focused zoning. Plot dimensions in Kalpavruksha are positioned for multiple buyer goals, from long-term land holding to future home construction. Along with plot planning, the project narrative highlights amenities such as landscaped zones, clubhouse-oriented lifestyle components, utility-ready roads, and access-led design. From a connectivity standpoint, Kalpavruksha is positioned about 5 km from West Bypass and Rayanapadu, with practical travel links toward Vijayawada city, railway access points, airport routes, and Amaravati-side expansion areas. Buyers usually verify CRDA and statutory approval status, plot dimensions and road-width access, infrastructure progress, travel-time feasibility, and final documentation and registration process before booking."
   };
 
   const features = [
     {
-      icon: <CheckCircle className="h-6 w-6 text-[#8b6328]" />,
-      title: "Fully Approved. Carefully Maintained.",
-      description: "CRDA-approved and backed by 5 years of developer maintenance.",
-    },
-    {
-      icon: <MapPin className="h-6 w-6 text-[#8b6328]" />,
-      title: "Closer to Everything That Matters",
-      description:
-        "7.5 km from Vijayawada | 13.5 km from Amaravati Start-up Village & BITS | Near Vijayawada-Nagpur Greenfield Highway",
-    },
-    {
-      icon: <Car className="h-6 w-6 text-[#8b6328]" />,
-      title: "Roads That Respect Space and Flow",
-      description: "60', 40', and 33' wide internal CC roads, walkways, avenue plantations, and stormwater drains.",
-    },
-    {
-      icon: <Zap className="h-6 w-6 text-[#8b6328]" />,
-      title: "Seamless Systems Beneath the Surface",
-      description: "Underground networks for power, water, fiber, and sewage - silent, secure, and future-ready.",
+      icon: <TreePine className="h-6 w-6 text-[#8b6328]" />,
+      title: "Hill views",
+      description: "Unobstructed views of the Kondapalli hills from most plots in the layout.",
     },
     {
       icon: <Waves className="h-6 w-6 text-[#8b6328]" />,
-      title: "Water That Works, Landscapes That Live",
-      description: "Overhead tank with underground supply, STP-connected drainage, and drip irrigation.",
+      title: "Creek & walking trail",
+      description: "A live creek runs through Kalpavruksha with a dedicated trail alongside it.",
     },
     {
       icon: <Building className="h-6 w-6 text-[#8b6328]" />,
-      title: "A Clubhouse That Feels Like a Second Home",
-      description: "Infinity pool, yoga room, gym, party lawn, convention hall, private theatre, and guest rooms.",
+      title: "Clubhouse",
+      description: "Infinity pool, private theatre, banquet hall, BBQ deck and an AC gym.",
     },
     {
       icon: <Users className="h-6 w-6 text-[#8b6328]" />,
-      title: "Play Isn't Just for Kids - It's for Community",
-      description: "Basketball, net cricket, multi-purpose court, children's play zone, and indoor games.",
+      title: "Boulder park & sports courts",
+      description: "Pickleball and box cricket courts, plus a landscaped boulder park.",
     },
     {
-      icon: <Trees className="h-6 w-6 text-[#8b6328]" />,
-      title: "Where Nature is Always Within Reach",
-      description: "Central rivulet garden beside the creek, landscaped arrival court, and edge gardens.",
+      icon: <Car className="h-6 w-6 text-[#8b6328]" />,
+      title: "CC roads & underground utilities",
+      description: "Every internal road is concrete; every utility line runs underground.",
     },
     {
       icon: <Shield className="h-6 w-6 text-[#8b6328]" />,
-      title: "Protected. Peaceful. Prepared.",
-      description: "8' compound wall with 2' solar fencing, 24x7 gated entry with CCTV, and solar lighting.",
-    },
-    {
-      icon: <Heart className="h-6 w-6 text-[#8b6328]" />,
-      title: "Designed Not Just to Last - But to Mean Something",
-      description: "More than a layout - a vision grounded in values for your family's legacy.",
+      title: "11-ft wall & 24/7 CCTV",
+      description: "The entire layout is enclosed and monitored around the clock.",
     },
   ]
 
-  const trustStripItems = [
+  const kalpavrukshaDifferenceItems = [
     {
-      icon: <Shield className="h-4 w-4" />,
-      label: 'CRDA Approved',
+      title: 'Sunrise framed by the hills',
+      detail: 'A distinctive natural elevation setting that protects the peaceful, scenic character of the community.',
     },
     {
-      icon: <CheckCircle className="h-4 w-4" />,
-      label: 'RERA Approved',
+      title: 'Creek-side walking track',
+      detail: 'An engineered rivulet garden inside the layout boundary - daily lifestyle value, not just landscaping.',
     },
     {
-      icon: <CheckCircle className="h-4 w-4" />,
-      label: 'Clear Title',
+      title: 'Rooftop clubhouse',
+      detail: 'Infinity pool, private theatre, AC gym, BBQ zone, banquet hall and indoor sports.',
     },
     {
-      icon: <Trees className="h-4 w-4" />,
-      label: `${KALPAVRUKSHA_TRUTH.projectArea} ${KALPAVRUKSHA_TRUTH.projectAreaUnit}`,
+      title: "40 & 30 ft CC roads",
+      detail: 'Grand avenue entries with underground concrete drainage, ICT ducting and avenue tree plantation.',
+    },
+  ];
+
+  const sitePhotoPlaceholders = [
+    {
+      label: 'Entrance wall',
+      title: 'Entrance wall',
+      detail: 'Latest shared site photo showing the entrance wall progress at Kalpavruksha.',
+      image: require('../assets/kalpavruksha/site-entrance-wall.png'),
+      alt: 'Kalpavruksha live site entrance wall progress',
     },
     {
-      icon: <Building className="h-4 w-4" />,
-      label: `${KALPAVRUKSHA_TRUTH.totalPlots} Premium Plots`,
+      label: 'Main gate',
+      title: 'Main gate',
+      detail: 'Latest shared site photo showing the main gate progress at Kalpavruksha.',
+      image: require('../assets/kalpavruksha/site-main-gate.png'),
+      alt: 'Kalpavruksha live site main gate progress',
     },
   ];
 
@@ -896,7 +930,7 @@ const KalpavrukshaPage = () => {
       label: "Price From",
       value: KALPAVRUKSHA_TRUTH.priceFrom,
       unit: "",
-      detail: `FAQ range: ${KALPAVRUKSHA_TRUTH.priceRange}.`
+      detail: `Starting price: ${KALPAVRUKSHA_TRUTH.priceRange}.`
     },
     {
       label: "Project Area",
@@ -917,10 +951,10 @@ const KalpavrukshaPage = () => {
       detail: KALPAVRUKSHA_TRUTH.location
     },
     {
-      label: "RERA ID",
-      value: KALPAVRUKSHA_TRUTH.reraId,
+      label: "Price Range",
+      value: KALPAVRUKSHA_TRUTH.priceRange,
       unit: "",
-      detail: "Shown in the project FAQ."
+      detail: "Current starting price shared in the project update."
     }
   ];
   const visibleProjectSnapshotStats = projectSnapshotStats.filter((item) => item.value || item.detail);
@@ -932,30 +966,30 @@ const KalpavrukshaPage = () => {
       label: 'Booked so far',
       value: KALPAVRUKSHA_TRUTH.bookedPlots,
       unit: 'Plots',
-      detail: 'Transparent early-stage booking progress.'
+      detail: 'Current booking progress shared by the project team.'
     },
     {
       label: 'Possession',
       value: KALPAVRUKSHA_TRUTH.possession,
       unit: '',
-      detail: 'Project possession timeline shown in the FAQ.'
+      detail: 'Expected possession timeline from the project details.'
     },
     {
-      label: 'Project Type',
-      value: KALPAVRUKSHA_TRUTH.configuration,
+      label: 'Developer Maintenance',
+      value: 'Till Dec 2030',
       unit: '',
-      detail: KALPAVRUKSHA_TRUTH.communityType
+      detail: 'Developer maintenance is planned through December 2030.'
     }
   ];
 
   const locationHighlights = [
     {
       icon: <MapPin className="h-4 w-4" />,
-      title: "Near Vijayawada-Nagpur Greenfield Highway"
+      title: "Vemavaram location"
     },
     {
       icon: <Car className="h-4 w-4" />,
-      title: "5 km from Western Bypass"
+      title: "5 km from West Bypass & Rayanapadu"
     },
     {
       icon: <MapPin className="h-4 w-4" />,
@@ -1028,10 +1062,10 @@ const KalpavrukshaPage = () => {
     {
       id: 'overview',
       navLabel: 'Overview',
-      eyebrow: 'CRDA-approved open plots in Vijayawada',
-      title: "Where You Don't Just Arrive - You Belong",
+      eyebrow: 'CRDA & RERA APPROVED - AMARAVATI GROWTH CORRIDOR',
+      title: 'Residential Plots near Vijayawada, close to Amaravati',
       description:
-        "It's not just the feeling of arriving somewhere new, but somewhere right, where your heart belongs. Just 12 mins from Amaravati.",
+        "A real housing neighbourhood with clubhouse, 3 parks, CC roads, underground utilities and secure 11' compound wall.",
       image: KALPAVRUKSHA_OVERVIEW_HERO_IMAGE,
       imageSrcSet: KALPAVRUKSHA_OVERVIEW_HERO_SRC_SET,
       imageSizes: HERO_IMAGE_SIZES,
@@ -1046,7 +1080,7 @@ const KalpavrukshaPage = () => {
       summaryLabel: 'Project snapshot',
       summaryTitle: 'Verified overview',
       summaryText:
-        'CRDA-approved plotted community near the Vijayawada-Nagpur Greenfield Highway with 105 residential plots, clubhouse amenities, and planned internal infrastructure.',
+        'CRDA-approved plotted community in Vemavaram with 105 residential plots, clubhouse amenities, and planned internal infrastructure.',
     },
     {
       id: 'security',
@@ -1054,7 +1088,7 @@ const KalpavrukshaPage = () => {
       eyebrow: 'Trust',
       title: 'Trust begins with clarity',
       description:
-        'CRDA approval, gated entry, CCTV, and 5 years of maintenance make the project easier to choose with confidence.',
+        'CRDA approval, gated entry, CCTV, and developer maintenance till Dec 2030 make the project easier to choose with confidence.',
       image: KALPAVRUKSHA_TRUST_HERO_IMAGE,
       imageSrcSet: KALPAVRUKSHA_TRUST_HERO_SRC_SET,
       imageSizes: HERO_IMAGE_SIZES,
@@ -1064,7 +1098,7 @@ const KalpavrukshaPage = () => {
       facts: [
         'CRDA approved',
         '24x7 gated entry',
-        '5 years maintenance',
+        'Maintenance till Dec 2030',
       ],
       summaryLabel: 'Why it feels reliable',
       summaryTitle: 'Trust built on clarity',
@@ -1077,7 +1111,7 @@ const KalpavrukshaPage = () => {
       eyebrow: 'Calm',
       title: 'Calm starts with space',
       description:
-        'Wide roads, walkways, avenue planting, and underground utilities help the layout feel open and ordered.',
+        '40 and 30 ft CC roads, walkways, avenue planting, and underground utilities help the layout feel open and ordered.',
       image: KALPAVRUKSHA_CALM_HERO_IMAGE,
       imageSrcSet: KALPAVRUKSHA_CALM_HERO_SRC_SET,
       imageSizes: HERO_IMAGE_SIZES,
@@ -1085,7 +1119,7 @@ const KalpavrukshaPage = () => {
       imagePosition: 'center center',
       imageScale: 1.03,
       facts: [
-        "60' / 40' / 33' roads",
+        "40' / 30' CC roads",
         'Underground utilities',
         'Walkways and avenue trees',
       ],
@@ -1227,7 +1261,9 @@ const KalpavrukshaPage = () => {
   }, []);
   const [selectedImage, setSelectedImage] = useState(null);
   const [mobileGalleryIndex, setMobileGalleryIndex] = useState(0);
+  const [sitePhotoIndex, setSitePhotoIndex] = useState(0);
   const activeMobileGalleryImage = KALPAVRUKSHA_GALLERY_IMAGES[mobileGalleryIndex] || KALPAVRUKSHA_GALLERY_IMAGES[0];
+  const activeSitePhoto = sitePhotoPlaceholders[sitePhotoIndex] || sitePhotoPlaceholders[0];
   const openModal = (item) => {
     setSelectedImage(item);
   };
@@ -1266,7 +1302,6 @@ const KalpavrukshaPage = () => {
     }
 
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const mobileQuery = window.matchMedia('(max-width: 767px)');
 
     const isGalleryVisible = () => {
       const section = galleryRef.current;
@@ -1276,17 +1311,33 @@ const KalpavrukshaPage = () => {
     };
 
     const intervalId = window.setInterval(() => {
-      if (reducedMotionQuery.matches || !mobileQuery.matches || !isGalleryVisible()) {
+      if (reducedMotionQuery.matches || !isGalleryVisible()) {
         return;
       }
 
       setMobileGalleryIndex((current) => (
         current >= KALPAVRUKSHA_GALLERY_IMAGES.length - 1 ? 0 : current + 1
       ));
-    }, 4200);
+    }, 3800);
 
     return () => window.clearInterval(intervalId);
   }, [isModalOpen, selectedImage]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || selectedImage || isModalOpen) {
+      return undefined;
+    }
+
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const intervalId = window.setInterval(() => {
+      if (reducedMotionQuery.matches) return;
+      setSitePhotoIndex((current) => (
+        current >= sitePhotoPlaceholders.length - 1 ? 0 : current + 1
+      ));
+    }, 3600);
+
+    return () => window.clearInterval(intervalId);
+  }, [isModalOpen, selectedImage, sitePhotoPlaceholders.length]);
 
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -1355,6 +1406,13 @@ const KalpavrukshaPage = () => {
     setDownloadAssetKey(assetKey);
   };
   const closeDownloadLeadModal = () => setDownloadAssetKey(null);
+  const handleLayoutLeadInput = (event) => {
+    const { name, value } = event.target;
+    setLayoutLeadForm((previous) => ({
+      ...previous,
+      [name]: name === 'phone' ? value.replace(/\D/g, '').slice(0, 10) : value,
+    }));
+  };
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -1714,11 +1772,13 @@ const KalpavrukshaPage = () => {
     }
   };
 
-  const submitLayoutLead = async (e) => {
+  const submitLayoutLead = async (e, assetKeyOverride = null) => {
     e?.preventDefault?.();
     const trimmedName = layoutLeadForm.name.trim();
     const trimmedPhone = layoutLeadForm.phone.trim();
     const trimmedEmail = layoutLeadForm.email.trim();
+    const selectedAssetKey = assetKeyOverride || downloadAssetKey;
+    const selectedDownloadAsset = selectedAssetKey ? DOWNLOAD_ASSET_CONFIG[selectedAssetKey] : null;
 
     if (!trimmedName || !trimmedPhone || !trimmedEmail) {
       setToast({ type: 'error', msg: 'Please enter your name, phone number, and email address to continue.' });
@@ -1726,7 +1786,7 @@ const KalpavrukshaPage = () => {
       return;
     }
 
-    if (!activeDownloadAsset) {
+    if (!selectedDownloadAsset) {
       setToast({ type: 'error', msg: 'Please select a valid download option.' });
       setTimeout(() => setToast(null), 4000);
       return;
@@ -1749,7 +1809,7 @@ const KalpavrukshaPage = () => {
       const googleAdsAttribution = getGoogleAdsAttributionPayload();
       await api.post('/api/leads/layout-download', {
         project: 'Kalpavruksha',
-        source: activeDownloadAsset.source,
+        source: selectedDownloadAsset.source,
         platformSource: 'Website',
         platform_source: 'website',
         landingVariant: LANDING_VARIANT,
@@ -1757,14 +1817,14 @@ const KalpavrukshaPage = () => {
         landingVersion: LANDING_VERSION,
         landing_version: LANDING_VERSION,
         version: LANDING_VERSION,
-        leadStatus: activeDownloadAsset.leadStatus,
+        leadStatus: selectedDownloadAsset.leadStatus,
         name: trimmedName,
         phone: trimmedPhone,
         email: trimmedEmail,
         googleAdsAttribution: googleAdsAttribution || undefined,
       });
 
-      const assetType = downloadAssetKey === 'layout' ? 'master_layout' : 'brochure';
+      const assetType = selectedAssetKey === 'layout' ? 'master_layout' : 'brochure';
       trackEvent(`${assetType}_downloaded`, withLandingVariant({
         event_category: 'conversion',
         conversion_type: `${assetType}_download`,
@@ -1773,10 +1833,10 @@ const KalpavrukshaPage = () => {
         project: 'Kalpavruksha',
         source: 'kalpavruksha_download_form',
         asset_type: assetType,
-        lead_status: activeDownloadAsset.leadStatus,
-        file_name: activeDownloadAsset.fileName,
+        lead_status: selectedDownloadAsset.leadStatus,
+        file_name: selectedDownloadAsset.fileName,
         file_extension: 'pdf',
-        link_url: activeDownloadAsset.url,
+        link_url: selectedDownloadAsset.url,
         google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
         google_ads_click_id_type: googleAdsAttribution?.clickIdType,
         google_ads_campaign_id: googleAdsAttribution?.campaignId,
@@ -1784,7 +1844,7 @@ const KalpavrukshaPage = () => {
 
       closeDownloadLeadModal();
       setLayoutLeadForm({ name: '', phone: '', email: '' });
-      triggerAssetDownload(activeDownloadAsset);
+      triggerAssetDownload(selectedDownloadAsset);
       navigate('/thank-you');
     } catch (err) {
       console.error(err);
@@ -2670,7 +2730,7 @@ const KalpavrukshaPage = () => {
                       <div className="pointer-events-none absolute -left-6 -top-7 hidden h-[17rem] w-[17rem] rounded-full bg-[radial-gradient(circle,_rgba(6,10,8,0.22)_0%,_rgba(6,10,8,0.08)_54%,_rgba(6,10,8,0)_82%)] blur-2xl sm:block sm:h-[21rem] sm:w-[21rem]"></div>
                       <div className="relative flex flex-col justify-end">
                         <div>
-                        <p className="inline-flex items-center gap-2 rounded-full border border-white/[0.12] bg-white/[0.08] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.26em] text-[#f1ddb1] backdrop-blur-none sm:px-3.5 sm:py-2 sm:text-[11px] sm:backdrop-blur-sm">
+                        <p className="flex w-fit items-center gap-2 rounded-full border border-white/[0.12] bg-white/[0.08] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.26em] text-[#f1ddb1] backdrop-blur-none sm:px-3.5 sm:py-2 sm:text-[11px] sm:backdrop-blur-sm">
                           <span className="h-2 w-2 rounded-full bg-[#dcb66a] shadow-[0_0_0_4px_rgba(220,182,106,0.12)]"></span>
                           <span>{activeHeroSlide.eyebrow}</span>
                         </p>
@@ -2714,25 +2774,42 @@ const KalpavrukshaPage = () => {
                           {HERO_SUPPORT_LINE}
                         </p>
 
+                        <a
+                          href={googleReviewSummary.reviewUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => trackGoogleReviewsClick('hero_review_pill')}
+                          className="mt-4 inline-flex w-fit max-w-full items-center gap-2 rounded-full border border-[#e8cc8f]/30 bg-black/[0.18] px-3 py-1.5 text-[11px] font-semibold text-white/[0.9] shadow-[0_10px_22px_rgba(0,0,0,0.14)] transition hover:border-[#e8cc8f]/55 hover:bg-black/[0.26] sm:mt-5 sm:text-xs"
+                          aria-label="Open Kalpavruksha Google reviews in a new tab"
+                        >
+                          <span className="rounded-full bg-[#e5c27f] px-2 py-0.5 text-[#1d1609]">{googleReviewSummary.rating}</span>
+                          <span className="flex items-center gap-0.5 text-[#e5c27f]" aria-label={`${googleReviewSummary.rating} out of 5 stars`}>
+                            {Array.from({ length: 5 }).map((_, index) => (
+                              <Star key={index} className="h-3.5 w-3.5 fill-current" strokeWidth={1.8} />
+                            ))}
+                          </span>
+                          <span>{googleReviewSummary.reviewCount} Google Reviews</span>
+                        </a>
+
                         <div className="mt-4 flex flex-col gap-3 sm:mt-6 sm:flex-row sm:items-center sm:gap-3.5">
                           <button
                             type="button"
-                            aria-label="Book Free Site Visit"
-                            onClick={() => openVisitModal('hero_book_site_visit_cta')}
+                            aria-label="Get Price & Location on WhatsApp"
+                            onClick={() => openKalpavrukshaWhatsApp('hero_price_whatsapp')}
                             className="kalpa-v1-cta-sheen inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#cba159] px-6 py-3.5 text-[15px] font-semibold text-[#1d1609] shadow-[0_18px_38px_rgba(203,161,89,0.28)] transition-all duration-300 hover:bg-[#d4ab68] hover:shadow-[0_22px_42px_rgba(203,161,89,0.34)] sm:min-h-14 sm:w-auto sm:min-w-[13.5rem] sm:px-8 sm:text-base"
                           >
-                            <MapPin className="h-4 w-4 sm:h-5 sm:w-5" />
-                            <span>Book Site Visit</span>
+                            <FaWhatsapp className="h-4 w-4 sm:h-5 sm:w-5" />
+                            <span>Get Price & Location</span>
                           </button>
 
                           <button
                             type="button"
-                            aria-label="Get Current Price on WhatsApp"
-                            onClick={() => openKalpavrukshaWhatsApp('hero_price_whatsapp')}
+                            aria-label="Book Site Visit"
+                            onClick={() => openVisitModal('hero_book_site_visit_cta')}
                             className="kalpa-v1-cta-sheen inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-[#e1c482]/55 bg-[linear-gradient(180deg,rgba(255,250,241,0.14)_0%,rgba(215,177,111,0.18)_100%)] px-5 py-3.5 text-[15px] font-semibold text-white shadow-[0_12px_24px_rgba(0,0,0,0.1)] transition-all duration-300 hover:border-[#e7cd95] hover:bg-[linear-gradient(180deg,rgba(255,250,241,0.18)_0%,rgba(215,177,111,0.24)_100%)] sm:min-h-14 sm:w-auto sm:min-w-[13rem] sm:px-6 sm:text-base"
                           >
-                            <FaWhatsapp className="h-4 w-4 sm:h-5 sm:w-5" />
-                            <span>Current Price</span>
+                            <MapPin className="h-4 w-4 sm:h-5 sm:w-5" />
+                            <span>Book Site Visit</span>
                           </button>
                         </div>
 
@@ -2859,29 +2936,83 @@ const KalpavrukshaPage = () => {
           </div>
         </section>
 
-        {/* Conversion trust strip */}
-        <section className="relative z-10 border-t border-[#e6d8bd] bg-[radial-gradient(circle_at_12%_0%,rgba(203,161,89,0.13),transparent_28%),linear-gradient(180deg,#fffdf8_0%,#f5ead8_100%)] py-5">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex snap-x gap-3 overflow-x-auto pb-1 sm:grid sm:grid-cols-5 sm:overflow-visible sm:pb-0">
-              {trustStripItems.map((item, index) => (
-                <div
-                  key={item.label}
-                  className="kalpa-v1-luxe-card kalpa-v1-reveal-scale group flex min-w-[13.5rem] snap-start items-center gap-3 rounded-[22px] border border-[#eadfcb] bg-white/[0.78] px-4 py-3.5 shadow-[0_12px_30px_rgba(83,64,31,0.07)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#d8b46c]/70 hover:bg-white hover:shadow-[0_18px_42px_rgba(83,64,31,0.1)] sm:min-w-0 sm:px-3.5"
-                  style={{ '--kalpa-reveal-delay': `${index * 55}ms` }}
-                >
-                  <span className="kalpa-v1-icon-breathe flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#fff5df] text-[#8b6328] ring-1 ring-[#dcc18a] transition-transform duration-300 group-hover:rotate-[-3deg]">
-                    {item.icon}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-[9px] font-semibold uppercase tracking-[0.18em] text-[#b19358]">
-                      Proof 0{index + 1}
-                    </span>
-                    <span className="mt-1 block max-w-[11rem] text-sm font-bold leading-snug tracking-[-0.01em] text-[#18231d]">
-                      {item.label}
-                    </span>
-                  </span>
+        {/* Buyer shortlist and live site proof */}
+        <section
+          ref={aboutRef}
+          className="relative z-10 overflow-hidden border-t border-[#e6d8bd] bg-[radial-gradient(circle_at_12%_0%,rgba(203,161,89,0.16),transparent_30%),linear-gradient(180deg,#fffdf8_0%,#f3e5cf_100%)] py-12 md:py-16"
+          style={DEFERRED_SECTION_STYLE}
+        >
+          <div className="pointer-events-none absolute -right-20 top-12 h-72 w-72 rounded-full bg-white/55 blur-3xl" />
+          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-4xl text-center">
+              <div className="kalpa-v1-reveal-left">
+                <div className="inline-flex items-center rounded-full border border-[#d7ba82] bg-[#fff9ef] px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#8b6328] shadow-sm">
+                  Why Choose Us
                 </div>
-              ))}
+                <h2 className="mx-auto mt-5 max-w-3xl text-[2rem] font-bold leading-[1.04] tracking-[-0.04em] text-[#18231d] md:text-[2.85rem]">
+                  What makes Kalpavruksha different
+                </h2>
+                <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[#627067]">
+                  Built for buyers who value transparency, lifestyle, and long-term appreciation.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-8 grid gap-5 lg:grid-cols-[1.08fr,0.92fr] lg:items-stretch">
+                <div className="order-2 grid gap-3 sm:grid-cols-2 lg:order-2">
+                  {kalpavrukshaDifferenceItems.map((item, index) => (
+                    <div
+                      key={item.title}
+                      className="kalpa-v1-luxe-card kalpa-v1-reveal rounded-[22px] border border-[#eadfcb] bg-white/[0.86] p-4 shadow-[0_14px_32px_rgba(83,64,31,0.07)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#d8b46c]/65 hover:bg-white"
+                      style={{ '--kalpa-reveal-delay': `${index * 65}ms` }}
+                    >
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9a7a3d]">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <h3 className="mt-2 text-base font-bold tracking-[-0.02em] text-[#18231d]">{item.title}</h3>
+                      <p className="mt-2 text-sm leading-6 text-[#627067]">{item.detail}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="kalpa-v1-luxe-card kalpa-v1-reveal order-1 flex flex-col overflow-hidden rounded-[28px] border border-[#d6c296] bg-[#fffaf0] shadow-[0_26px_64px_rgba(83,64,31,0.15)] lg:order-1">
+                  <div className="order-2 bg-[linear-gradient(145deg,#173226_0%,#102319_100%)] px-5 py-5 text-[#fff7e5] sm:px-6 lg:order-1 lg:min-h-[12rem] lg:py-6">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#e5c27f]">
+                      Live Site Images
+                    </p>
+                    <h3 className="mt-3 text-[1.65rem] font-bold leading-tight md:text-[1.75rem]">{activeSitePhoto.title}</h3>
+                    <p className="mt-2.5 text-sm leading-6 text-white/72 md:text-base md:leading-7">{activeSitePhoto.detail}</p>
+                  </div>
+                  <div className="order-1 relative bg-[radial-gradient(circle_at_24%_18%,rgba(215,177,111,0.24),transparent_28%),linear-gradient(145deg,#fff8e9_0%,#efe0c6_100%)] p-3 sm:p-4 lg:order-2 lg:min-h-[17rem] lg:flex-1 lg:p-5">
+                    <div className="relative min-h-[13.5rem] overflow-hidden rounded-[22px] bg-white/[0.64] shadow-[0_18px_42px_rgba(83,64,31,0.14)] ring-1 ring-[#cfa968]/32 lg:h-full lg:min-h-[13rem]">
+                      <img
+                        key={activeSitePhoto.title}
+                        src={activeSitePhoto.image}
+                        alt={activeSitePhoto.alt || activeSitePhoto.title}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full min-h-[13.5rem] w-full object-cover transition-transform duration-700 hover:scale-[1.025] lg:min-h-[13rem]"
+                      />
+                      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(16,35,25,0)_42%,rgba(16,35,25,0.26)_100%)]" />
+                      <div className="absolute left-3 top-3 rounded-full border border-white/40 bg-[#102319]/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#fff7e5] backdrop-blur-sm">
+                        {String(sitePhotoIndex + 1).padStart(2, '0')} / {sitePhotoPlaceholders.length}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="order-3 flex items-center justify-center gap-3 border-t border-[#eadfcb] px-5 py-3">
+                    <div className="flex gap-1.5">
+                      {sitePhotoPlaceholders.map((item, index) => (
+                        <button
+                          key={item.label}
+                          type="button"
+                          onClick={() => setSitePhotoIndex(index)}
+                          aria-label={`Show ${item.label} live site photo`}
+                          className={`h-1.5 rounded-full transition-all ${sitePhotoIndex === index ? 'w-7 bg-[#cba159]' : 'w-1.5 bg-[#cdbb98]'}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
             </div>
           </div>
         </section>
@@ -2946,7 +3077,7 @@ const KalpavrukshaPage = () => {
                       />
                       <CTAButton
                         icon={<FaWhatsapp className="w-5 h-5" />}
-                        text="Current Price"
+                        text="Get Price & Location"
                         onClick={() => openKalpavrukshaWhatsApp('snapshot_price_whatsapp')}
                         className="w-full !min-h-[3.05rem] !border-white/[0.16] !bg-white/[0.10] !px-4 !py-2.5 !text-white hover:!bg-white/[0.16] hover:!text-white"
                       />
@@ -3042,7 +3173,7 @@ const KalpavrukshaPage = () => {
                     Availability, stated plainly
                   </h2>
                   <p className="mt-3 text-base leading-7 text-[#5f6a62]">
-                    No countdowns or exaggerated scarcity. Just the current project progress we can verify.
+                    Current progress is presented clearly so buyers can discuss availability with confidence.
                   </p>
                 </div>
 
@@ -3091,76 +3222,6 @@ const KalpavrukshaPage = () => {
                       <h3 className="text-sm font-bold text-[#18231d]">{title}</h3>
                     </div>
                     <p className="mt-3 text-sm leading-6 text-[#627067]">{detail}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Section 2: From Longing to Belonging */}
-        <div ref={aboutRef} />
-        <section
-          id="about"
-          className="relative overflow-hidden border-t border-[#ebe0ca] bg-[linear-gradient(180deg,#fdf8ef_0%,#f6ede0_100%)] py-14 md:py-20"
-          style={DEFERRED_SECTION_STYLE}
-        >
-          <div className="pointer-events-none absolute -left-24 top-10 h-56 w-56 rounded-full bg-[#e7d7b4]/35 blur-3xl" />
-          <div className="pointer-events-none absolute right-0 top-1/3 h-64 w-64 rounded-full bg-[#f4e4bf]/50 blur-3xl" />
-
-          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-5 lg:grid-cols-[0.95fr,1.05fr] lg:items-stretch">
-              <div className="kalpa-v1-luxe-card kalpa-v1-reveal-left flex min-h-[28rem] flex-col justify-between rounded-[34px] border border-[#d6bd86]/35 bg-[radial-gradient(circle_at_18%_8%,rgba(228,197,132,0.2),transparent_28%),linear-gradient(145deg,#1c2a20_0%,#0c1711_100%)] p-6 text-white shadow-[0_26px_70px_rgba(26,28,20,0.22)] md:p-8 lg:p-10">
-                <div>
-                  <div className="inline-flex items-center rounded-full border border-[#e7ca8f]/28 bg-white/[0.07] px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#e8cd8d]">
-                    Project Essence
-                  </div>
-                  <h2 className="mt-6 max-w-[11ch] text-[2.35rem] font-extrabold leading-[0.98] tracking-[-0.055em] text-[#fff7e5] md:text-[3.35rem]">
-                    From Longing to Belonging
-                  </h2>
-                  <p className="mt-5 max-w-xl text-base leading-7 text-white/[0.74] md:text-[1.05rem]">
-                    Kalpavruksha is positioned as a quieter plotted community for buyers who want legal clarity, everyday access, and a site that feels composed before they commit.
-                  </p>
-                </div>
-
-                <div className="mt-8 grid gap-3 border-t border-white/10 pt-5 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-                  {[
-                    ['01', 'Verify', 'Check approvals, RERA, and layout first.'],
-                    ['02', 'Visit', 'See roads, open areas, and access on site.'],
-                    ['03', 'Decide', 'Book only if the essentials match.'],
-                  ].map(([step, title, detail], index) => (
-                    <div
-                      key={title}
-                      className="kalpa-v1-reveal rounded-[22px] border border-white/10 bg-white/[0.06] p-4"
-                      style={{ '--kalpa-reveal-delay': `${index * 70}ms` }}
-                    >
-                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#e5c98d]">{step}</span>
-                      <h3 className="mt-2 text-base font-bold text-white">{title}</h3>
-                      <p className="mt-2 text-sm leading-6 text-white/[0.64]">{detail}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                {[
-                  ['Buyer-first clarity', 'A page structure that keeps documents, pricing, layout, and visit actions easy to find.'],
-                  ['Calm decision flow', 'Visitors can inspect the project, ask for price, download the layout, or book a visit without friction.'],
-                  ['Grounded promise', 'No exaggerated scarcity, no invented claims, and no forced pickup details when transport is not needed.'],
-                  ['Conversion path', 'Each major section has a natural next step so interested buyers do not have to hunt for action.'],
-                ].map(([title, detail], index) => (
-                  <div
-                    key={title}
-                    className="kalpa-v1-luxe-card kalpa-v1-reveal-scale flex min-h-[13rem] flex-col justify-between rounded-[28px] border border-[#eadfcb] bg-white/[0.86] p-5 shadow-[0_18px_42px_rgba(83,64,31,0.075)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#d8b46c]/65 hover:bg-white hover:shadow-[0_24px_54px_rgba(83,64,31,0.11)] md:p-6"
-                    style={{ '--kalpa-reveal-delay': `${index * 75}ms` }}
-                  >
-                    <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[#fff5df] text-sm font-bold text-[#8b6328] ring-1 ring-[#dcc18a]">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <div>
-                      <h3 className="text-lg font-bold tracking-[-0.02em] text-[#18231d]">{title}</h3>
-                      <p className="mt-3 text-sm leading-6 text-[#627067]">{detail}</p>
-                    </div>
                   </div>
                 ))}
               </div>
@@ -3237,6 +3298,7 @@ const KalpavrukshaPage = () => {
                     loading="lazy"
                     decoding="async"
                     className="h-full w-full object-cover transition-all duration-700 group-hover:scale-[1.035]"
+                    style={getGalleryImageStyle(activeMobileGalleryImage)}
                   />
                   <div className="absolute left-5 right-5 top-5 h-1 overflow-hidden rounded-full bg-white/24">
                     <div
@@ -3299,42 +3361,102 @@ const KalpavrukshaPage = () => {
               </div>
             </div>
 
-            <div className="mt-9 hidden gap-5 md:grid md:grid-cols-2 xl:grid-cols-3">
-              {KALPAVRUKSHA_GALLERY_IMAGES.map((item, index) => (
-                <div
-                  key={index}
-                  onClick={() => openModal(item)}
-                  className="kalpa-v1-luxe-card kalpa-v1-reveal group overflow-hidden rounded-[26px] border border-[#eadfcb] bg-white/[0.86] shadow-[0_16px_38px_rgba(83,64,31,0.07)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#d6b171] hover:bg-white hover:shadow-[0_24px_55px_rgba(83,64,31,0.11)]"
-                  style={{ '--kalpa-reveal-delay': `${index * 65}ms` }}
+            <div className="mt-9 hidden md:block">
+              <div className="mx-auto max-w-5xl">
+                <button
+                  type="button"
+                  onClick={() => openModal(activeMobileGalleryImage)}
+                  className="kalpa-v1-luxe-card kalpa-v1-reveal group w-full overflow-hidden rounded-[30px] border border-[#eadfcb] bg-white/[0.9] text-left shadow-[0_22px_54px_rgba(83,64,31,0.1)] transition-all duration-300 hover:-translate-y-1 hover:border-[#d6b171] hover:bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#d7b16f]/22"
                 >
-                  <div className="relative aspect-[16/11] overflow-hidden bg-[linear-gradient(180deg,#fbf7ef_0%,#f2e6ce_100%)]">
-                    <img
-                      src={item.image}
-                      alt={item.alt || item.title}
-                      loading="lazy"
-                      decoding="async"
-                      className="kalpa-v1-image-lift h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                    {item.maskEmbeddedLabel && (
-                      <div
-                        aria-hidden="true"
-                        className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-[linear-gradient(180deg,rgba(247,239,224,0)_0%,rgba(247,239,224,0.58)_58%,rgba(247,239,224,0.74)_100%)] backdrop-blur-[2px]"
+                  <div className="grid lg:grid-cols-[1.18fr,0.82fr]">
+                    <div className="relative h-[28rem] overflow-hidden bg-[linear-gradient(180deg,#fbf7ef_0%,#f2e6ce_100%)]">
+                      <img
+                        key={activeMobileGalleryImage.title}
+                        src={activeMobileGalleryImage.image}
+                        alt={activeMobileGalleryImage.alt || activeMobileGalleryImage.title}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.025]"
+                        style={getGalleryImageStyle(activeMobileGalleryImage)}
                       />
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between gap-4 border-t border-[#efe4cf] px-5 py-4">
-                    <div>
-                      <div className="inline-flex items-center rounded-full bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8b6328] ring-1 ring-[#d7ba82]">
-                        Render {String(index + 1).padStart(2, '0')}
+                      <div className="absolute left-6 right-6 top-6 h-1 overflow-hidden rounded-full bg-white/28">
+                        <div key={activeMobileGalleryImage.title} className="kalpa-v1-gallery-progress h-full rounded-full bg-[#e5c27f]" />
                       </div>
-                      <h3 className="mt-3 text-lg font-semibold text-[#18231d]">{item.title}</h3>
+                      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(10,16,12,0.05)_0%,rgba(10,16,12,0)_45%,rgba(10,16,12,0.28)_100%)]" />
                     </div>
-                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#d7ba82] bg-white text-[#8b6328] shadow-sm transition-transform duration-300 group-hover:translate-x-0.5">
-                      <ArrowUpRight className="h-4 w-4" />
-                    </span>
+                    <div className="flex flex-col justify-between p-6 lg:p-8">
+                      <div>
+                        <div className="inline-flex items-center rounded-full bg-[#fff7e8] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8b6328] ring-1 ring-[#d7ba82]">
+                          Render {String(mobileGalleryIndex + 1).padStart(2, '0')} / {KALPAVRUKSHA_GALLERY_IMAGES.length}
+                        </div>
+                        <h3 className="mt-5 text-3xl font-bold tracking-[-0.04em] text-[#18231d]">
+                          {activeMobileGalleryImage.title}
+                        </h3>
+                        <p className="mt-4 text-base leading-7 text-[#637067]">
+                          A simple slideshow of planned lifestyle render views. Click to view the image larger.
+                        </p>
+                      </div>
+                      <div className="mt-8 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-1.5">
+                          {KALPAVRUKSHA_GALLERY_IMAGES.map((item, index) => (
+                            <span
+                              key={item.title}
+                              className={`h-2 rounded-full transition-all ${mobileGalleryIndex === index ? 'w-8 bg-[#cba159]' : 'w-2 bg-[#cdbb98]'}`}
+                            />
+                          ))}
+                        </div>
+                        <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#d7ba82] bg-white text-[#8b6328] shadow-sm transition-transform duration-300 group-hover:translate-x-0.5">
+                          <ArrowUpRight className="h-4 w-4" />
+                        </span>
+                      </div>
+                    </div>
                   </div>
+                </button>
+                <div className="mt-4 flex justify-center gap-2">
+                  <button
+                    type="button"
+                    aria-label="Show previous gallery slide"
+                    onClick={() => setMobileGalleryIndex((current) => (
+                      current <= 0 ? KALPAVRUKSHA_GALLERY_IMAGES.length - 1 : current - 1
+                    ))}
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#d7ba82] bg-white text-[#8b6328] shadow-sm"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Show next gallery slide"
+                    onClick={() => setMobileGalleryIndex((current) => (
+                      current >= KALPAVRUKSHA_GALLERY_IMAGES.length - 1 ? 0 : current + 1
+                    ))}
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#d7ba82] bg-white text-[#8b6328] shadow-sm"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
                 </div>
-              ))}
+                <div className="mt-5 grid grid-cols-4 gap-3">
+                  {KALPAVRUKSHA_GALLERY_IMAGES.map((item, index) => (
+                    <button
+                      key={item.title}
+                      type="button"
+                      onClick={() => setMobileGalleryIndex(index)}
+                      className={`overflow-hidden rounded-[18px] border bg-white shadow-sm transition-all duration-200 ${
+                        mobileGalleryIndex === index ? 'border-[#cba159] ring-2 ring-[#cba159]/20' : 'border-[#eadfcb] opacity-80 hover:opacity-100'
+                      }`}
+                      aria-label={`Show ${item.title}`}
+                    >
+                      <img
+                        src={item.image}
+                        alt={item.alt || item.title}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-20 w-full object-cover"
+                        style={getGalleryImageStyle(item)}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -3423,13 +3545,13 @@ const KalpavrukshaPage = () => {
             <div className="kalpa-v1-luxe-card overflow-hidden rounded-[32px] border border-[#e3d4b8] bg-[radial-gradient(circle_at_top_left,rgba(214,189,130,0.14),transparent_26%),linear-gradient(135deg,#fffdfa_0%,#f7efe1_52%,#efe3cf_100%)] px-5 py-8 shadow-[0_24px_60px_rgba(83,64,31,0.11)] md:px-8 md:py-10 lg:px-10">
               <div className="mx-auto max-w-3xl text-center">
                 <div className="inline-flex items-center rounded-full border border-[#d7ba82] bg-white/90 px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#8b6328] shadow-sm backdrop-blur">
-                  Signature Advantages
+                  Layout Essentials
                 </div>
                 <h2 className="mt-5 text-[1.9rem] font-bold tracking-[-0.03em] text-[#18231d] md:text-[2.7rem]">
-                  What Sets <span className="text-[#8b6328]">Kalpavruksha</span> Apart
+                  What's inside the layout
                 </h2>
                 <p className="mt-4 text-base leading-7 text-[#5f6a62] md:text-[1.05rem]">
-                  Some places are where you stay, but some places stay with you. Kalpavruksha is shaped by the quieter assurances that matter after the sale too.
+                  Built around a working creek and the hills behind it, not around a brochure.
                 </p>
               </div>
 
@@ -3739,57 +3861,88 @@ const KalpavrukshaPage = () => {
           </div>
         </section>
 
-        {/* Section 9: Journey Home */}
-        <section className="relative overflow-hidden border-t border-[#e0cfa8] bg-[radial-gradient(circle_at_20%_0%,rgba(214,177,111,0.16),transparent_28%),linear-gradient(180deg,#fff9ed_0%,#ecd8b3_100%)] py-14 md:py-20" style={DEFERRED_SECTION_STYLE}>
-          <div className="pointer-events-none absolute -left-20 top-10 h-72 w-72 rounded-full bg-white/45 blur-3xl" />
-          <div className="pointer-events-none absolute right-0 bottom-0 h-80 w-80 rounded-full bg-[#d7b16f]/18 blur-3xl" />
-          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="kalpa-v1-luxe-card overflow-hidden rounded-[36px] border border-[#dcc9a3] bg-white/[0.88] p-3 shadow-[0_28px_72px_rgba(83,64,31,0.14)] backdrop-blur-sm md:p-4">
-              <div className="grid gap-3 lg:grid-cols-[0.9fr,1.1fr]">
-                <div className="kalpa-v1-reveal-left flex min-h-[21rem] flex-col justify-between rounded-[30px] bg-[radial-gradient(circle_at_top_right,rgba(215,177,111,0.28),transparent_34%),linear-gradient(145deg,#1b2a20_0%,#0d1711_100%)] p-6 text-white md:p-8">
-                  <div>
-                    <div className="inline-flex items-center rounded-full border border-[#e7ca8f]/28 bg-white/[0.07] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#e8cd8d]">
-                      Next Step
-                    </div>
-                    <h2 className="mt-5 max-w-[12ch] text-[2.15rem] font-extrabold leading-[1] tracking-[-0.055em] text-[#fff7e5] md:text-[3.2rem]">
-                      Your site visit should feel simple.
-                    </h2>
-                    <p className="mt-5 max-w-md text-sm leading-7 text-white/[0.72] md:text-base">
-                      Choose a slot, get directions or pickup help, and inspect the layout before making a decision.
-                    </p>
-                  </div>
-                  <CTAButton
-                    icon={<MapPin className="w-5 h-5" />}
-                    text="Schedule a Site Visit"
-                    primary
-                    onClick={() => openVisitModal('journey_home')}
-                    className="mt-7 w-full sm:w-auto"
-                  />
-                </div>
+        {/* Section 9: Site Visit & Brochure */}
+        <section className="relative overflow-hidden border-t border-[#e0cfa8] bg-[linear-gradient(180deg,#fff9ed_0%,#efe0c5_100%)] py-12 md:py-18" style={DEFERRED_SECTION_STYLE}>
+          <div className="pointer-events-none absolute -left-24 top-8 h-72 w-72 rounded-full bg-[#d7b16f]/18 blur-3xl" />
+          <div className="mx-auto max-w-[36rem] px-4 sm:px-6">
+            <div className="kalpa-v1-luxe-card kalpa-v1-reveal overflow-hidden rounded-[30px] border border-[#d6c296] bg-[#fffaf0] shadow-[0_24px_62px_rgba(83,64,31,0.14)]">
+              <div className="bg-[radial-gradient(circle_at_top_right,rgba(215,177,111,0.22),transparent_34%),linear-gradient(145deg,#173226_0%,#102319_100%)] px-5 py-8 text-center text-[#fff7e5] md:px-8">
+                <h2 className="font-serif text-[1.65rem] font-bold leading-tight md:text-[2.15rem]">
+                  Limited site visit slots this week
+                </h2>
+                <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-white/78 md:text-base">
+                  We keep visit groups small so you get time to inspect the layout, roads and surroundings properly.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => openVisitModal('limited_slots')}
+                  className="mt-6 inline-flex min-h-[3.35rem] w-full items-center justify-center rounded-2xl bg-[#d9ad4f] px-5 text-base font-bold text-[#102319] shadow-[0_16px_34px_rgba(217,173,79,0.26)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#e2bb69] active:translate-y-0"
+                >
+                  Book a Free Site Visit
+                </button>
+              </div>
 
-                <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                  {[
-                    ['Ask first', 'Start Live Chat', <MessageCircle className="w-5 h-5" />, () => launchKalpavrukshaLiveChat('journey_home')],
-                    ['Speak now', 'Request a Callback', <Phone className="w-5 h-5" />, goToHomeCallToAction],
-                    ['Review docs', 'Download Project Brochure', <Download className="w-5 h-5" />, () => openDownloadLeadModal('brochure', 'journey_home')],
-                  ].map(([eyebrow, title, icon, action], index) => (
-                    <button
-                      key={title}
-                      type="button"
-                      onClick={action}
-                      className="kalpa-v1-luxe-card kalpa-v1-reveal group flex min-h-[7.5rem] items-center justify-between gap-4 rounded-[26px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] p-5 text-left shadow-[0_16px_36px_rgba(83,64,31,0.07)] transition-all duration-300 hover:-translate-y-1 hover:border-[#d8b46c]/70 hover:bg-white hover:shadow-[0_24px_52px_rgba(83,64,31,0.11)]"
-                      style={{ '--kalpa-reveal-delay': `${index * 80}ms` }}
-                    >
-                      <span>
-                        <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9a7a3d]">{eyebrow}</span>
-                        <span className="mt-2 block text-lg font-bold tracking-[-0.02em] text-[#18231d]">{title}</span>
-                      </span>
-                      <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#d7ba82] bg-white text-[#8b6328] transition-transform duration-300 group-hover:translate-x-1">
-                        {icon}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+              <div className="px-5 py-7 md:px-8 md:py-8">
+                <h3 className="font-serif text-[1.45rem] font-bold leading-tight text-[#18231d] md:text-[1.8rem]">
+                  Get the brochure & map
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-[#647067] md:text-base">
+                  Receive the project brochure, location pin, master plan and the latest site-visit assistance details.
+                </p>
+                <form onSubmit={(event) => submitLayoutLead(event, 'brochure')} className="mt-6 space-y-4">
+                  <label className="block">
+                    <span className="text-sm font-semibold text-[#18231d]">Your name</span>
+                    <input
+                      name="name"
+                      value={layoutLeadForm.name}
+                      onChange={handleLayoutLeadInput}
+                      className="mt-2 min-h-[3.35rem] w-full rounded-2xl border border-[#d9c8a4] bg-white px-4 text-base font-medium text-[#18231d] outline-none transition focus:border-[#d7b16f] focus:ring-4 focus:ring-[#d7b16f]/18"
+                      placeholder="Full name"
+                      required
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-sm font-semibold text-[#18231d]">Phone number</span>
+                    <input
+                      name="phone"
+                      value={layoutLeadForm.phone}
+                      onChange={handleLayoutLeadInput}
+                      className="mt-2 min-h-[3.35rem] w-full rounded-2xl border border-[#d9c8a4] bg-white px-4 text-base font-medium text-[#18231d] outline-none transition focus:border-[#d7b16f] focus:ring-4 focus:ring-[#d7b16f]/18"
+                      inputMode="tel"
+                      maxLength={10}
+                      placeholder="10-digit mobile number"
+                      required
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-sm font-semibold text-[#18231d]">Email address</span>
+                    <input
+                      name="email"
+                      value={layoutLeadForm.email}
+                      onChange={handleLayoutLeadInput}
+                      className="mt-2 min-h-[3.35rem] w-full rounded-2xl border border-[#d9c8a4] bg-white px-4 text-base font-medium text-[#18231d] outline-none transition focus:border-[#d7b16f] focus:ring-4 focus:ring-[#d7b16f]/18"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="Email address"
+                      required
+                    />
+                  </label>
+                  <label className="flex items-start gap-3 text-sm leading-5 text-[#647067]">
+                    <input
+                      type="checkbox"
+                      required
+                      className="mt-0.5 h-5 w-5 rounded border-[#d9c8a4] text-[#8b6328] focus:ring-[#d7b16f]"
+                    />
+                    <span>I agree to be contacted by Easy Homes about Kalpavruksha on call, WhatsApp or email.</span>
+                  </label>
+                  <button
+                    type="submit"
+                    disabled={downloadSubmitting}
+                    className="inline-flex min-h-[3.4rem] w-full items-center justify-center rounded-2xl bg-[#d9ad4f] px-5 text-base font-bold text-[#102319] shadow-[0_16px_34px_rgba(217,173,79,0.24)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#e2bb69] disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {downloadSubmitting ? 'Submitting...' : 'Send Me the Brochure & Map'}
+                  </button>
+                </form>
               </div>
             </div>
           </div>
@@ -3881,33 +4034,33 @@ const KalpavrukshaPage = () => {
           </div>
         </section>
 
-        {!isModalOpen && (
-          <div className="fixed bottom-0 left-1/2 z-[85] w-full max-w-[560px] -translate-x-1/2 rounded-t-[28px] border border-[#d7ba82]/45 bg-[linear-gradient(180deg,rgba(255,250,241,0.98)_0%,rgba(246,234,214,0.99)_100%)] px-3 pb-[calc(env(safe-area-inset-bottom)+0.55rem)] pt-3 shadow-[0_-18px_42px_rgba(83,64,31,0.2)] backdrop-blur md:hidden">
-            <div className="grid grid-cols-[1fr_auto_auto] items-center gap-2">
-              <div className="min-w-0 rounded-2xl border border-[#eadfcb] bg-white/88 px-3 py-2 shadow-[0_8px_20px_rgba(83,64,31,0.08)]">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8b6328]">Price From</p>
-                {KALPAVRUKSHA_TRUTH.priceFrom ? (
-                  <p className="truncate text-sm font-bold text-[#18231d]">{KALPAVRUKSHA_TRUTH.priceFrom}</p>
-                ) : (
-                  <p className="min-h-[1.25rem]" aria-hidden="true">&nbsp;</p>
-                )}
-              </div>
-
+        {!isModalOpen && !selectedImage && (
+          <div className="fixed bottom-0 left-1/2 z-[85] w-full max-w-[560px] -translate-x-1/2 rounded-t-[16px] border border-[#d7ba82]/45 bg-[#fff7e8] px-3 pb-[calc(env(safe-area-inset-bottom)+0.38rem)] pt-2 shadow-[0_-14px_34px_rgba(83,64,31,0.16)] md:hidden">
+            <div className="grid grid-cols-[2.75rem_2.75rem_minmax(0,1fr)] items-center gap-2">
               <a
                 href={KALPAVRUKSHA_CALL_URL}
                 onClick={() => trackKalpavrukshaCallClick('mobile_sticky_call')}
                 aria-label="Call Easy Homes"
-                className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[#d7ba82] bg-white text-[#8b6328] shadow-[0_8px_20px_rgba(83,64,31,0.1)] transition-all duration-200 active:scale-95"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-[15px] border border-[#d7ba82] bg-white text-[#173226] shadow-[0_8px_18px_rgba(83,64,31,0.09)] transition-all duration-200 active:scale-95"
               >
                 <Phone className="h-5 w-5" />
               </a>
 
               <button
                 type="button"
-                onClick={() => openVisitModal('mobile_sticky_book_visit')}
-                className="inline-flex h-12 items-center justify-center rounded-2xl bg-[#cba159] px-4 text-sm font-semibold text-[#1d1609] shadow-[0_12px_28px_rgba(203,161,89,0.3)] transition-all duration-200 active:scale-95"
+                onClick={() => openKalpavrukshaWhatsApp('mobile_sticky_whatsapp')}
+                aria-label="Open WhatsApp chat from sticky footer"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-[15px] border border-[#d7ba82] bg-white text-[#173226] shadow-[0_8px_18px_rgba(83,64,31,0.09)] transition-all duration-200 active:scale-95"
               >
-                Book Visit
+                <FaWhatsapp className="h-5 w-5" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => openVisitModal('mobile_sticky_book_visit')}
+                className="inline-flex h-11 items-center justify-center rounded-[15px] bg-[#cba159] px-4 text-sm font-bold text-[#102319] shadow-[0_10px_24px_rgba(203,161,89,0.24)] transition-all duration-200 active:scale-95"
+              >
+                Book Site Visit
               </button>
             </div>
           </div>

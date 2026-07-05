@@ -2,13 +2,11 @@ import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Building,
   CalendarDays,
-  CheckCircle,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Download,
-  Droplets,
-  FileCheck,
   Landmark,
   Layers,
   MapPin,
@@ -16,6 +14,7 @@ import {
   Phone,
   Route,
   Shield,
+  Star,
   Trees,
   Users,
   X,
@@ -23,6 +22,7 @@ import {
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import api from '../api';
+import YouTubeLiteEmbed from '../components/YouTubeLiteEmbed';
 import ZohoSalesIQWidgetLoader, { openZohoSalesIQChat } from '../components/ZohoSalesIQWidgetLoader';
 import {
   trackEvent,
@@ -43,6 +43,7 @@ import {
   KALPAVRUKSHA_PEACE_HERO_SRC_SET,
   KALPAVRUKSHA_TRUST_HERO_IMAGE,
   KALPAVRUKSHA_TRUST_HERO_SRC_SET,
+  KALPAVRUKSHA_WALKTHROUGH_BROCHURE_COVER,
 } from '../assets/kalpavrukshaHeroAssets';
 
 const preloadReviewsSection = () => import('../components/ReviewProject');
@@ -66,24 +67,44 @@ const LAYOUT_ASSET = {
 
 const PROJECT = {
   name: 'Kalpavruksha',
-  subtitle: 'Premium residential open plots near Vijayawada',
-  location: 'Near Vijayawada-Nagpur Greenfield Highway, Vemavaram',
-  locationShort: 'Near Vijayawada',
-  priceFrom: 'Rs. 30 Lakhs',
-  priceRange: 'Rs. 30-35 Lakhs',
+  subtitle: 'Residential Plots near Vijayawada, close to Amaravati',
+  location: 'Vemavaram, 5 km from West Bypass & Rayanapadu',
+  locationShort: 'Vemavaram',
+  priceFrom: 'Rs. 31 Lakhs',
+  priceRange: 'Rs. 31 Lakhs onwards',
   plotSizes: '174-525',
   plotSizeUnit: 'Sq.yd.',
-  projectArea: '9.03 Acres',
+  projectArea: '11 Acres',
   totalPlots: '105',
   bookedPlots: '17',
   reraId: 'P06160035909',
   possession: 'September 2026',
+  maintenance: 'Till Dec 2030',
   configuration: 'Residential plots',
 };
 const FOUNDER_MESSAGE = '';
 
 const CALL_URL = 'tel:+918988896666';
 const DIRECTIONS_URL = 'https://maps.app.goo.gl/dNA1KdiDNuLjTthG8';
+const KALPAVRUKSHA_GOOGLE_RATING = {
+  rating: '5.0',
+  reviewCount: '22',
+  reviewUrl: 'https://share.google/OHvpBdiGZ7sqZGHYR',
+  source: 'fallback',
+};
+const normalizeGoogleReviewSummary = (reviewData, fallback = KALPAVRUKSHA_GOOGLE_RATING) => {
+  const ratingValue = Number(reviewData?.rating);
+  const reviewCountValue = Number(reviewData?.reviewCount);
+
+  return {
+    rating: Number.isFinite(ratingValue) ? ratingValue.toFixed(1) : fallback.rating,
+    reviewCount: Number.isFinite(reviewCountValue)
+      ? String(Math.max(0, Math.round(reviewCountValue)))
+      : fallback.reviewCount,
+    reviewUrl: reviewData?.reviewUrl || fallback.reviewUrl,
+    source: reviewData?.source || fallback.source,
+  };
+};
 const KALPAVRUKSHA_ZOHO_CHAT_QUESTION =
   'Hi Easy Homes, I want details about Kalpavruksha open plots, pricing, and site visit availability.';
 const KALPAVRUKSHA_ZOHO_THEME = {
@@ -129,49 +150,43 @@ const isValidEmail = (value) => EMAIL_PATTERN.test(String(value || '').trim());
 
 const galleryImages = [
   {
-    title: 'Entrance',
-    label: 'Entrance',
-    image: require('../assets/kalpavruksha/Entry-000.webp'),
-    alt: 'Kalpavruksha grand entrance for the CRDA approved plotted community in Vijayawada',
-  },
-  {
-    title: 'Amenities',
+    title: 'Modern Clubhouse',
     label: 'Amenities',
     image: require('../assets/kalpavruksha/club house.webp'),
-    alt: 'Kalpavruksha clubhouse and lifestyle amenities',
+    alt: 'Kalpavruksha clubhouse exterior with landscaped lawns and premium lifestyle amenities',
+    maskEmbeddedLabel: true,
   },
   {
-    title: 'Landscape',
+    title: 'Contour Garden',
     label: 'Gardens',
     image: require('../assets/kalpavruksha/contour garden.webp'),
-    alt: 'Kalpavruksha contour garden with landscaped pathways',
+    alt: 'Kalpavruksha contour garden with landscaped pathways and open recreational greens',
+    maskEmbeddedLabel: true,
   },
   {
     title: 'Arrival Court',
     label: 'Arrival',
     image: require('../assets/kalpavruksha/arrival court.webp'),
     alt: 'Kalpavruksha arrival court inside the gated layout',
+    maskEmbeddedLabel: true,
   },
   {
-    title: 'Water Feature',
+    title: 'Lotus Pond Retreat',
     label: 'Lifestyle',
     image: require('../assets/kalpavruksha/lotus pond 2.webp'),
-    alt: 'Kalpavruksha lotus pond and landscaped water feature',
-  },
-  {
-    title: 'Seating Area',
-    label: 'Community',
-    image: require('../assets/kalpavruksha/seating area.webp'),
-    alt: 'Kalpavruksha community seating area near gardens',
+    alt: 'Kalpavruksha lotus pond water feature with curved walkways and reflective landscaping',
+    maskEmbeddedLabel: true,
   },
 ];
+const CROPPED_GALLERY_IMAGE_STYLE = { height: '124%', objectPosition: 'center top' };
+const getGalleryImageStyle = (item) => (item?.maskEmbeddedLabel ? CROPPED_GALLERY_IMAGE_STYLE : undefined);
 
 const heroSlides = [
   {
     id: 'overview',
     label: 'Overview',
-    eyebrow: 'CRDA-approved open plots in Vijayawada',
-    title: "Where You Don't Just Arrive - You Belong",
+    eyebrow: 'CRDA & RERA APPROVED - AMARAVATI GROWTH CORRIDOR',
+    title: 'Residential Plots near Vijayawada, close to Amaravati',
     image: KALPAVRUKSHA_OVERVIEW_HERO_IMAGE,
     imageSrcSet: KALPAVRUKSHA_OVERVIEW_HERO_SRC_SET,
     alt: 'Kalpavruksha plotted community overview',
@@ -214,19 +229,11 @@ const heroSlides = [
   },
 ];
 
-const trustItems = [
-  { icon: <Shield className="h-4 w-4" />, label: 'CRDA Approved' },
-  { icon: <FileCheck className="h-4 w-4" />, label: 'RERA Approved' },
-  { icon: <CheckCircle className="h-4 w-4" />, label: 'Clear Title' },
-  { icon: <Trees className="h-4 w-4" />, label: PROJECT.projectArea },
-  { icon: <Building className="h-4 w-4" />, label: `${PROJECT.totalPlots} Premium Plots` },
-];
-
 const snapshotCards = [
   {
     label: 'Price From',
     value: PROJECT.priceFrom,
-    detail: `FAQ range: ${PROJECT.priceRange}`,
+    detail: `Starting price: ${PROJECT.priceRange}`,
     icon: <Landmark className="h-5 w-5" />,
   },
   {
@@ -254,23 +261,23 @@ const availabilityCards = [
   {
     label: 'Booked So Far',
     value: `${PROJECT.bookedPlots} plots`,
-    detail: 'Booking progress is shown transparently from available project data.',
+    detail: 'Current booking progress shared by the project team.',
   },
   {
     label: 'Possession',
     value: PROJECT.possession,
-    detail: 'Timeline shown in the project FAQ.',
+    detail: 'Expected possession timeline from the project details.',
   },
   {
-    label: 'Price Clarity',
-    value: PROJECT.priceRange,
-    detail: 'Final pricing can vary by plot size, facing, and location in the layout.',
+    label: 'Developer Maintenance',
+    value: PROJECT.maintenance,
+    detail: 'Developer maintenance is planned through December 2030.',
   },
 ];
 
 const locationChips = [
   { label: '7.5 km', detail: 'Vijayawada' },
-  { label: '5 km', detail: 'Western Bypass' },
+  { label: '5 km', detail: 'West Bypass & Rayanapadu' },
   { label: 'NH 65', detail: 'Hyderabad Highway access' },
   { label: '13.5 km', detail: 'Amaravati Start-up Village & BITS' },
   { label: '14 km', detail: 'Vijayawada Railway Station' },
@@ -278,12 +285,48 @@ const locationChips = [
 ];
 
 const amenities = [
-  { icon: <Route className="h-5 w-5" />, title: "60', 40' and 33' roads", detail: 'Internal CC roads with planned circulation.' },
-  { icon: <Zap className="h-5 w-5" />, title: 'Underground utilities', detail: 'Power, water, fiber and sewage networks.' },
-  { icon: <Droplets className="h-5 w-5" />, title: 'Water systems', detail: 'Overhead tank, underground supply and drainage planning.' },
-  { icon: <Users className="h-5 w-5" />, title: 'Community amenities', detail: 'Clubhouse, gym, party lawn and play areas.' },
-  { icon: <Trees className="h-5 w-5" />, title: 'Landscape zones', detail: 'Rivulet garden, edge gardens and arrival court.' },
-  { icon: <Shield className="h-5 w-5" />, title: 'Gated security', detail: "Compound wall, CCTV, gated entry and solar lighting." },
+  { icon: <Trees className="h-5 w-5" />, title: 'Hill views', detail: 'Unobstructed views of the Kondapalli hills from most plots in the layout.' },
+  { icon: <Route className="h-5 w-5" />, title: 'Creek & walking trail', detail: 'A live creek runs through Kalpavruksha with a dedicated trail alongside it.' },
+  { icon: <Users className="h-5 w-5" />, title: 'Clubhouse', detail: 'Infinity pool, private theatre, banquet hall, BBQ deck and an AC gym.' },
+  { icon: <Layers className="h-5 w-5" />, title: 'Boulder park & sports courts', detail: 'Pickleball and box cricket courts, plus a landscaped boulder park.' },
+  { icon: <Zap className="h-5 w-5" />, title: 'CC roads & underground utilities', detail: 'Every internal road is concrete; every utility line runs underground.' },
+  { icon: <Shield className="h-5 w-5" />, title: '11-ft wall & 24/7 CCTV', detail: 'The entire layout is enclosed and monitored around the clock.' },
+];
+
+const differenceItems = [
+  {
+    title: 'Sunrise framed by the hills',
+    detail: 'A distinctive natural elevation setting that protects the peaceful, scenic character of the community.',
+  },
+  {
+    title: 'Creek-side walking track',
+    detail: 'An engineered rivulet garden inside the layout boundary - daily lifestyle value, not just landscaping.',
+  },
+  {
+    title: 'Rooftop clubhouse',
+    detail: 'Infinity pool, private theatre, AC gym, BBQ zone, banquet hall and indoor sports.',
+  },
+  {
+    title: '40 & 30 ft CC roads',
+    detail: 'Grand avenue entries with underground concrete drainage, ICT ducting and avenue tree plantation.',
+  },
+];
+
+const sitePhotoPlaceholders = [
+  {
+    label: 'Entrance wall',
+    title: 'Entrance wall',
+    detail: 'Latest shared site photo showing the entrance wall progress at Kalpavruksha.',
+    image: require('../assets/kalpavruksha/site-entrance-wall.png'),
+    alt: 'Kalpavruksha live site entrance wall progress',
+  },
+  {
+    label: 'Main gate',
+    title: 'Main gate',
+    detail: 'Latest shared site photo showing the main gate progress at Kalpavruksha.',
+    image: require('../assets/kalpavruksha/site-main-gate.png'),
+    alt: 'Kalpavruksha live site main gate progress',
+  },
 ];
 
 const faqs = [
@@ -293,7 +336,7 @@ const faqs = [
   },
   {
     question: 'What is the project size?',
-    answer: 'The project spans 9.03 acres and is planned as a gated residential plotted community.',
+    answer: 'The project spans 11 acres and is planned as a gated residential plotted community.',
   },
   {
     question: 'How many plots are available in Kalpavruksha?',
@@ -305,7 +348,7 @@ const faqs = [
   },
   {
     question: 'What is the price range?',
-    answer: 'The plots are priced between Rs. 30-35 lakhs. Final pricing can vary by plot size, facing, and location within the layout.',
+    answer: 'The current starting price is Rs. 31 lakhs onwards. Final pricing can vary by plot size, facing, and location within the layout.',
   },
   {
     question: 'What is the RERA ID?',
@@ -538,9 +581,14 @@ function CountUpValue({
   );
 }
 
+const getFirstNumber = (value, fallback = 0) => {
+  const match = String(value || '').match(/\d+(?:\.\d+)?/);
+  return match ? Number(match[0]) : fallback;
+};
+
 function ProjectMetricValue({ label, value, unit, className = '' }) {
   if (label === 'Price From') {
-    return <CountUpValue end={30} prefix="Rs. " suffix=" Lakhs" className={className} />;
+    return <CountUpValue end={getFirstNumber(PROJECT.priceFrom, 31)} prefix="Rs. " suffix=" Lakhs" className={className} />;
   }
 
   if (label === 'Plot Sizes') {
@@ -555,11 +603,12 @@ function ProjectMetricValue({ label, value, unit, className = '' }) {
   }
 
   if (label === 'Project Area') {
-    return <CountUpValue end={9.03} decimals={2} suffix=" Acres" className={className} />;
+    const areaValue = getFirstNumber(PROJECT.projectArea, 11);
+    return <CountUpValue end={areaValue} decimals={String(areaValue).includes('.') ? 2 : 0} suffix=" Acres" className={className} />;
   }
 
   if (label === 'Total plots') {
-    return <CountUpValue end={105} className={className} />;
+    return <CountUpValue end={getFirstNumber(PROJECT.totalPlots, 105)} className={className} />;
   }
 
   return <span className={className}>{value} {unit || ''}</span>;
@@ -571,11 +620,7 @@ function AvailabilityMetricValue({ item, className = '' }) {
   }
 
   if (item.label === 'Price Clarity') {
-    return (
-      <span className={className} aria-label={PROJECT.priceRange}>
-        Rs. <CountUpValue end={30} />-<CountUpValue end={35} /> Lakhs
-      </span>
-    );
+    return <span className={className}>{PROJECT.priceRange}</span>;
   }
 
   return <span className={className}>{item.value}</span>;
@@ -624,10 +669,13 @@ export default function KalpavrukshaV2() {
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
   const [activeHeroSlideIndex, setActiveHeroSlideIndex] = useState(0);
   const [mobileGalleryIndex, setMobileGalleryIndex] = useState(0);
+  const [sitePhotoIndex, setSitePhotoIndex] = useState(0);
+  const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
   const [isMobileGalleryInView, setIsMobileGalleryInView] = useState(false);
   const [stickyCtaVisible, setStickyCtaVisible] = useState(false);
   const [layoutPreviewOpen, setLayoutPreviewOpen] = useState(false);
   const [shouldRenderReviews, setShouldRenderReviews] = useState(false);
+  const [googleReviewSummary, setGoogleReviewSummary] = useState(KALPAVRUKSHA_GOOGLE_RATING);
 
   const heroRef = useRef(null);
   const snapshotRef = useRef(null);
@@ -640,6 +688,9 @@ export default function KalpavrukshaV2() {
   const faqRef = useRef(null);
   const finalCtaRef = useRef(null);
   const todayDate = new Date().toISOString().split('T')[0];
+  const activeGalleryImage = galleryImages[mobileGalleryIndex] || galleryImages[0];
+  const activeSitePhoto = sitePhotoPlaceholders[sitePhotoIndex] || sitePhotoPlaceholders[0];
+  const selectedGalleryImageIndex = galleryImages.findIndex((item) => item.image === selectedGalleryImage?.image);
 
   const showToast = (msg, type = 'error') => {
     setToast({ msg, type });
@@ -652,6 +703,16 @@ export default function KalpavrukshaV2() {
     const headerOffset = window.innerWidth >= 1024 ? 92 : 84;
     const top = ref.current.getBoundingClientRect().top + window.scrollY - headerOffset;
     window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
+  };
+
+  const trackGoogleReviewsClick = (placement = 'hero_review_pill') => {
+    trackEvent('google_reviews_click', withTrackingContext({
+      project: PROJECT.name,
+      source: 'kalpavruksha',
+      placement,
+      rating_source: googleReviewSummary.source,
+      review_url: googleReviewSummary.reviewUrl,
+    }));
   };
 
   useEffect(() => {
@@ -715,7 +776,7 @@ export default function KalpavrukshaV2() {
     if (typeof window === 'undefined') return undefined;
 
     const galleryNode = galleryRef.current;
-    if (!galleryNode || window.innerWidth >= 1024) {
+    if (!galleryNode) {
       setIsMobileGalleryInView(false);
       return undefined;
     }
@@ -738,15 +799,28 @@ export default function KalpavrukshaV2() {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !isMobileGalleryInView) return undefined;
+    if (typeof window === 'undefined' || !isMobileGalleryInView || selectedGalleryImage) return undefined;
 
     const timerId = window.setInterval(() => {
-      if (window.innerWidth >= 1024) return;
       setMobileGalleryIndex((current) => (current + 1) % galleryImages.length);
-    }, 3400);
+    }, 3600);
 
     return () => window.clearInterval(timerId);
-  }, [isMobileGalleryInView]);
+  }, [isMobileGalleryInView, selectedGalleryImage]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || visitModalOpen || brochureModalOpen || layoutPreviewOpen || selectedGalleryImage) return undefined;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return undefined;
+    }
+
+    const timerId = window.setInterval(() => {
+      setSitePhotoIndex((current) => (current + 1) % sitePhotoPlaceholders.length);
+    }, 3600);
+
+    return () => window.clearInterval(timerId);
+  }, [brochureModalOpen, layoutPreviewOpen, selectedGalleryImage, visitModalOpen]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || window.innerWidth >= 1024 || !isMobileGalleryInView) return;
@@ -759,6 +833,27 @@ export default function KalpavrukshaV2() {
       inline: 'start',
     });
   }, [isMobileGalleryInView, mobileGalleryIndex]);
+
+  useEffect(() => {
+    if (!selectedGalleryImage || typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const handleGalleryKeyDown = (event) => {
+      if (event.key === 'ArrowLeft') {
+        showPreviousGalleryImage();
+      }
+      if (event.key === 'ArrowRight') {
+        showNextGalleryImage();
+      }
+      if (event.key === 'Escape') {
+        closeGalleryPreview();
+      }
+    };
+
+    window.addEventListener('keydown', handleGalleryKeyDown);
+    return () => window.removeEventListener('keydown', handleGalleryKeyDown);
+  }, [selectedGalleryImage]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -786,6 +881,24 @@ export default function KalpavrukshaV2() {
 
     observer.observe(reviewsNode);
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    let isActive = true;
+
+    api.get('/api/google-reviews/kalpavruksha')
+      .then((response) => {
+        const reviewData = response.data?.data;
+        if (!isActive || !response.data?.success || !reviewData) return;
+        setGoogleReviewSummary(normalizeGoogleReviewSummary(reviewData));
+      })
+      .catch(() => {
+        // Keep the verified Google link visible even when live Places data is not configured yet.
+      });
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -874,6 +987,35 @@ export default function KalpavrukshaV2() {
 
   const closeBrochureModal = () => {
     setBrochureModalOpen(false);
+  };
+
+  const openGalleryPreview = (item, index = null) => {
+    if (Number.isInteger(index)) {
+      setMobileGalleryIndex(index);
+    }
+    setSelectedGalleryImage(item);
+  };
+
+  const closeGalleryPreview = () => {
+    setSelectedGalleryImage(null);
+  };
+
+  const showPreviousGalleryImage = () => {
+    setSelectedGalleryImage((current) => {
+      const currentIndex = galleryImages.findIndex((item) => item.image === current?.image);
+      const nextIndex = currentIndex <= 0 ? galleryImages.length - 1 : currentIndex - 1;
+      setMobileGalleryIndex(nextIndex);
+      return galleryImages[nextIndex] || current;
+    });
+  };
+
+  const showNextGalleryImage = () => {
+    setSelectedGalleryImage((current) => {
+      const currentIndex = galleryImages.findIndex((item) => item.image === current?.image);
+      const nextIndex = currentIndex < 0 || currentIndex >= galleryImages.length - 1 ? 0 : currentIndex + 1;
+      setMobileGalleryIndex(nextIndex);
+      return galleryImages[nextIndex] || current;
+    });
   };
 
   const handleVisitInput = (event) => {
@@ -1131,38 +1273,6 @@ export default function KalpavrukshaV2() {
     }
   };
 
-  const continueFromQuickRequest = (event) => {
-    event.preventDefault();
-    const trimmedName = visitForm.name.trim();
-    const trimmedPhone = visitForm.phone.trim();
-    const trimmedEmail = visitForm.email.trim();
-
-    if (!trimmedName || !trimmedPhone || !trimmedEmail) {
-      showToast('Please enter your name, phone number, and email address to continue.');
-      return;
-    }
-
-    if (!/^\d{10}$/.test(trimmedPhone)) {
-      showToast('Please enter a valid 10-digit phone number.');
-      return;
-    }
-
-    if (!isValidEmail(trimmedEmail)) {
-      showToast('Please enter a valid email address.');
-      return;
-    }
-
-    setVisitSource('lp_b_inline_request');
-    setVisitStep(2);
-    setVisitModalOpen(true);
-    trackEvent('visit_step_1_submit', withTrackingContext({
-      form_name: 'kalpavruksha_site_visit_form',
-      project: PROJECT.name,
-      source: 'lp_b_inline_request',
-      interest: visitForm.interest || VISIT_INTEREST_OPTIONS[0],
-    }));
-  };
-
   const navItems = [
     { label: 'Overview', onClick: () => scrollToRef(heroRef) },
     { label: 'Layout', onClick: () => scrollToRef(planRef) },
@@ -1191,7 +1301,7 @@ export default function KalpavrukshaV2() {
         <title>Kalpavruksha Open Plots in Vijayawada | CRDA Approved Plots Near Amaravati | Easy Homes</title>
         <meta
           name="description"
-          content="Explore Kalpavruksha by Easy Homes, a CRDA-approved residential plotted community with 105 open plots across 9.03 acres near Vijayawada and Amaravati, with plot sizes from 174 to 525 square yards, premium infrastructure, and clubhouse amenities."
+          content="Explore Kalpavruksha by Easy Homes, a CRDA-approved residential plotted community with 105 open plots across 11 acres in Vemavaram, 5 km from West Bypass and Rayanapadu, with plot sizes from 174 to 525 square yards, premium infrastructure, and clubhouse amenities."
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -1313,6 +1423,23 @@ export default function KalpavrukshaV2() {
               transform: translateX(0) scale(1);
             }
           }
+
+          @keyframes kv2-gallery-progress {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+          }
+
+          .kalpa-v2-page .kv2-gallery-progress {
+            transform-origin: left center;
+            animation: kv2-gallery-progress 3600ms linear infinite;
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .kalpa-v2-page .kv2-gallery-progress {
+              animation: none;
+              transform: scaleX(1);
+            }
+          }
         `}
       </style>
 
@@ -1412,7 +1539,7 @@ export default function KalpavrukshaV2() {
 
                 <div className="relative z-10 mx-auto grid min-h-[30rem] max-w-6xl items-end gap-8 px-5 pb-8 pt-10 lg:min-h-[calc(100vh-4.1rem)] lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:px-6 lg:py-12">
                   <div className="max-w-2xl text-center lg:text-left">
-                    <p className="mx-auto inline-flex rounded-full border border-[#fff7e8]/45 bg-[#fff7e8]/12 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-[#ffe2a8] lg:mx-0">
+                    <p className="mx-auto flex w-fit rounded-full border border-[#fff7e8]/45 bg-[#fff7e8]/12 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-[#ffe2a8] lg:mx-0">
                       {activeHeroSlide.label}
                     </p>
                     <h1 className="kv2-display kv2-hero-title mt-5 text-[1.68rem] font-semibold uppercase leading-[1.08] tracking-[-0.01em] text-[#ffe2a8] sm:text-[2.2rem] lg:text-[2.85rem] xl:text-[3.15rem]">
@@ -1421,20 +1548,38 @@ export default function KalpavrukshaV2() {
                     <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-[#fff7e8]/86 sm:text-base lg:mx-0 lg:text-base lg:leading-7">
                       {PROJECT.plotSizes} {PROJECT.plotSizeUnit} | {PROJECT.projectArea} | {PROJECT.locationShort} | Gated Community
                     </p>
+                    <a
+                      href={googleReviewSummary.reviewUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => trackGoogleReviewsClick('hero_review_pill')}
+                      className="mx-auto mt-4 inline-flex w-fit max-w-full items-center gap-2 rounded-full border border-[#ffe2a8]/35 bg-[#27382c]/38 px-3 py-1.5 text-[11px] font-semibold text-[#fff7e8] shadow-[0_12px_28px_rgba(39,56,44,0.18)] transition hover:border-[#ffe2a8]/65 hover:bg-[#27382c]/52 lg:mx-0"
+                      aria-label="Open Kalpavruksha Google reviews in a new tab"
+                    >
+                      <span className="rounded-full bg-[#ffe2a8] px-2 py-0.5 text-[#27382c]">{googleReviewSummary.rating}</span>
+                      <span className="flex items-center gap-0.5 text-[#ffe2a8]" aria-label={`${googleReviewSummary.rating} out of 5 stars`}>
+                        {Array.from({ length: 5 }).map((_, index) => (
+                          <Star key={index} className="h-3.5 w-3.5 fill-current" strokeWidth={1.8} />
+                        ))}
+                      </span>
+                      <span>{googleReviewSummary.reviewCount} Google Reviews</span>
+                    </a>
                     <div className="mx-auto mt-6 grid max-w-sm grid-cols-2 gap-3 lg:mx-0">
                       <button
                         type="button"
-                        onClick={() => openVisitModal('lp_b_hero_book')}
+                        onClick={() => openWhatsApp('lp_b_hero_price')}
+                        aria-label="Get Price & Location on WhatsApp"
                         className="rounded-xl bg-[#b56f37] px-4 py-3 text-sm font-bold uppercase tracking-[0.02em] text-[#fff7e8] shadow-[0_14px_30px_rgba(181,111,55,0.28)]"
                       >
-                        Book Site Visit
+                        Get Price & Location
                       </button>
                       <button
                         type="button"
-                        onClick={() => openWhatsApp('lp_b_hero_price')}
+                        onClick={() => openVisitModal('lp_b_hero_book')}
+                        aria-label="Book Site Visit"
                         className="rounded-xl border border-[#ffe2a8]/70 bg-[#fff7e8]/8 px-4 py-3 text-sm font-bold uppercase tracking-[0.02em] text-[#ffe2a8]"
                       >
-                        Current Price
+                        Book Site Visit
                       </button>
                     </div>
 
@@ -1476,66 +1621,70 @@ export default function KalpavrukshaV2() {
 
           <section ref={snapshotRef} className="kv2-section-shell bg-[linear-gradient(135deg,#f4e6cc_0%,#dbe0c7_54%,#ead2aa_100%)] px-5 py-12 lg:px-6 lg:py-16">
             <div className="relative z-10 mx-auto max-w-5xl">
-            <h2 className="kv2-display kv2-reveal-target text-center text-[1.75rem] font-semibold uppercase tracking-[-0.02em] text-[#27382c] lg:text-[2.45rem]">
-              Why buyers shortlist Kalpavruksha
-            </h2>
-
-            <div className="mx-auto mt-7 grid max-w-5xl grid-cols-2 gap-3 text-center sm:grid-cols-5 lg:gap-4">
-              {trustItems.map((item) => (
-                <div key={item.label} className="kv2-card-lift rounded-[22px] border border-[#fff7e8]/70 bg-[#fff7e8]/62 px-2 py-3 shadow-[0_18px_36px_rgba(82,104,74,0.08)] backdrop-blur">
-                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border border-[#b56f37]/22 bg-[#f2d6aa] text-[#52684a] lg:h-11 lg:w-11">
-                    {item.icon}
-                  </div>
-                  <p className="mt-2 text-[10px] font-extrabold uppercase leading-tight tracking-[0.08em] text-[#27382c]">
-                    {item.label}
+              <div className="mx-auto max-w-4xl text-center">
+                <div className="kv2-reveal-target">
+                  <p className="inline-flex rounded-full border border-[#52684a]/22 bg-[#fff7e8]/54 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8b5526]">
+                    Why Choose Us
+                  </p>
+                  <h2 className="kv2-display mx-auto mt-5 max-w-3xl text-[1.85rem] font-semibold uppercase leading-[1.04] tracking-[-0.02em] text-[#27382c] lg:text-[2.65rem]">
+                    What makes Kalpavruksha different
+                  </h2>
+                  <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[#52684a] md:text-base">
+                    Built for buyers who value transparency, lifestyle, and long-term appreciation.
                   </p>
                 </div>
-              ))}
-            </div>
+              </div>
 
-            <div className="mx-auto mt-7 grid max-w-5xl grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-5">
-              {[
-                galleryImages[0],
-                galleryImages[1],
-                galleryImages[2],
-                galleryImages[3],
-                galleryImages[4],
-                galleryImages[5],
-              ].map((item) => (
-                <button
-                  key={item.title}
-                  type="button"
-                  onClick={() => scrollToRef(galleryRef)}
-                  className="group kv2-image-card kv2-card-lift relative h-24 overflow-hidden rounded-[18px] border border-[#fff7e8]/70 bg-[#52684a] shadow-[0_18px_36px_rgba(82,104,74,0.18)] lg:h-44 lg:rounded-[26px]"
-                >
-                  <img src={item.image} alt={item.alt} loading="eager" decoding="async" fetchPriority="low" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#233729]/82 via-[#233729]/10 to-transparent" />
-                  <span className="absolute inset-x-2 bottom-3 text-center text-sm font-extrabold uppercase leading-tight text-[#fff7e8]">
-                    {item.label}
-                  </span>
-                </button>
-              ))}
-            </div>
+              <div className="mt-8 grid gap-5 lg:grid-cols-[1.08fr,0.92fr] lg:items-stretch">
+                <div className="order-2 grid gap-4 sm:grid-cols-2 lg:order-2">
+                  {differenceItems.map((item, index) => (
+                    <div
+                      key={item.title}
+                      className="kv2-card-lift rounded-[22px] border border-[#fff7e8]/76 bg-[#fff7e8]/62 p-4 shadow-[0_18px_42px_rgba(82,104,74,0.1)] backdrop-blur"
+                      style={{ '--kv2-delay': `${index * 60}ms` }}
+                    >
+                      <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8b5526]">{String(index + 1).padStart(2, '0')}</span>
+                      <h3 className="mt-2 text-base font-bold tracking-[-0.02em] text-[#27382c]">{item.title}</h3>
+                      <p className="mt-2 text-sm leading-6 text-[#5f684f]">{item.detail}</p>
+                    </div>
+                  ))}
+                </div>
 
-            <div className="kv2-reveal-target mx-auto mt-8 max-w-5xl rounded-[28px] border border-[#fff7e8]/75 bg-[#fff7e8]/68 p-4 shadow-[0_22px_48px_rgba(82,104,74,0.12)] backdrop-blur lg:p-6">
-              <p className="text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8b5526]">Project Snapshot</p>
-              <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-                {snapshotCards.map((item) => (
-                  <div key={item.label} className="kv2-card-lift rounded-[20px] border border-[#b56f37]/10 bg-[#f0dfbf]/72 p-3">
-                    <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#8b5526]/75">{item.label}</p>
-                    <ProjectMetricValue label={item.label} value={item.value} unit={item.unit} className="mt-1 block text-base font-extrabold leading-tight text-[#27382c]" />
+                <div className="kv2-reveal-target order-1 grid overflow-hidden rounded-[28px] border border-[#fff7e8]/75 bg-[#fff7e8]/58 shadow-[0_28px_68px_rgba(82,104,74,0.16)] backdrop-blur lg:order-1 lg:grid-rows-[auto,1fr]">
+                <div className="bg-[linear-gradient(145deg,#27382c_0%,#52684a_100%)] p-6 text-[#fff7e8]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f1cf8f]">Live Site Images</p>
+                  <h3 className="kv2-display mt-3 text-[1.75rem] font-semibold tracking-[-0.04em] text-[#fff7e8] md:text-[2rem]">{activeSitePhoto.title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-[#fff7e8]/74 md:text-base md:leading-7">{activeSitePhoto.detail}</p>
+                  <div className="mt-5 flex items-center gap-2">
+                    {sitePhotoPlaceholders.map((item, index) => (
+                      <button
+                        key={item.label}
+                        type="button"
+                        onClick={() => setSitePhotoIndex(index)}
+                        className={`h-2 rounded-full transition-all ${sitePhotoIndex === index ? 'w-8 bg-[#f1cf8f]' : 'w-2 bg-[#fff7e8]/35'}`}
+                        aria-label={`Show ${item.label} live site photo`}
+                      />
+                    ))}
                   </div>
-                ))}
+                </div>
+                <div className="relative min-h-[17rem] overflow-hidden bg-[radial-gradient(circle_at_top,rgba(181,111,55,0.16),transparent_42%),linear-gradient(145deg,#fff7e8_0%,#ead6b6_100%)] p-5">
+                  <div className="relative min-h-[13rem] overflow-hidden rounded-[22px] bg-[#fff7e8]/64 text-[#27382c] shadow-[0_18px_42px_rgba(82,104,74,0.14)] ring-1 ring-[#b56f37]/26">
+                    <img
+                      key={activeSitePhoto.title}
+                      src={activeSitePhoto.image}
+                      alt={activeSitePhoto.alt || activeSitePhoto.title}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full min-h-[13rem] w-full object-cover transition-transform duration-700 hover:scale-[1.025]"
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(39,56,44,0)_42%,rgba(39,56,44,0.24)_100%)]" />
+                    <p className="absolute bottom-3 right-3 rounded-full border border-[#fff7e8]/44 bg-[#27382c]/74 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#fff7e8] backdrop-blur-sm">
+                      {String(sitePhotoIndex + 1).padStart(2, '0')} / {sitePhotoPlaceholders.length}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="mx-auto mt-4 grid max-w-xl grid-cols-2 gap-3">
-                <button type="button" onClick={() => openVisitModal('lp_b_snapshot')} className="rounded-xl bg-[#b56f37] px-3 py-3 text-sm font-bold text-[#fff7e8]">
-                  Book Visit
-                </button>
-                <button type="button" onClick={() => openWhatsApp('lp_b_snapshot_price')} className="rounded-xl border border-[#b56f37]/45 bg-[#fff7e8]/45 px-3 py-3 text-sm font-bold text-[#8b5526]">
-                  WhatsApp Price
-                </button>
               </div>
-            </div>
             </div>
           </section>
 
@@ -1551,7 +1700,7 @@ export default function KalpavrukshaV2() {
                   </h2>
                 </div>
                 <p className="kv2-reveal-target max-w-xl text-sm leading-7 text-[#52684a] md:text-base md:leading-8 lg:justify-self-end">
-                  Current project facts are shown plainly so buyers can compare, ask questions, and plan a visit with confidence.
+                  Current progress is presented clearly so buyers can discuss availability and plan a site visit with confidence.
                 </p>
               </div>
               <div className="mt-7 grid gap-3 sm:grid-cols-3">
@@ -1566,6 +1715,26 @@ export default function KalpavrukshaV2() {
             </div>
           </section>
 
+          <section className="kv2-section-shell border-y border-[#b56f37]/12 bg-[linear-gradient(135deg,#f7ecd9_0%,#e2d1aa_52%,#dbe0c7_100%)] px-5 py-12 text-[#27382c] md:py-16 lg:px-6">
+            <div className="relative z-10 mx-auto max-w-5xl">
+              <SectionHeader
+                eyebrow="Walkthrough"
+                title="See the project before you visit"
+                description="A short video walkthrough helps buyers understand the atmosphere, layout story and visit context before planning the site visit."
+              />
+              <div className="kv2-reveal-target mt-8 overflow-hidden rounded-[30px] border border-[#fff7e8]/76 bg-[#fff7e8]/62 p-3 shadow-[0_24px_58px_rgba(82,104,74,0.14)] backdrop-blur md:p-4">
+                <div className="relative aspect-video overflow-hidden rounded-[24px] bg-[#f4e6cc] ring-1 ring-[#b56f37]/18">
+                  <YouTubeLiteEmbed
+                    videoId="mt-G29uakpQ"
+                    title="Kalpavruksha project walkthrough video"
+                    description="Experience Kalpavruksha before you visit"
+                    posterSrc={KALPAVRUKSHA_WALKTHROUGH_BROCHURE_COVER}
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+
           <section ref={galleryRef} className="kv2-section-shell border-y border-[#b56f37]/12 bg-[linear-gradient(180deg,#f8e7ca_0%,#e6caa0_100%)] py-12 md:py-16">
             <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6">
               <SectionHeader
@@ -1574,30 +1743,95 @@ export default function KalpavrukshaV2() {
                 description="Swipe on mobile or explore the premium gallery on desktop before planning the visit."
               />
 
-              <div ref={galleryTrackRef} className="kv2-mobile-gallery mt-8 flex snap-x gap-4 overflow-x-auto pb-3 lg:grid lg:grid-cols-3 lg:overflow-visible">
-                {galleryImages.map((item) => (
-                  <div
-                    key={item.title}
-                    className="group kv2-image-card kv2-card-lift relative min-w-[78%] snap-start overflow-hidden rounded-[26px] border border-[#fff7e8]/70 bg-[#52684a] shadow-[0_22px_48px_rgba(82,104,74,0.18)] sm:min-w-[48%] lg:min-w-0"
-                  >
-                    <img src={item.image} alt={item.alt} loading="eager" decoding="async" className="h-56 w-full object-cover transition duration-500 group-hover:scale-105 lg:h-60" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#233729]/82 via-[#233729]/18 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 p-5 text-[#fff7e8]">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f1cf8f]">{item.label}</p>
-                      <h3 className="mt-2 text-xl font-bold">{item.title}</h3>
+              <div ref={galleryTrackRef} className="mt-8">
+                <button
+                  type="button"
+                  onClick={() => openGalleryPreview(activeGalleryImage, mobileGalleryIndex)}
+                  className="group kv2-image-card kv2-card-lift mx-auto block w-full max-w-5xl overflow-hidden rounded-[30px] border border-[#fff7e8]/72 bg-[#fff7e8]/74 text-left shadow-[0_24px_58px_rgba(82,104,74,0.16)] backdrop-blur transition-all duration-300 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#b56f37]/22"
+                >
+                  <div className="grid lg:grid-cols-[1.18fr,0.82fr]">
+                    <div className="relative h-72 overflow-hidden bg-[#52684a] lg:h-[28rem]">
+                      <img
+                        key={activeGalleryImage.title}
+                        src={activeGalleryImage.image}
+                        alt={activeGalleryImage.alt}
+                        loading="eager"
+                        decoding="async"
+                        className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.025]"
+                        style={getGalleryImageStyle(activeGalleryImage)}
+                      />
+                      <div className="absolute left-5 right-5 top-5 h-1 overflow-hidden rounded-full bg-[#fff7e8]/24">
+                        <div key={activeGalleryImage.title} className="kv2-gallery-progress h-full rounded-full bg-[#f1cf8f]" />
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#233729]/38 via-transparent to-transparent" />
+                    </div>
+                    <div className="flex flex-col justify-between p-5 text-[#27382c] md:p-7">
+                      <div>
+                        <p className="inline-flex rounded-full border border-[#b56f37]/22 bg-[#f2d6aa] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8b5526]">
+                          Gallery {String(mobileGalleryIndex + 1).padStart(2, '0')} / {galleryImages.length}
+                        </p>
+                        <h3 className="kv2-display mt-5 text-3xl font-semibold tracking-[-0.04em] text-[#27382c]">
+                          {activeGalleryImage.title}
+                        </h3>
+                        <p className="mt-4 text-sm leading-7 text-[#5f684f] md:text-base">
+                          A simple slideshow of planned lifestyle render views. Click to view the image larger.
+                        </p>
+                      </div>
+                      <div className="mt-8 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-1.5">
+                          {galleryImages.map((item, index) => (
+                            <span
+                              key={item.title}
+                              className={`h-2 rounded-full transition-all ${index === mobileGalleryIndex ? 'w-8 bg-[#b56f37]' : 'w-2 bg-[#52684a]/35'}`}
+                            />
+                          ))}
+                        </div>
+                        <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#b56f37]/24 bg-[#fff7e8] text-[#8b5526] shadow-sm">
+                          <ChevronRight className="h-5 w-5" />
+                        </span>
+                      </div>
                     </div>
                   </div>
-                ))}
+                </button>
               </div>
-              <div className="mt-2 flex justify-center gap-2 lg:hidden">
+              <div className="mt-4 flex justify-center gap-2">
+                <button
+                  type="button"
+                  aria-label="Show previous gallery slide"
+                  onClick={() => setMobileGalleryIndex((current) => (current <= 0 ? galleryImages.length - 1 : current - 1))}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#b56f37]/24 bg-[#fff7e8] text-[#8b5526] shadow-sm"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Show next gallery slide"
+                  onClick={() => setMobileGalleryIndex((current) => (current >= galleryImages.length - 1 ? 0 : current + 1))}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#b56f37]/24 bg-[#fff7e8] text-[#8b5526] shadow-sm"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="mx-auto mt-5 grid max-w-5xl grid-cols-4 gap-3">
                 {galleryImages.map((item, index) => (
                   <button
                     key={item.title}
                     type="button"
                     onClick={() => setMobileGalleryIndex(index)}
-                    className={`h-2 rounded-full transition-all ${index === mobileGalleryIndex ? 'w-8 bg-[#b56f37]' : 'w-2 bg-[#52684a]/35'}`}
+                    className={`overflow-hidden rounded-[18px] border bg-[#fff7e8] shadow-sm transition-all duration-200 ${
+                      index === mobileGalleryIndex ? 'border-[#b56f37] ring-2 ring-[#b56f37]/20' : 'border-[#fff7e8]/70 opacity-80 hover:opacity-100'
+                    }`}
                     aria-label={`Show ${item.title}`}
-                  />
+                  >
+                    <img
+                      src={item.image}
+                      alt={item.alt}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-20 w-full object-cover"
+                      style={getGalleryImageStyle(item)}
+                    />
+                  </button>
                 ))}
               </div>
             </div>
@@ -1608,8 +1842,8 @@ export default function KalpavrukshaV2() {
               <div className="kv2-reveal-target">
                 <SectionHeader
                   eyebrow="Layout Plan"
-                  title="Master plan and transparency"
-                  description="Explore the approved layout image and core project facts without digging through dense content."
+                  title="Master plan and pricing"
+                  description="Explore the approved layout image and current project facts without digging through dense content."
                   align="left"
                   tone="dark"
                 />
@@ -1618,9 +1852,9 @@ export default function KalpavrukshaV2() {
                     ['Project area', PROJECT.projectArea],
                     ['Total plots', PROJECT.totalPlots],
                     ['Plot sizes', `${PROJECT.plotSizes} ${PROJECT.plotSizeUnit}`],
-                    ['RERA ID', PROJECT.reraId],
+                    ['Price Range', PROJECT.priceRange],
                   ].map(([label, value]) => (
-                    <div key={label} className={`kv2-card-lift rounded-[22px] border border-[#fff7e8]/24 bg-[#fff7e8]/16 p-4 shadow-[0_18px_38px_rgba(39,56,44,0.16)] backdrop-blur md:rounded-[26px] md:p-5 ${label === 'RERA ID' ? 'col-span-2 sm:col-span-1' : ''}`}>
+                    <div key={label} className="kv2-card-lift rounded-[22px] border border-[#fff7e8]/24 bg-[#fff7e8]/16 p-4 shadow-[0_18px_38px_rgba(39,56,44,0.16)] backdrop-blur md:rounded-[26px] md:p-5">
                       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#fff7e8]/62">{label}</p>
                       <ProjectMetricValue label={label === 'Project area' ? 'Project Area' : label} value={value} className="mt-2 block break-words text-lg font-bold text-[#fff7e8] md:text-xl" />
                     </div>
@@ -1679,9 +1913,9 @@ export default function KalpavrukshaV2() {
                 <div className="grid gap-8 lg:grid-cols-[0.85fr,1.15fr] lg:items-center">
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8b6328]">Locality Summary</p>
-                    <h3 className="mt-3 text-[1.6rem] font-bold leading-[1.12] tracking-[-0.04em] text-[#27382c] md:text-3xl">Near Vijayawada-Nagpur Greenfield Highway</h3>
+                    <h3 className="mt-3 text-[1.6rem] font-bold leading-[1.12] tracking-[-0.04em] text-[#27382c] md:text-3xl">{PROJECT.location}</h3>
                     <p className="mt-3 text-sm leading-7 text-[#5f684f] md:text-base md:leading-8">
-                      Positioned in Vemavaram with practical access to Vijayawada, Western Bypass, Hyderabad Highway and Amaravati-side destinations.
+                      Positioned in Vemavaram with practical access to West Bypass, Rayanapadu, Vijayawada, Hyderabad Highway and Amaravati-side destinations.
                     </p>
                     <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                       <CtaButton href={DIRECTIONS_URL} target="_blank" variant="gold" icon={<MapPin className="h-5 w-5" />}>
@@ -1717,8 +1951,8 @@ export default function KalpavrukshaV2() {
             <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6">
               <SectionHeader
                 eyebrow="Infrastructure & Amenities"
-                title="Premium plotted development essentials"
-                description="Core infrastructure and lifestyle features, kept easy to compare before a site visit."
+                title="What's inside the layout"
+                description="Built around a working creek and the hills behind it, not around a brochure."
               />
               <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
                 {amenities.map((item) => (
@@ -1768,7 +2002,7 @@ export default function KalpavrukshaV2() {
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#f1cf8f]">Buyer confidence</p>
                   <h3 className="mt-3 text-xl font-bold">Prefer to verify first?</h3>
                   <p className="mt-3 text-sm leading-7 text-[#fff7e8]/72">
-                    Google reviews remain available for reassurance. If the widget is slow to load, ask the team directly on WhatsApp.
+                    Read Google feedback for added confidence, or ask the team directly on WhatsApp before planning a visit.
                   </p>
                   <button
                     type="button"
@@ -1787,7 +2021,7 @@ export default function KalpavrukshaV2() {
                   </div>
                   <div className="kv2-review-widget relative min-h-[120px] overflow-hidden rounded-[18px] bg-[#f4e6cc] ring-1 ring-[#d7c198]">
                     <div className="absolute inset-0 flex items-center justify-center px-5 text-center text-sm leading-6 text-[#5f684f]">
-                      Google reviews load here. You can continue with WhatsApp if the widget is unavailable.
+                      Google reviews appear here when the widget is available.
                     </div>
                     <div className="relative z-10 min-h-[8rem] p-2">
                       {shouldRenderReviews ? (
@@ -1841,103 +2075,123 @@ export default function KalpavrukshaV2() {
             </div>
           </section>
 
-          <section ref={finalCtaRef} className="kv2-section-shell border-t border-[#b56f37]/12 bg-[linear-gradient(135deg,#ead6b6_0%,#f6ead8_100%)] px-5 py-10 text-[#27382c] md:py-14">
-            <div className="kv2-reveal-target relative z-10 mx-auto max-w-xl rounded-[30px] border border-[#fff7e8]/72 bg-[linear-gradient(135deg,#52684a_0%,#7f8d62_100%)] p-5 text-[#fff7e8] shadow-[0_26px_70px_rgba(82,104,74,0.18)] md:p-6">
-              <h2 className="kv2-display text-center text-[1.45rem] font-semibold uppercase tracking-[-0.015em] text-[#fff7e8] md:text-3xl">
-                Request a Callback
-              </h2>
-              <p className="mx-auto mt-2.5 max-w-md text-center text-sm leading-6 text-[#fff7e8]/72">
-                Share your details once. The next step shows available slots for the site visit.
-              </p>
-              <form onSubmit={continueFromQuickRequest} className="mx-auto mt-6 max-w-lg space-y-3">
-                <input
-                  name="name"
-                  value={visitForm.name}
-                  onChange={handleVisitInput}
-                  className="min-h-[2.95rem] w-full rounded-2xl border border-[#fff7e8]/20 bg-[#fff7e8] px-4 text-sm font-medium text-[#27382c] outline-none transition focus:border-[#f1cf8f] focus:ring-4 focus:ring-[#fff7e8]/20"
-                  placeholder="Your Name"
-                  required
-                />
-                <input
-                  name="phone"
-                  value={visitForm.phone}
-                  onChange={handleVisitInput}
-                  className="min-h-[2.95rem] w-full rounded-2xl border border-[#fff7e8]/20 bg-[#fff7e8] px-4 text-sm font-medium text-[#27382c] outline-none transition focus:border-[#f1cf8f] focus:ring-4 focus:ring-[#fff7e8]/20"
-                  inputMode="tel"
-                  maxLength={10}
-                  placeholder="Mobile Number"
-                  required
-                />
-                <input
-                  name="email"
-                  value={visitForm.email}
-                  onChange={handleVisitInput}
-                  className="min-h-[2.95rem] w-full rounded-2xl border border-[#fff7e8]/20 bg-[#fff7e8] px-4 text-sm font-medium text-[#27382c] outline-none transition focus:border-[#f1cf8f] focus:ring-4 focus:ring-[#fff7e8]/20"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="Email Address"
-                  required
-                />
-                <label className="block text-xs font-semibold text-[#fff7e8]/82">
-                  Looking For:
-                  <select
-                    name="interest"
-                    value={visitForm.interest}
-                    onChange={handleVisitInput}
-                    className="mt-1 min-h-[2.95rem] w-full rounded-2xl border border-[#fff7e8]/20 bg-[#fff7e8] px-4 text-sm font-medium text-[#27382c] outline-none transition focus:border-[#f1cf8f] focus:ring-4 focus:ring-[#fff7e8]/20"
-                  >
-                    {VISIT_INTEREST_OPTIONS.map((option) => (
-                      <option key={option} value={option}>{option}</option>
-                    ))}
-                  </select>
-                </label>
+          <section ref={finalCtaRef} className="kv2-section-shell border-t border-[#b56f37]/12 bg-[linear-gradient(135deg,#f7ead5_0%,#ead6b6_100%)] px-4 py-10 text-[#27382c] md:py-16">
+            <div className="kv2-reveal-target relative z-10 mx-auto max-w-xl overflow-hidden rounded-[32px] border border-[#b56f37]/18 bg-[#fff7e8] shadow-[0_28px_78px_rgba(82,104,74,0.16)]">
+              <div className="bg-[radial-gradient(circle_at_top_right,rgba(255,226,168,0.16),transparent_34%),linear-gradient(145deg,#27382c_0%,#17271f_100%)] px-5 py-8 text-center text-[#fff7e8] md:px-8">
+                <h2 className="kv2-display text-[1.55rem] font-semibold leading-tight tracking-[-0.02em] md:text-3xl">
+                  Limited site visit slots this week
+                </h2>
+                <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[#fff7e8]/75 md:text-base">
+                  We keep visit groups small so you get time to inspect the layout, roads and surroundings properly.
+                </p>
                 <button
-                  type="submit"
-                  className="min-h-[3rem] w-full rounded-2xl bg-[#fff7e8] px-4 text-sm font-bold uppercase tracking-[0.05em] text-[#52684a] shadow-[0_12px_28px_rgba(39,56,44,0.18)]"
+                  type="button"
+                  onClick={() => openVisitModal('lp_b_limited_slots')}
+                  className="mt-6 inline-flex min-h-[3.25rem] w-full items-center justify-center rounded-2xl bg-[#b56f37] px-5 text-base font-semibold text-[#fff7e8] shadow-[0_16px_36px_rgba(181,111,55,0.26)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#a76430] active:translate-y-0"
                 >
-                  Continue to Slot
+                  Book a Free Site Visit
                 </button>
-              </form>
+              </div>
+
+              <div className="px-5 py-7 md:px-8 md:py-8">
+                <h3 className="kv2-display text-[1.45rem] font-semibold leading-tight tracking-[-0.02em] text-[#27382c] md:text-[1.9rem]">
+                  Get the brochure & map
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-[#5f684f] md:text-base">
+                  Receive the project brochure, location pin, master plan and the latest site-visit assistance details.
+                </p>
+                <form onSubmit={submitBrochure} className="mt-6 space-y-4">
+                  <label className="block">
+                    <span className="text-sm font-semibold text-[#27382c]">Your name</span>
+                    <input
+                      name="name"
+                      value={brochureForm.name}
+                      onChange={handleBrochureInput}
+                      className="mt-2 min-h-[3.25rem] w-full rounded-2xl border border-[#b56f37]/18 bg-white px-4 text-base font-medium text-[#27382c] outline-none transition focus:border-[#b56f37] focus:ring-4 focus:ring-[#b56f37]/14"
+                      placeholder="Full name"
+                      required
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-sm font-semibold text-[#27382c]">Phone number</span>
+                    <input
+                      name="phone"
+                      value={brochureForm.phone}
+                      onChange={handleBrochureInput}
+                      className="mt-2 min-h-[3.25rem] w-full rounded-2xl border border-[#b56f37]/18 bg-white px-4 text-base font-medium text-[#27382c] outline-none transition focus:border-[#b56f37] focus:ring-4 focus:ring-[#b56f37]/14"
+                      inputMode="tel"
+                      maxLength={10}
+                      placeholder="10-digit mobile number"
+                      required
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-sm font-semibold text-[#27382c]">Email address</span>
+                    <input
+                      name="email"
+                      value={brochureForm.email}
+                      onChange={handleBrochureInput}
+                      className="mt-2 min-h-[3.25rem] w-full rounded-2xl border border-[#b56f37]/18 bg-white px-4 text-base font-medium text-[#27382c] outline-none transition focus:border-[#b56f37] focus:ring-4 focus:ring-[#b56f37]/14"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="Email address"
+                      required
+                    />
+                  </label>
+                  <label className="flex items-start gap-3 text-sm leading-5 text-[#5f684f]">
+                    <input
+                      type="checkbox"
+                      required
+                      className="mt-0.5 h-5 w-5 rounded border-[#b56f37]/24 text-[#b56f37] focus:ring-[#b56f37]"
+                    />
+                    <span>I agree to be contacted by Easy Homes about Kalpavruksha on call, WhatsApp or email.</span>
+                  </label>
+                  <button
+                    type="submit"
+                    disabled={brochureSubmitting}
+                    className="inline-flex min-h-[3.35rem] w-full items-center justify-center rounded-2xl bg-[#b56f37] px-5 text-base font-semibold text-[#fff7e8] shadow-[0_16px_34px_rgba(181,111,55,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#a76430] disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {brochureSubmitting ? 'Submitting...' : 'Send Me the Brochure & Map'}
+                  </button>
+                </form>
+              </div>
             </div>
           </section>
         </main>
 
-        {!visitModalOpen && !brochureModalOpen && !layoutPreviewOpen && (
-          <div className={`fixed bottom-0 left-1/2 z-[100] w-full max-w-[540px] -translate-x-1/2 border border-[#b56f37]/22 bg-[#fff7e8] px-3 pb-[calc(env(safe-area-inset-bottom)+0.55rem)] pt-2.5 shadow-[0_-18px_42px_rgba(82,104,74,0.18)] transition-all duration-300 lg:hidden ${
+        {!visitModalOpen && !brochureModalOpen && !layoutPreviewOpen && !selectedGalleryImage && (
+          <div className={`fixed bottom-0 left-1/2 z-[100] w-full max-w-[540px] -translate-x-1/2 rounded-t-[16px] border border-[#b56f37]/22 bg-[#fff7e8] px-3 pb-[calc(env(safe-area-inset-bottom)+0.38rem)] pt-2 shadow-[0_-14px_34px_rgba(82,104,74,0.16)] transition-all duration-300 lg:hidden ${
             stickyCtaVisible ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-full opacity-0'
           }`}>
-            <div className="grid grid-cols-[1fr_auto_auto] items-center gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto] lg:gap-3">
-              <div className="min-w-0 rounded-2xl border border-[#d7c198] bg-[#f4e6cc] px-3 py-2">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8b5526]">Price From</p>
-                <p className="truncate text-sm font-bold text-[#27382c]">{PROJECT.priceFrom}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => openWhatsApp('lp_b_sticky_price')}
-                className="hidden h-12 items-center justify-center rounded-2xl border border-[#b56f37]/30 bg-[#fff7e8] px-5 text-sm font-semibold text-[#8b5526] shadow-sm lg:inline-flex"
-              >
-                WhatsApp Price
-              </button>
+            <div className="grid grid-cols-[2.75rem_2.75rem_minmax(0,1fr)] items-center gap-2">
               <a
                 href={CALL_URL}
                 onClick={() => trackCallClick('lp_b_mobile_sticky')}
                 aria-label="Call Easy Homes"
-                className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[#b56f37]/30 bg-[#fff7e8] text-[#8b5526] shadow-sm"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-[15px] border border-[#b56f37]/30 bg-white text-[#27382c] shadow-[0_8px_18px_rgba(82,104,74,0.09)] transition-all duration-200 active:scale-95"
               >
                 <Phone className="h-5 w-5" />
               </a>
               <button
                 type="button"
-                onClick={() => openVisitModal('lp_b_mobile_sticky')}
-                className="inline-flex h-12 items-center justify-center rounded-2xl bg-[#b56f37] px-4 text-sm font-semibold text-[#fff7e8] shadow-[0_12px_28px_rgba(181,111,55,0.28)]"
+                onClick={() => openWhatsApp('lp_b_mobile_sticky_whatsapp')}
+                aria-label="Open WhatsApp chat from sticky footer"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-[15px] border border-[#b56f37]/30 bg-white text-[#27382c] shadow-[0_8px_18px_rgba(82,104,74,0.09)] transition-all duration-200 active:scale-95"
               >
-                Book Visit
+                <FaWhatsapp className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => openVisitModal('lp_b_mobile_sticky')}
+                className="inline-flex h-11 items-center justify-center rounded-[15px] bg-[#b56f37] px-4 text-sm font-semibold text-[#fff7e8] shadow-[0_10px_24px_rgba(181,111,55,0.24)] transition-all duration-200 active:scale-95"
+              >
+                Book Site Visit
               </button>
             </div>
           </div>
         )}
 
-        {!visitModalOpen && !brochureModalOpen && !layoutPreviewOpen && stickyCtaVisible && (
+        {!visitModalOpen && !brochureModalOpen && !layoutPreviewOpen && !selectedGalleryImage && stickyCtaVisible && (
           <div className="pointer-events-none fixed right-4 top-1/2 z-[90] hidden -translate-y-1/2 transition-all duration-300 lg:block">
             <div className="pointer-events-auto flex flex-col items-center gap-3">
               <button
@@ -2080,6 +2334,81 @@ export default function KalpavrukshaV2() {
                   loading="eager"
                   decoding="async"
                 />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {selectedGalleryImage && (
+          <div
+            className="fixed inset-0 z-[130] flex items-center justify-center bg-[#18231d]/88 p-3 backdrop-blur-sm md:p-6"
+            onClick={(event) => { if (event.target === event.currentTarget) closeGalleryPreview(); }}
+          >
+            <div className="relative w-full max-w-6xl">
+              <button
+                type="button"
+                onClick={closeGalleryPreview}
+                className="absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#fff7e8]/24 bg-[#18231d]/68 text-[#fff7e8] transition hover:bg-[#18231d]/86"
+                aria-label="Close gallery preview"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  showPreviousGalleryImage();
+                }}
+                className="absolute left-3 top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#fff7e8]/24 bg-[#18231d]/68 text-[#fff7e8] transition hover:bg-[#18231d]/86"
+                aria-label="Show previous gallery image"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  showNextGalleryImage();
+                }}
+                className="absolute right-3 top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#fff7e8]/24 bg-[#18231d]/68 text-[#fff7e8] transition hover:bg-[#18231d]/86"
+                aria-label="Show next gallery image"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+              <div className="overflow-hidden rounded-[30px] border border-[#fff7e8]/24 bg-[#fff7e8] shadow-[0_34px_90px_rgba(0,0,0,0.34)]">
+                <div className="relative overflow-hidden bg-[#27382c]">
+                  <img
+                    src={selectedGalleryImage.image}
+                    alt={selectedGalleryImage.alt || selectedGalleryImage.title}
+                    className="max-h-[72dvh] w-full object-contain bg-[#27382c]"
+                    loading="eager"
+                    decoding="async"
+                  />
+                  {selectedGalleryImage.maskEmbeddedLabel && (
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(180deg,rgba(255,247,232,0)_0%,rgba(255,247,232,0.58)_58%,rgba(255,247,232,0.76)_100%)] backdrop-blur-[2px] sm:h-24"
+                    />
+                  )}
+                </div>
+                <div className="flex items-center justify-between gap-4 border-t border-[#d7c198] bg-[#fff7e8] px-4 py-3 text-[#27382c] md:px-5 md:py-4">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8b5526]">
+                      Gallery {selectedGalleryImageIndex >= 0 ? selectedGalleryImageIndex + 1 : mobileGalleryIndex + 1} / {galleryImages.length}
+                    </p>
+                    <h3 className="mt-1 text-lg font-bold">{selectedGalleryImage.title}</h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeGalleryPreview();
+                      openVisitModal('lp_b_gallery_preview');
+                    }}
+                    className="hidden rounded-2xl bg-[#b56f37] px-4 py-2.5 text-sm font-semibold text-[#fff7e8] md:inline-flex"
+                  >
+                    Book Site Visit
+                  </button>
+                </div>
               </div>
             </div>
           </div>

@@ -205,7 +205,7 @@ afterEach(() => {
 test('hero next/previous controls change slides', async () => {
   renderPage();
 
-  expect(screen.getByText("Where You Don't Just Arrive - You Belong")).toBeInTheDocument();
+  expect(screen.getByText('Residential Plots near Vijayawada, close to Amaravati')).toBeInTheDocument();
 
   fireEvent.click(screen.getAllByLabelText('Show next slide')[0]);
   act(() => {
@@ -219,13 +219,13 @@ test('hero next/previous controls change slides', async () => {
     jest.advanceTimersByTime(200);
   });
 
-  expect(await screen.findByText("Where You Don't Just Arrive - You Belong")).toBeInTheDocument();
+  expect(await screen.findByText('Residential Plots near Vijayawada, close to Amaravati')).toBeInTheDocument();
 });
 
 test('hero WhatsApp CTA tracks the same placement flow as Kalpa', () => {
   renderPage();
 
-  fireEvent.click(screen.getAllByRole('button', { name: 'Get Current Price on WhatsApp' })[0]);
+  fireEvent.click(screen.getAllByRole('button', { name: 'Get Price & Location on WhatsApp' })[0]);
 
   expect(trackWhatsAppClick).toHaveBeenCalledWith(
     expect.objectContaining({
@@ -263,13 +263,16 @@ test('project nav links scroll to the matching section', () => {
 test('conversion-first sections show verified project essentials near the top', () => {
   renderPage();
 
-  expect(screen.getByRole('button', { name: 'Book Free Site Visit' })).toBeInTheDocument();
-  expect(screen.getAllByText('CRDA Approved').length).toBeGreaterThan(0);
-  expect(screen.getByText('RERA Approved')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Get Price & Location on WhatsApp' })).toBeInTheDocument();
+  expect(screen.getByText('What makes Kalpavruksha different')).toBeInTheDocument();
+  expect(screen.getByText('Built for buyers who value transparency, lifestyle, and long-term appreciation.')).toBeInTheDocument();
+  expect(screen.getByText('Sunrise framed by the hills')).toBeInTheDocument();
+  expect(screen.getByText("What's inside the layout")).toBeInTheDocument();
+  expect(screen.queryByText('Clear buyer transparency')).not.toBeInTheDocument();
   expect(screen.getByText('Buyer Essentials')).toBeInTheDocument();
   expect(screen.getByText('Honest Availability')).toBeInTheDocument();
-  expect(screen.getAllByText('Rs. 30 Lakhs').length).toBeGreaterThan(0);
-  expect(screen.getAllByText('P06160035909').length).toBeGreaterThan(0);
+  expect(screen.getAllByText('Rs. 31 Lakhs').length).toBeGreaterThan(0);
+  expect(screen.getAllByText('Rs. 31 Lakhs onwards').length).toBeGreaterThan(0);
   expect(screen.getAllByText('September 2026').length).toBeGreaterThan(0);
   expect(screen.getByText('17')).toBeInTheDocument();
 });
@@ -512,30 +515,30 @@ test('gallery cards use descriptive alt text for SEO and accessibility', () => {
   renderPage();
 
   expect(
-    screen.getByAltText('Kalpavruksha grand entrance for the CRDA-approved plotted community in Vijayawada'),
-  ).toBeInTheDocument();
+    screen.getAllByAltText('Kalpavruksha clubhouse exterior with landscaped lawns and premium lifestyle amenities').length,
+  ).toBeGreaterThan(0);
   expect(
-    screen.getByAltText('Kalpavruksha clubhouse exterior with landscaped lawns and premium lifestyle amenities'),
-  ).toBeInTheDocument();
+    screen.getAllByAltText('Kalpavruksha lotus pond water feature with curved walkways and reflective landscaping').length,
+  ).toBeGreaterThan(0);
 });
 
 test('gallery modal next and previous controls keep sliding through images', () => {
   renderPage();
 
   fireEvent.click(
-    screen.getByAltText('Kalpavruksha grand entrance for the CRDA-approved plotted community in Vijayawada'),
+    screen.getAllByAltText('Kalpavruksha clubhouse exterior with landscaped lawns and premium lifestyle amenities')[0],
   );
 
-  expect(screen.getByText('1 / 6')).toBeInTheDocument();
+  expect(screen.getByText('1 / 4')).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole('button', { name: 'Show next gallery image' }));
-  expect(screen.getByText('2 / 6')).toBeInTheDocument();
+  expect(screen.getByText('2 / 4')).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole('button', { name: 'Show next gallery image' }));
-  expect(screen.getByText('3 / 6')).toBeInTheDocument();
+  expect(screen.getByText('3 / 4')).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole('button', { name: 'Show previous gallery image' }));
-  expect(screen.getByText('2 / 6')).toBeInTheDocument();
+  expect(screen.getByText('2 / 4')).toBeInTheDocument();
 });
 
 test('location keeps the shared directions link and no longer renders the travel map', () => {
