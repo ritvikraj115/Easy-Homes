@@ -5,13 +5,15 @@ import { trackEvent, trackWhatsAppClick } from '../utils/analytics';
 import { captureGoogleAdsAttribution, getGoogleAdsAttributionPayload } from '../utils/googleAdsAttribution';
 import { KALPAVRUKSHA_WHATSAPP_NUMBER } from '../utils/kalpavrukshaWhatsapp';
 import ZohoSalesIQWidgetLoader from '../components/ZohoSalesIQWidgetLoader';
-import siteEntranceWall from '../assets/kalpavruksha/live-entrance-wall.jpeg';
-import siteCompoundWall from '../assets/kalpavruksha/live-compound-wall.jpeg';
-import siteClubhouseLawn from '../assets/kalpavruksha/live-clubhouse-lawn.jpeg';
-import siteSeatingPavilion from '../assets/kalpavruksha/live-seating-pavilion.jpeg';
-import siteMainGate from '../assets/kalpavruksha/live-main-gate.jpeg';
+import siteEntranceWall from '../assets/kalpavruksha/live-entrance-wall-1200.webp';
+import siteCompoundWall from '../assets/kalpavruksha/live-compound-wall-1200.webp';
+import siteClubhouseLawn from '../assets/kalpavruksha/live-clubhouse-lawn-1200.webp';
+import siteSeatingPavilion from '../assets/kalpavruksha/live-seating-pavilion-1200.webp';
+import siteMainGate from '../assets/kalpavruksha/live-main-gate-1200.webp';
 
 const CALL_URL = 'tel:+918988896666';
+const KALPAVRUKSHA_FONT_STYLESHEET =
+  'https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap';
 const GOOGLE_REVIEW_FALLBACK = {
   rating: '5.0',
   reviewCount: '22',
@@ -335,7 +337,6 @@ export default function KalpavrukshaMobileUx({
       return;
     }
 
-    const message = `Hi, I'm ${name} (${phone}). Please send me the Kalpavruksha brochure and location map.`;
     const googleAdsAttribution = getGoogleAdsAttributionPayload();
     const leadEventId = `kalpa_mobile_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     setIsSubmitting(true);
@@ -350,7 +351,7 @@ export default function KalpavrukshaMobileUx({
         placement: 'mobile_brochure_map_form',
         platform_source: 'website',
         platformSource: 'Website',
-        leadStatus: 'Downloaded Brochure',
+        leadStatus: 'Brochure and Map Requested on WhatsApp',
         landingVariant,
         landing_variant: landingVariant,
         landingVersion,
@@ -369,12 +370,11 @@ export default function KalpavrukshaMobileUx({
         placement: 'mobile_brochure_map_form',
         source: 'kalpavruksha_mobile_brochure_map_form',
         form_source: 'mobile_brochure_map_form',
-        lead_type: 'mobile_brochure_map_site_visit',
+        lead_type: 'brochure_map_request',
         lead_event_id: leadEventId,
         event_id: leadEventId,
         brochure_requested: true,
         map_requested: true,
-        site_visit_requested: true,
         platform_source: 'website',
         phone,
         page_path: typeof window !== 'undefined' ? window.location.pathname : undefined,
@@ -396,23 +396,12 @@ export default function KalpavrukshaMobileUx({
         utm_content: googleAdsAttribution?.utmContent,
       };
 
-      trackEvent('visit_step_1_submit', {
-        ...mobileConversionPayload,
-        conversion_type: 'mobile_site_visit_lead_step_1',
-      });
-
-      trackEvent('book_site_visit_submitted', {
-        ...mobileConversionPayload,
-        conversion_type: 'book_site_visit',
-        visit_type: 'mobile_lead_request',
-      });
-
       trackEvent('brochure_downloaded', {
         ...mobileConversionPayload,
-        conversion_type: 'brochure_download',
+        conversion_type: 'brochure_map_requested',
         file_name: 'Kalpavruksha Project Brochure.pdf',
         file_extension: 'pdf',
-        delivery_channel: 'whatsapp',
+        delivery_channel: 'whatsapp_follow_up',
       });
 
       trackEvent('generate_lead', {
@@ -420,10 +409,8 @@ export default function KalpavrukshaMobileUx({
         conversion_type: 'generate_lead',
       });
 
-      setStatus('Opening WhatsApp...');
-      if (typeof window !== 'undefined') {
-        window.location.href = buildWhatsAppUrl(message);
-      }
+      setForm({ name: '', phone: '', consent: false });
+      setStatus('Thank you. Our team will send the brochure and location map on WhatsApp shortly.');
     } catch (error) {
       setStatus(error.response?.data?.message || 'Something went wrong. Please try again.');
     } finally {
@@ -449,11 +436,15 @@ export default function KalpavrukshaMobileUx({
           name="description"
           content="Kalpavruksha by Easy Homes: CRDA and RERA approved residential plots near Vijayawada and Amaravati with clubhouse, parks, CC roads and underground utilities."
         />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preload" as="image" href={siteEntranceWall} type="image/webp" fetchPriority="high" />
+        <link rel="preload" as="style" href={KALPAVRUKSHA_FONT_STYLESHEET} />
         <link
-          href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap"
           rel="stylesheet"
+          href={KALPAVRUKSHA_FONT_STYLESHEET}
+          media="print"
+          onLoad={(event) => {
+            event.currentTarget.media = 'all';
+          }}
         />
       </Helmet>
 
@@ -1340,7 +1331,16 @@ export default function KalpavrukshaMobileUx({
                 <span className="kmux-live-dot" />
                 Live from the site
               </span>
-              <img key={activeHeroImage.title} src={activeHeroImage.image} alt={activeHeroImage.alt} />
+              <img
+                key={activeHeroImage.title}
+                src={activeHeroImage.image}
+                alt={activeHeroImage.alt}
+                width="1200"
+                height="675"
+                loading={activeHeroIndex === 0 ? 'eager' : 'lazy'}
+                decoding="async"
+                fetchPriority={activeHeroIndex === 0 ? 'high' : 'low'}
+              />
             </button>
             <div className="kmux-hero-dots" aria-label="Live site slideshow">
               {siteImages.map((item, index) => (

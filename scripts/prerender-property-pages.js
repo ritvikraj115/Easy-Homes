@@ -32,11 +32,12 @@ const CONTACT_PATH = '/contact';
 const CONTACT_CANONICAL_URL = `${SITE_URL}${CONTACT_PATH}`;
 const SEARCH_PROPERTIES_PATH = '/searchProperties';
 const KALPAVRUKSHA_PATH = '/kalpavruksha/';
+const KALPAVRUKSHA_V2_PATH = '/kalpavruksha2/';
 const KALPAVRUKSHA_CANONICAL_URL = `${SITE_URL}${KALPAVRUKSHA_PATH}`;
 const KALPAVRUKSHA_IMAGE_URL = `${SITE_URL}/kalpPcImg.webp`;
 const HOME_PRELOAD_SNIPPET =
   '<link rel="preload" as="image" href="/hero-dekstop.webp" imagesrcset="/hero-mobile.webp 768w, /hero-dekstop.webp 1920w" imagesizes="100vw" fetchpriority="high"/>';
-const KALPAVRUKSHA_PRELOAD_SNIPPET =
+const KALPAVRUKSHA_FALLBACK_PRELOAD_SNIPPET =
   '<link rel="preload" as="image" href="/kalpabg2-960.webp" type="image/webp" imagesrcset="/kalpabg2-640.webp 640w, /kalpabg2-960.webp 960w" imagesizes="(max-width: 1023px) 100vw, 50vw" fetchpriority="high"/>';
 const HOME_SEO = {
   title: 'Easy Homes | CRDA-Approved Plots in Amaravati & Vijayawada',
@@ -177,6 +178,41 @@ function upsertTitle(html, title) {
 
 function appendToHead(html, snippet) {
   return html.replace('</head>', `${snippet}</head>`);
+}
+
+function getManifestAsset(assetManifest, key) {
+  return assetManifest?.files?.[key] || '';
+}
+
+function buildKalpavrukshaPreloadSnippet(assetManifest = {}) {
+  const mobileHero = getManifestAsset(assetManifest, 'static/media/live-entrance-wall-1200.webp');
+  const overview640 = getManifestAsset(assetManifest, 'static/media/overview-640.webp');
+  const overview960 = getManifestAsset(assetManifest, 'static/media/overview-960.webp');
+  const overview1280 = getManifestAsset(assetManifest, 'static/media/overview-1280.webp');
+  const overview1920 = getManifestAsset(assetManifest, 'static/media/overview-1920.webp');
+
+  const desktopSrcSet = [
+    overview640 ? `${overview640} 640w` : '',
+    overview960 ? `${overview960} 960w` : '',
+    overview1280 ? `${overview1280} 1280w` : '',
+    overview1920 ? `${overview1920} 1920w` : '',
+  ].filter(Boolean).join(', ');
+
+  const snippets = [];
+
+  if (mobileHero) {
+    snippets.push(
+      `<link rel="preload" as="image" href="${escapeHtml(mobileHero)}" type="image/webp" media="(max-width: 699px)" imagesizes="100vw" fetchpriority="high"/>`,
+    );
+  }
+
+  if (overview1280) {
+    snippets.push(
+      `<link rel="preload" as="image" href="${escapeHtml(overview1280)}" type="image/webp" media="(min-width: 700px)"${desktopSrcSet ? ` imagesrcset="${escapeHtml(desktopSrcSet)}"` : ''} imagesizes="100vw" fetchpriority="high"/>`,
+    );
+  }
+
+  return snippets.join('') || KALPAVRUKSHA_FALLBACK_PRELOAD_SNIPPET;
 }
 
 function injectRootContent(html, content) {
@@ -815,14 +851,18 @@ function buildPrerenderedPage(templateHtml, property, { indexable }) {
   return html;
 }
 
-function buildKalpavrukshaPrerenderedPage(templateHtml) {
+function buildKalpavrukshaPrerenderedPage(
+  templateHtml,
+  assetManifest,
+  { prerenderedRoute = 'kalpavruksha', robots = 'index,follow' } = {},
+) {
   const schemas = buildKalpavrukshaSchemas();
   let html = templateHtml;
   html = upsertTitle(html, KALPAVRUKSHA_SEO.title);
   html = upsertMetaByName(html, 'description', KALPAVRUKSHA_SEO.description);
   html = upsertMetaByName(html, 'keywords', KALPAVRUKSHA_SEO.keywords);
-  html = upsertMetaByName(html, 'easyhomes:prerendered-route', 'kalpavruksha');
-  html = upsertMetaByName(html, 'robots', 'index,follow');
+  html = upsertMetaByName(html, 'easyhomes:prerendered-route', prerenderedRoute);
+  html = upsertMetaByName(html, 'robots', robots);
   html = upsertMetaByProperty(html, 'og:title', KALPAVRUKSHA_SEO.shareTitle);
   html = upsertMetaByProperty(html, 'og:description', KALPAVRUKSHA_SEO.shareDescription);
   html = upsertMetaByProperty(html, 'og:url', KALPAVRUKSHA_CANONICAL_URL);
@@ -837,7 +877,7 @@ function buildKalpavrukshaPrerenderedPage(templateHtml) {
       .map((schema) => `<script type="application/ld+json">${escapeJsonForHtml(schema)}</script>`)
       .join(''),
   );
-  html = appendToHead(html, KALPAVRUKSHA_PRELOAD_SNIPPET);
+  html = appendToHead(html, buildKalpavrukshaPreloadSnippet(assetManifest));
   html = injectRootContent(html, buildKalpavrukshaPreviewMarkup());
   return html;
 }
@@ -912,8 +952,19 @@ async function loadTemplateHtml() {
   }
 }
 
+async function loadAssetManifest() {
+  try {
+    const manifestJson = await fs.readFile(path.join(BUILD_DIR, 'asset-manifest.json'), 'utf8');
+    return JSON.parse(manifestJson);
+  } catch (err) {
+    console.warn('Prerender: asset manifest unavailable, using fallback critical preloads.');
+    return {};
+  }
+}
+
 async function generatePropertyPages() {
   const templateHtml = await loadTemplateHtml();
+  const assetManifest = await loadAssetManifest();
   const properties = await loadProperties();
 
   if (properties.length === 0) {
@@ -947,7 +998,15 @@ async function generatePropertyPages() {
   writtenPages += 1;
   await writeRoutePage(SEARCH_PROPERTIES_PATH, buildSearchPropertiesPrerenderedPage(templateHtml, properties));
   writtenPages += 1;
-  await writeRoutePage(KALPAVRUKSHA_PATH, buildKalpavrukshaPrerenderedPage(templateHtml));
+  await writeRoutePage(KALPAVRUKSHA_PATH, buildKalpavrukshaPrerenderedPage(templateHtml, assetManifest));
+  writtenPages += 1;
+  await writeRoutePage(
+    KALPAVRUKSHA_V2_PATH,
+    buildKalpavrukshaPrerenderedPage(templateHtml, assetManifest, {
+      prerenderedRoute: 'kalpavruksha2',
+      robots: 'noindex,follow',
+    }),
+  );
   writtenPages += 1;
 
   console.log(`Prerender: generated ${writtenPages} HTML files.`);

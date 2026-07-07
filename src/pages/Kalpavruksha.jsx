@@ -99,7 +99,7 @@ const DOWNLOAD_ASSET_CONFIG = {
     title: 'Download Project Brochure',
     description: 'Share your details to access the Kalpavruksha project brochure.',
     source: 'Website',
-    leadStatus: 'Downloaded Brochure'
+    leadStatus: 'Brochure and Map Requested on WhatsApp'
   }
 };
 const KALPAVRUKSHA_CALL_URL = 'tel:+918988896666';
@@ -935,35 +935,35 @@ const KalpavrukshaPage = () => {
       label: 'Entrance wall',
       title: 'Entrance wall',
       detail: 'Latest site photo showing the front boundary wall and entry frontage at Kalpavruksha.',
-      image: require('../assets/kalpavruksha/live-entrance-wall.jpeg'),
+      image: require('../assets/kalpavruksha/live-entrance-wall-1200.webp'),
       alt: 'Kalpavruksha live site entrance wall and frontage',
     },
     {
       label: 'Main gate',
       title: 'Main gate',
       detail: 'Latest site photo showing the tree-themed main gate and internal road alignment.',
-      image: require('../assets/kalpavruksha/live-main-gate.jpeg'),
+      image: require('../assets/kalpavruksha/live-main-gate-1200.webp'),
       alt: 'Kalpavruksha live site main gate with internal road view',
     },
     {
       label: 'Compound wall',
       title: 'Compound wall',
       detail: 'Latest site photo showing the compound wall, boundary finish and service-side progress.',
-      image: require('../assets/kalpavruksha/live-compound-wall.jpeg'),
+      image: require('../assets/kalpavruksha/live-compound-wall-1200.webp'),
       alt: 'Kalpavruksha live site compound wall and boundary progress',
     },
     {
       label: 'Clubhouse lawn',
       title: 'Clubhouse lawn',
       detail: 'Latest site photo showing the lawn, walking path and clubhouse-side progress.',
-      image: require('../assets/kalpavruksha/live-clubhouse-lawn.jpeg'),
+      image: require('../assets/kalpavruksha/live-clubhouse-lawn-1200.webp'),
       alt: 'Kalpavruksha live site clubhouse lawn and walking path',
     },
     {
       label: 'Seating pavilion',
       title: 'Seating pavilion',
       detail: 'Latest site photo showing the outdoor seating pavilion and open-space development.',
-      image: require('../assets/kalpavruksha/live-seating-pavilion.jpeg'),
+      image: require('../assets/kalpavruksha/live-seating-pavilion-1200.webp'),
       alt: 'Kalpavruksha live site outdoor seating pavilion',
     },
   ];
@@ -1867,12 +1867,13 @@ const KalpavrukshaPage = () => {
         googleAdsAttribution: googleAdsAttribution || undefined,
       });
 
+      const isBrochureRequest = selectedAssetKey === 'brochure';
       const assetType = selectedAssetKey === 'layout' ? 'master_layout' : 'brochure';
       trackEvent(`${assetType}_downloaded`, withLandingVariant({
         event_category: 'conversion',
-        conversion_type: `${assetType}_download`,
+        conversion_type: isBrochureRequest ? 'brochure_map_requested' : `${assetType}_download`,
         form_name: 'kalpavruksha_download_form',
-        lead_type: `${assetType}_download`,
+        lead_type: isBrochureRequest ? 'brochure_map_request' : `${assetType}_download`,
         project: 'Kalpavruksha',
         source: 'kalpavruksha_download_form',
         asset_type: assetType,
@@ -1880,6 +1881,7 @@ const KalpavrukshaPage = () => {
         file_name: selectedDownloadAsset.fileName,
         file_extension: 'pdf',
         link_url: selectedDownloadAsset.url,
+        delivery_channel: isBrochureRequest ? 'whatsapp_follow_up' : 'direct_download',
         google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
         google_ads_click_id_type: googleAdsAttribution?.clickIdType,
         google_ads_campaign_id: googleAdsAttribution?.campaignId,
@@ -1887,7 +1889,9 @@ const KalpavrukshaPage = () => {
 
       closeDownloadLeadModal();
       setLayoutLeadForm({ name: '', phone: '', email: '' });
-      triggerAssetDownload(selectedDownloadAsset);
+      if (!isBrochureRequest) {
+        triggerAssetDownload(selectedDownloadAsset);
+      }
       navigate('/thank-you');
     } catch (err) {
       console.error(err);

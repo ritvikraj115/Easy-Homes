@@ -47,6 +47,8 @@ import {
 } from '../assets/kalpavrukshaHeroAssets';
 import KalpavrukshaMobileUx from './KalpavrukshaMobileUx';
 
+const KALPAVRUKSHA_FONT_STYLESHEET =
+  'https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap';
 const preloadReviewsSection = () => import('../components/ReviewProject');
 const ReviewsSection = React.lazy(preloadReviewsSection);
 
@@ -57,7 +59,7 @@ const SITE_VISIT_ZOHO_NOTE = 'Site visit scheduled from website.';
 const BROCHURE_ASSET = {
   url: '/mainBrouche.pdf',
   fileName: 'Kalpavruksha Project Brochure.pdf',
-  leadStatus: 'Downloaded Brochure',
+  leadStatus: 'Brochure and Map Requested on WhatsApp',
   source: 'Website',
 };
 const LAYOUT_ASSET = {
@@ -318,35 +320,35 @@ const sitePhotoPlaceholders = [
     label: 'Entrance wall',
     title: 'Entrance wall',
     detail: 'Latest site photo showing the front boundary wall and entry frontage at Kalpavruksha.',
-    image: require('../assets/kalpavruksha/live-entrance-wall.jpeg'),
+    image: require('../assets/kalpavruksha/live-entrance-wall-1200.webp'),
     alt: 'Kalpavruksha live site entrance wall and frontage',
   },
   {
     label: 'Main gate',
     title: 'Main gate',
     detail: 'Latest site photo showing the tree-themed main gate and internal road alignment.',
-    image: require('../assets/kalpavruksha/live-main-gate.jpeg'),
+    image: require('../assets/kalpavruksha/live-main-gate-1200.webp'),
     alt: 'Kalpavruksha live site main gate with internal road view',
   },
   {
     label: 'Compound wall',
     title: 'Compound wall',
     detail: 'Latest site photo showing the compound wall, boundary finish and service-side progress.',
-    image: require('../assets/kalpavruksha/live-compound-wall.jpeg'),
+    image: require('../assets/kalpavruksha/live-compound-wall-1200.webp'),
     alt: 'Kalpavruksha live site compound wall and boundary progress',
   },
   {
     label: 'Clubhouse lawn',
     title: 'Clubhouse lawn',
     detail: 'Latest site photo showing the lawn, walking path and clubhouse-side progress.',
-    image: require('../assets/kalpavruksha/live-clubhouse-lawn.jpeg'),
+    image: require('../assets/kalpavruksha/live-clubhouse-lawn-1200.webp'),
     alt: 'Kalpavruksha live site clubhouse lawn and walking path',
   },
   {
     label: 'Seating pavilion',
     title: 'Seating pavilion',
     detail: 'Latest site photo showing the outdoor seating pavilion and open-space development.',
-    image: require('../assets/kalpavruksha/live-seating-pavilion.jpeg'),
+    image: require('../assets/kalpavruksha/live-seating-pavilion-1200.webp'),
     alt: 'Kalpavruksha live site outdoor seating pavilion',
   },
 ];
@@ -1296,7 +1298,7 @@ export default function KalpavrukshaV2() {
 
       const trackingPayload = withTrackingContext({
         form_name: 'kalpavruksha_download_form',
-        lead_type: 'brochure_download',
+        lead_type: 'brochure_map_request',
         project: PROJECT.name,
         source: BROCHURE_ASSET.source,
         asset_type: 'brochure',
@@ -1308,16 +1310,16 @@ export default function KalpavrukshaV2() {
       trackEvent('brochure_downloaded', withTrackingContext({
         ...trackingPayload,
         event_category: 'conversion',
-        conversion_type: 'brochure_download',
+        conversion_type: 'brochure_map_requested',
         file_name: BROCHURE_ASSET.fileName,
         file_extension: 'pdf',
         link_url: BROCHURE_ASSET.url,
+        delivery_channel: 'whatsapp_follow_up',
       }));
 
-      downloadFile(BROCHURE_ASSET.url, BROCHURE_ASSET.fileName);
       setBrochureForm(DEFAULT_BROCHURE_FORM);
       setBrochureModalOpen(false);
-      showToast('Brochure download started.', 'success');
+      navigate('/thank-you');
     } catch (error) {
       showToast(error.response?.data?.message || 'Failed to submit. Please try again.');
     } finally {
@@ -1366,13 +1368,24 @@ export default function KalpavrukshaV2() {
           name="description"
           content="Explore Kalpavruksha by Easy Homes, a CRDA-approved residential plotted community with 105 open plots across 11 acres in Vemavaram, 5 km from West Bypass and Rayanapadu, with plot sizes from 174 to 525 square yards, premium infrastructure, and clubhouse amenities."
         />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preload" as="style" href={KALPAVRUKSHA_FONT_STYLESHEET} />
         <link
-          href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap"
           rel="stylesheet"
+          href={KALPAVRUKSHA_FONT_STYLESHEET}
+          media="print"
+          onLoad={(event) => {
+            event.currentTarget.media = 'all';
+          }}
         />
-        <link rel="preload" as="image" href={KALPAVRUKSHA_OVERVIEW_HERO_PRELOAD} />
+        <link
+          rel="preload"
+          as="image"
+          href={KALPAVRUKSHA_OVERVIEW_HERO_PRELOAD}
+          type="image/webp"
+          imageSrcSet={KALPAVRUKSHA_OVERVIEW_HERO_SRC_SET}
+          imageSizes={HERO_IMAGE_SIZES}
+          fetchPriority="high"
+        />
       </Helmet>
       <style>
         {`
