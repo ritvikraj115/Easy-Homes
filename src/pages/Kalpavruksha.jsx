@@ -47,6 +47,7 @@ import {
   KALPAVRUKSHA_TRUST_HERO_SRC_SET,
   KALPAVRUKSHA_WALKTHROUGH_BROCHURE_COVER,
 } from '../assets/kalpavrukshaHeroAssets';
+import KalpavrukshaMobileUx from './KalpavrukshaMobileUx';
 
 function normalizeVisitSlot(rawSlot) {
   const text = String(rawSlot || '').trim();
@@ -340,6 +341,9 @@ const KalpavrukshaPage = () => {
   const shouldShowFloatingActions = showFloatingActions && !isModalOpen;
   const [toast, setToast] = useState(null);
   const [activeHeroSlideIndex, setActiveHeroSlideIndex] = useState(0);
+  const [useMobileClientUx, setUseMobileClientUx] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth < 700
+  );
   const [shouldRenderReviews, setShouldRenderReviews] = useState(false);
   const [googleReviewSummary, setGoogleReviewSummary] = useState(KALPAVRUKSHA_GOOGLE_RATING);
   const todayDate = new Date().toISOString().split('T')[0];
@@ -395,6 +399,24 @@ const KalpavrukshaPage = () => {
     window.scrollToAmenities = scrollToAmenities;
     window.scrollToContact = scrollToContact;
   }
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const syncMobileUx = () => {
+      setUseMobileClientUx(window.innerWidth < 700);
+    };
+
+    syncMobileUx();
+    window.addEventListener('resize', syncMobileUx);
+    window.addEventListener('orientationchange', syncMobileUx);
+    return () => {
+      window.removeEventListener('resize', syncMobileUx);
+      window.removeEventListener('orientationchange', syncMobileUx);
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -912,16 +934,37 @@ const KalpavrukshaPage = () => {
     {
       label: 'Entrance wall',
       title: 'Entrance wall',
-      detail: 'Latest shared site photo showing the entrance wall progress at Kalpavruksha.',
-      image: require('../assets/kalpavruksha/site-entrance-wall.png'),
-      alt: 'Kalpavruksha live site entrance wall progress',
+      detail: 'Latest site photo showing the front boundary wall and entry frontage at Kalpavruksha.',
+      image: require('../assets/kalpavruksha/live-entrance-wall.jpeg'),
+      alt: 'Kalpavruksha live site entrance wall and frontage',
     },
     {
       label: 'Main gate',
       title: 'Main gate',
-      detail: 'Latest shared site photo showing the main gate progress at Kalpavruksha.',
-      image: require('../assets/kalpavruksha/site-main-gate.png'),
-      alt: 'Kalpavruksha live site main gate progress',
+      detail: 'Latest site photo showing the tree-themed main gate and internal road alignment.',
+      image: require('../assets/kalpavruksha/live-main-gate.jpeg'),
+      alt: 'Kalpavruksha live site main gate with internal road view',
+    },
+    {
+      label: 'Compound wall',
+      title: 'Compound wall',
+      detail: 'Latest site photo showing the compound wall, boundary finish and service-side progress.',
+      image: require('../assets/kalpavruksha/live-compound-wall.jpeg'),
+      alt: 'Kalpavruksha live site compound wall and boundary progress',
+    },
+    {
+      label: 'Clubhouse lawn',
+      title: 'Clubhouse lawn',
+      detail: 'Latest site photo showing the lawn, walking path and clubhouse-side progress.',
+      image: require('../assets/kalpavruksha/live-clubhouse-lawn.jpeg'),
+      alt: 'Kalpavruksha live site clubhouse lawn and walking path',
+    },
+    {
+      label: 'Seating pavilion',
+      title: 'Seating pavilion',
+      detail: 'Latest site photo showing the outdoor seating pavilion and open-space development.',
+      image: require('../assets/kalpavruksha/live-seating-pavilion.jpeg'),
+      alt: 'Kalpavruksha live site outdoor seating pavilion',
     },
   ];
 
@@ -1906,6 +1949,17 @@ const KalpavrukshaPage = () => {
   const projectNavWordmarkClassName = isProjectNavOnLightSurface ? 'text-[#8b6328]' : 'text-[#dbc58f]';
   const projectNavTrackColor = isProjectNavOnLightSurface ? 'rgba(139, 99, 40, 0.12)' : 'rgba(255, 255, 255, 0.08)';
   const selectedImageIndex = getSelectedImageIndex();
+
+  if (useMobileClientUx) {
+    return (
+      <KalpavrukshaMobileUx
+        landingVariant={LANDING_VARIANT}
+        landingVersion={LANDING_VERSION}
+        googleReviewSummary={googleReviewSummary}
+      />
+    );
+  }
+
   return (
     <>
       <ZohoSalesIQWidgetLoader

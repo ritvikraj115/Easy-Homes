@@ -45,6 +45,7 @@ import {
   KALPAVRUKSHA_TRUST_HERO_SRC_SET,
   KALPAVRUKSHA_WALKTHROUGH_BROCHURE_COVER,
 } from '../assets/kalpavrukshaHeroAssets';
+import KalpavrukshaMobileUx from './KalpavrukshaMobileUx';
 
 const preloadReviewsSection = () => import('../components/ReviewProject');
 const ReviewsSection = React.lazy(preloadReviewsSection);
@@ -316,16 +317,37 @@ const sitePhotoPlaceholders = [
   {
     label: 'Entrance wall',
     title: 'Entrance wall',
-    detail: 'Latest shared site photo showing the entrance wall progress at Kalpavruksha.',
-    image: require('../assets/kalpavruksha/site-entrance-wall.png'),
-    alt: 'Kalpavruksha live site entrance wall progress',
+    detail: 'Latest site photo showing the front boundary wall and entry frontage at Kalpavruksha.',
+    image: require('../assets/kalpavruksha/live-entrance-wall.jpeg'),
+    alt: 'Kalpavruksha live site entrance wall and frontage',
   },
   {
     label: 'Main gate',
     title: 'Main gate',
-    detail: 'Latest shared site photo showing the main gate progress at Kalpavruksha.',
-    image: require('../assets/kalpavruksha/site-main-gate.png'),
-    alt: 'Kalpavruksha live site main gate progress',
+    detail: 'Latest site photo showing the tree-themed main gate and internal road alignment.',
+    image: require('../assets/kalpavruksha/live-main-gate.jpeg'),
+    alt: 'Kalpavruksha live site main gate with internal road view',
+  },
+  {
+    label: 'Compound wall',
+    title: 'Compound wall',
+    detail: 'Latest site photo showing the compound wall, boundary finish and service-side progress.',
+    image: require('../assets/kalpavruksha/live-compound-wall.jpeg'),
+    alt: 'Kalpavruksha live site compound wall and boundary progress',
+  },
+  {
+    label: 'Clubhouse lawn',
+    title: 'Clubhouse lawn',
+    detail: 'Latest site photo showing the lawn, walking path and clubhouse-side progress.',
+    image: require('../assets/kalpavruksha/live-clubhouse-lawn.jpeg'),
+    alt: 'Kalpavruksha live site clubhouse lawn and walking path',
+  },
+  {
+    label: 'Seating pavilion',
+    title: 'Seating pavilion',
+    detail: 'Latest site photo showing the outdoor seating pavilion and open-space development.',
+    image: require('../assets/kalpavruksha/live-seating-pavilion.jpeg'),
+    alt: 'Kalpavruksha live site outdoor seating pavilion',
   },
 ];
 
@@ -674,6 +696,9 @@ export default function KalpavrukshaV2() {
   const [isMobileGalleryInView, setIsMobileGalleryInView] = useState(false);
   const [stickyCtaVisible, setStickyCtaVisible] = useState(false);
   const [layoutPreviewOpen, setLayoutPreviewOpen] = useState(false);
+  const [useMobileClientUx, setUseMobileClientUx] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth < 700
+  );
   const [shouldRenderReviews, setShouldRenderReviews] = useState(false);
   const [googleReviewSummary, setGoogleReviewSummary] = useState(KALPAVRUKSHA_GOOGLE_RATING);
 
@@ -714,6 +739,24 @@ export default function KalpavrukshaV2() {
       review_url: googleReviewSummary.reviewUrl,
     }));
   };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const syncMobileUx = () => {
+      setUseMobileClientUx(window.innerWidth < 700);
+    };
+
+    syncMobileUx();
+    window.addEventListener('resize', syncMobileUx);
+    window.addEventListener('orientationchange', syncMobileUx);
+    return () => {
+      window.removeEventListener('resize', syncMobileUx);
+      window.removeEventListener('orientationchange', syncMobileUx);
+    };
+  }, []);
 
   useEffect(() => {
     captureGoogleAdsAttribution();
@@ -1297,6 +1340,16 @@ export default function KalpavrukshaV2() {
       ? 'border-[#b56f37] bg-[#f2d6aa] text-[#27382c] shadow-sm'
       : 'border-[#d6bd8f] bg-[#fff7e8] text-[#5f684f] hover:border-[#b56f37]'
   }`;
+
+  if (useMobileClientUx) {
+    return (
+      <KalpavrukshaMobileUx
+        landingVariant={LANDING_VARIANT}
+        landingVersion={LANDING_VERSION}
+        googleReviewSummary={googleReviewSummary}
+      />
+    );
+  }
 
   return (
     <>
