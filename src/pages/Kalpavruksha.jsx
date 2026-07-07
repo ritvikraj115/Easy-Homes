@@ -1950,12 +1950,13 @@ const KalpavrukshaPage = () => {
   const projectNavTrackColor = isProjectNavOnLightSurface ? 'rgba(139, 99, 40, 0.12)' : 'rgba(255, 255, 255, 0.08)';
   const selectedImageIndex = getSelectedImageIndex();
 
-  if (useMobileClientUx) {
+  if (useMobileClientUx && !showVisitModal) {
     return (
       <KalpavrukshaMobileUx
         landingVariant={LANDING_VARIANT}
         landingVersion={LANDING_VERSION}
         googleReviewSummary={googleReviewSummary}
+        onBookSiteVisit={openVisitModal}
       />
     );
   }

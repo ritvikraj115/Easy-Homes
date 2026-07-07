@@ -1341,12 +1341,13 @@ export default function KalpavrukshaV2() {
       : 'border-[#d6bd8f] bg-[#fff7e8] text-[#5f684f] hover:border-[#b56f37]'
   }`;
 
-  if (useMobileClientUx) {
+  if (useMobileClientUx && !visitModalOpen) {
     return (
       <KalpavrukshaMobileUx
         landingVariant={LANDING_VARIANT}
         landingVersion={LANDING_VERSION}
         googleReviewSummary={googleReviewSummary}
+        onBookSiteVisit={openVisitModal}
       />
     );
   }

@@ -193,6 +193,7 @@ export default function KalpavrukshaMobileUx({
   landingVariant = 'A',
   landingVersion = 'v1',
   googleReviewSummary = GOOGLE_REVIEW_FALLBACK,
+  onBookSiteVisit,
 }) {
   const rootRef = useRef(null);
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
@@ -268,6 +269,18 @@ export default function KalpavrukshaMobileUx({
       form_name: 'kalpavruksha_brochure_map_mobile',
       placement,
     });
+  };
+
+  const openSiteVisitForm = (placement) => {
+    if (typeof onBookSiteVisit === 'function') {
+      onBookSiteVisit(placement);
+      return;
+    }
+
+    trackFormOpen(placement);
+    if (typeof document !== 'undefined') {
+      document.getElementById('book')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   const trackPhoneClick = (placement) => {
@@ -781,6 +794,7 @@ export default function KalpavrukshaMobileUx({
           .kmux-cta-primary,
           .kmux-cta-secondary,
           .kmux-stickybar a,
+          .kmux-stickybar button,
           .kmux-hero-gallery {
             -webkit-tap-highlight-color:transparent;
           }
@@ -1080,13 +1094,18 @@ export default function KalpavrukshaMobileUx({
             border-radius:30px 18px 30px 18px;
           }
 
-          .kmux-persona-card a {
+          .kmux-persona-card a,
+          .kmux-persona-card button {
             display:inline-flex;
             margin-top:13px;
+            padding:0;
+            border:0;
             color:var(--gold);
+            background:transparent;
             text-decoration:none;
             font-size:14px;
             font-weight:900;
+            cursor:pointer;
           }
 
           .kmux-cta-band {
@@ -1224,6 +1243,7 @@ export default function KalpavrukshaMobileUx({
           .kmux-stickybar .kmux-visit {
             flex:1;
             min-height:48px;
+            border:0;
             border-radius:16px;
             display:flex;
             align-items:center;
@@ -1408,7 +1428,7 @@ export default function KalpavrukshaMobileUx({
           <article className="kmux-persona-card kmux-reveal">
             <h3>Investing from Hyderabad?</h3>
             <p>An AP-origin capital-region asset you can track remotely, with site visits arranged around your travel dates.</p>
-            <a href="#book" onClick={() => trackFormOpen('mobile_persona_plan_visit')}>Plan a visit -&gt;</a>
+            <button type="button" onClick={() => openSiteVisitForm('mobile_persona_plan_visit')}>Plan a visit -&gt;</button>
           </article>
         </section>
 
@@ -1416,9 +1436,9 @@ export default function KalpavrukshaMobileUx({
           <div className="kmux-reveal">
             <h2 className="kmux-section-title">Limited site visit slots this week</h2>
             <p className="kmux-section-note">We keep visit groups small so you actually get time on the ground. Tap below to hold a slot.</p>
-            <a href="#book" className="kmux-cta-primary" onClick={() => trackFormOpen('mobile_limited_slots')}>
+            <button type="button" className="kmux-cta-primary" onClick={() => openSiteVisitForm('mobile_limited_slots')}>
               Book a Free Site Visit
-            </a>
+            </button>
           </div>
         </section>
 
@@ -1492,9 +1512,9 @@ export default function KalpavrukshaMobileUx({
         >
           <WhatsAppIcon />
         </a>
-        <a href="#book" className="kmux-visit" onClick={() => trackFormOpen('mobile_sticky_book_visit')}>
+        <button type="button" className="kmux-visit" onClick={() => openSiteVisitForm('mobile_sticky_book_visit')}>
           Book Site Visit
-        </a>
+        </button>
       </nav>
 
       {lightboxImage && (
