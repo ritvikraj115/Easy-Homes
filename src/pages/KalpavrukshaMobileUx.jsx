@@ -431,7 +431,7 @@ export default function KalpavrukshaMobileUx({
         hideFloatButton
         homeWidgets={KALPAVRUKSHA_ZOHO_HOME_WIDGETS}
         theme={KALPAVRUKSHA_ZOHO_THEME}
-        autoLoad={false}
+        autoLoad
       />
       <div
         ref={rootRef}
