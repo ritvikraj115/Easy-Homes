@@ -267,14 +267,13 @@ test('conversion-first sections show verified project essentials near the top', 
   expect(screen.getByText('What makes Kalpavruksha different')).toBeInTheDocument();
   expect(screen.getByText('Built for buyers who value transparency, lifestyle, and long-term appreciation.')).toBeInTheDocument();
   expect(screen.getByText('Sunrise framed by the hills')).toBeInTheDocument();
-  expect(screen.getByText("What's inside the layout")).toBeInTheDocument();
+  expect(screen.queryByText("What's inside the layout")).not.toBeInTheDocument();
   expect(screen.queryByText('Clear buyer transparency')).not.toBeInTheDocument();
   expect(screen.getByText('Buyer Essentials')).toBeInTheDocument();
-  expect(screen.getByText('Honest Availability')).toBeInTheDocument();
+  expect(screen.queryByText('Honest Availability')).not.toBeInTheDocument();
   expect(screen.getAllByText('Rs. 31 Lakhs').length).toBeGreaterThan(0);
   expect(screen.getAllByText('Rs. 31 Lakhs onwards').length).toBeGreaterThan(0);
   expect(screen.getAllByText('September 2026').length).toBeGreaterThan(0);
-  expect(screen.getByText('17')).toBeInTheDocument();
 });
 
 test('site visit hash link opens the form directly for ad landing flows', async () => {
@@ -452,8 +451,7 @@ test('site visit map pickup mode can populate the pickup address', async () => {
   });
 });
 
-test('brochure download form submits and triggers the file download flow', async () => {
-  const anchorClickSpy = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+test('brochure and map request submits the lead without a client-side download', async () => {
   renderPage();
 
   fireEvent.click(screen.getByRole('button', { name: 'Download Project Brochure' }));
@@ -484,7 +482,7 @@ test('brochure download form submits and triggers the file download flow', async
       landingVersion: 'v1',
       landing_version: 'v1',
       version: 'v1',
-      leadStatus: 'Downloaded Brochure',
+      leadStatus: 'Brochure and Map Requested on WhatsApp',
       name: 'Brochure User',
       phone: '9123456789',
       email: 'brochure.user@example.com',
@@ -496,8 +494,8 @@ test('brochure download form submits and triggers the file download flow', async
     'brochure_downloaded',
     expect.objectContaining({
       form_name: 'kalpavruksha_download_form',
-      conversion_type: 'brochure_download',
-      lead_type: 'brochure_download',
+      conversion_type: 'brochure_map_requested',
+      lead_type: 'brochure_map_request',
       landing_variant: 'A',
       landing_version: 'v1',
     }),
@@ -505,10 +503,7 @@ test('brochure download form submits and triggers the file download flow', async
   expect(trackEvent).not.toHaveBeenCalledWith('form_submit', expect.anything());
   expect(trackEvent).not.toHaveBeenCalledWith('generate_lead', expect.anything());
   expect(trackEvent).not.toHaveBeenCalledWith('file_download', expect.anything());
-  expect(anchorClickSpy).toHaveBeenCalled();
   expect(mockNavigate).toHaveBeenCalledWith('/thank-you');
-
-  anchorClickSpy.mockRestore();
 });
 
 test('gallery cards use descriptive alt text for SEO and accessibility', () => {

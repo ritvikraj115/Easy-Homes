@@ -12,13 +12,9 @@ import {
   MapPin,
   MessageCircle,
   Phone,
-  Route,
-  Shield,
   Star,
   Trees,
-  Users,
   X,
-  Zap,
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import api from '../api';
@@ -267,15 +263,6 @@ const locationChips = [
   { label: '13.5 km', detail: 'Amaravati Start-up Village & BITS' },
   { label: '14 km', detail: 'Vijayawada Railway Station' },
   { label: '15 km', detail: 'Vijayawada Bus Stand' },
-];
-
-const amenities = [
-  { icon: <Trees className="h-5 w-5" />, title: 'Hill views', detail: 'Unobstructed views of the Kondapalli hills from most plots in the layout.' },
-  { icon: <Route className="h-5 w-5" />, title: 'Creek & walking trail', detail: 'A live creek runs through Kalpavruksha with a dedicated trail alongside it.' },
-  { icon: <Users className="h-5 w-5" />, title: 'Clubhouse', detail: 'Infinity pool, private theatre, banquet hall, BBQ deck and an AC gym.' },
-  { icon: <Layers className="h-5 w-5" />, title: 'Boulder park & sports courts', detail: 'Pickleball and box cricket courts, plus a landscaped boulder park.' },
-  { icon: <Zap className="h-5 w-5" />, title: 'CC roads & underground utilities', detail: 'Every internal road is concrete; every utility line runs underground.' },
-  { icon: <Shield className="h-5 w-5" />, title: '11-ft wall & 24/7 CCTV', detail: 'The entire layout is enclosed and monitored around the clock.' },
 ];
 
 const differenceItems = [
@@ -1689,6 +1676,7 @@ export default function KalpavrukshaV2() {
               </div>
             </section>
 
+          <div ref={amenitiesRef} />
           <section ref={snapshotRef} className="kv2-section-shell bg-[linear-gradient(135deg,#f4e6cc_0%,#dbe0c7_54%,#ead2aa_100%)] px-5 py-12 lg:px-6 lg:py-16">
             <div className="relative z-10 mx-auto max-w-5xl">
               <div className="mx-auto max-w-4xl text-center">
@@ -1992,27 +1980,6 @@ export default function KalpavrukshaV2() {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </section>
-
-          <section ref={amenitiesRef} className="kv2-section-shell bg-[linear-gradient(145deg,#c9b984_0%,#e7d6b5_45%,#d7dfc5_100%)] py-12 text-[#27382c] md:py-16">
-            <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6">
-              <SectionHeader
-                eyebrow="Infrastructure & Amenities"
-                title="What's inside the layout"
-                description="Built around a working creek and the hills behind it, not around a brochure."
-              />
-              <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
-                {amenities.map((item) => (
-                  <div key={item.title} className="kv2-card-lift rounded-[24px] border border-[#fff7e8]/72 bg-[#fff7e8]/56 p-4 shadow-[0_20px_46px_rgba(82,104,74,0.12)] backdrop-blur md:rounded-[28px] md:p-6">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#52684a]/12 text-[#52684a] ring-1 ring-[#52684a]/20 md:h-12 md:w-12">
-                      {item.icon}
-                    </div>
-                    <h3 className="mt-4 text-lg font-bold text-[#27382c] md:mt-5 md:text-xl">{item.title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-[#5f684f] md:mt-3 md:leading-7">{item.detail}</p>
-                  </div>
-                ))}
               </div>
             </div>
           </section>

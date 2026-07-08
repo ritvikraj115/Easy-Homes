@@ -6,11 +6,8 @@ import {
   MessageCircle,
   Phone,
   Building,
-  Waves,
   Car,
-  Shield,
   CheckCircle,
-  Users,
   TreePine,
   X,
   ArrowUpRight,
@@ -20,7 +17,6 @@ import {
   Menu,
   Star
 } from 'lucide-react';
-import { Card, CardContent } from '../components/card';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
@@ -885,39 +881,6 @@ const KalpavrukshaPage = () => {
     ],
     "articleBody": "Kalpavruksha is presented as a CRDA-approved plotted development by Easy Homes in Vemavaram, planned across approximately 11 acres with 105 residential plots. Buyers looking for open plots near Amaravati often evaluate three factors first: approval clarity, location practicality, and ground-level infrastructure readiness. The project is structured around those priorities with a planned layout, internal circulation, and community-focused zoning. Plot dimensions in Kalpavruksha are positioned for multiple buyer goals, from long-term land holding to future home construction. Along with plot planning, the project narrative highlights amenities such as landscaped zones, clubhouse-oriented lifestyle components, utility-ready roads, and access-led design. From a connectivity standpoint, Kalpavruksha is positioned about 5 km from West Bypass and Rayanapadu, with practical travel links toward Vijayawada city, railway access points, airport routes, and Amaravati-side expansion areas. Buyers usually verify CRDA and statutory approval status, plot dimensions and road-width access, infrastructure progress, travel-time feasibility, and final documentation and registration process before booking."
   };
-
-  const features = [
-    {
-      icon: <TreePine className="h-6 w-6 text-[#8b6328]" />,
-      title: "Hill views",
-      description: "Unobstructed views of the Kondapalli hills from most plots in the layout.",
-    },
-    {
-      icon: <Waves className="h-6 w-6 text-[#8b6328]" />,
-      title: "Creek & walking trail",
-      description: "A live creek runs through Kalpavruksha with a dedicated trail alongside it.",
-    },
-    {
-      icon: <Building className="h-6 w-6 text-[#8b6328]" />,
-      title: "Clubhouse",
-      description: "Infinity pool, private theatre, banquet hall, BBQ deck and an AC gym.",
-    },
-    {
-      icon: <Users className="h-6 w-6 text-[#8b6328]" />,
-      title: "Boulder park & sports courts",
-      description: "Pickleball and box cricket courts, plus a landscaped boulder park.",
-    },
-    {
-      icon: <Car className="h-6 w-6 text-[#8b6328]" />,
-      title: "CC roads & underground utilities",
-      description: "Every internal road is concrete; every utility line runs underground.",
-    },
-    {
-      icon: <Shield className="h-6 w-6 text-[#8b6328]" />,
-      title: "11-ft wall & 24/7 CCTV",
-      description: "The entire layout is enclosed and monitored around the clock.",
-    },
-  ]
 
   const kalpavrukshaDifferenceItems = [
     {
@@ -3000,6 +2963,7 @@ const KalpavrukshaPage = () => {
         </section>
 
         {/* Buyer shortlist and live site proof */}
+        <div ref={amenitiesRef} />
         <section
           ref={aboutRef}
           className="relative z-10 overflow-hidden border-t border-[#e6d8bd] bg-[radial-gradient(circle_at_12%_0%,rgba(203,161,89,0.16),transparent_30%),linear-gradient(180deg,#fffdf8_0%,#f3e5cf_100%)] py-12 md:py-16"
@@ -3525,62 +3489,6 @@ const KalpavrukshaPage = () => {
               </div>
             </div>
           </div>)}
-
-        {/* Section 5: What Sets Kalpavruksha Apart */}
-        <div ref={amenitiesRef} />
-        <section
-          id="amenities"
-          className="relative overflow-hidden border-t border-[#e5d8bf] bg-[radial-gradient(circle_at_top_left,rgba(214,189,130,0.16),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(214,189,130,0.08),transparent_28%),linear-gradient(180deg,#fbf6ec_0%,#f1e5d3_100%)] py-14 md:py-20"
-          style={DEFERRED_SECTION_STYLE}
-        >
-          <div className="pointer-events-none absolute -left-20 top-24 h-72 w-72 rounded-full bg-[#ead8b1]/30 blur-3xl" />
-          <div className="pointer-events-none absolute right-0 top-1/3 h-80 w-80 rounded-full bg-[#f1dfbd]/24 blur-3xl" />
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="kalpa-v1-luxe-card overflow-hidden rounded-[32px] border border-[#e3d4b8] bg-[radial-gradient(circle_at_top_left,rgba(214,189,130,0.14),transparent_26%),linear-gradient(135deg,#fffdfa_0%,#f7efe1_52%,#efe3cf_100%)] px-5 py-8 shadow-[0_24px_60px_rgba(83,64,31,0.11)] md:px-8 md:py-10 lg:px-10">
-              <div className="mx-auto max-w-3xl text-center">
-                <div className="inline-flex items-center rounded-full border border-[#d7ba82] bg-white/90 px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#8b6328] shadow-sm backdrop-blur">
-                  Layout Essentials
-                </div>
-                <h2 className="mt-5 text-[1.9rem] font-bold tracking-[-0.03em] text-[#18231d] md:text-[2.7rem]">
-                  What's inside the layout
-                </h2>
-                <p className="mt-4 text-base leading-7 text-[#5f6a62] md:text-[1.05rem]">
-                  Built around a working creek and the hills behind it, not around a brochure.
-                </p>
-              </div>
-
-              <div className="mx-auto mt-9 grid max-w-6xl grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {features.map((feature, index) => (
-                  <Card
-                    key={index}
-                    className="kalpa-v1-luxe-card kalpa-v1-reveal h-full rounded-[24px] border border-[#eadfcb] bg-[linear-gradient(180deg,#fffefb_0%,#f8f1e5_100%)] p-6 text-[#18231d] shadow-[0_16px_36px_rgba(83,64,31,0.075)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#d8b46c]/65 hover:bg-white hover:shadow-[0_24px_48px_rgba(83,64,31,0.11)]"
-                    style={{ '--kalpa-reveal-delay': `${index * 70}ms` }}
-                  >
-                    <CardContent className="p-0">
-                      <div className="flex h-full flex-col gap-5">
-                        <div className="kalpa-v1-icon-breathe flex h-14 w-14 items-center justify-center rounded-2xl border border-[#d7b16f]/28 bg-[linear-gradient(180deg,#fff5de_0%,#f6e6c7_100%)] shadow-[0_12px_28px_rgba(203,161,89,0.12)]">
-                          {feature.icon}
-                        </div>
-
-                        <div className="h-px w-20 bg-gradient-to-r from-[#d7b16f] via-[#c59a55]/45 to-transparent"></div>
-
-                        <div>
-                          <div className="mb-3 inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8b6328] ring-1 ring-[#eadfcb]">
-                            {String(index + 1).padStart(2, '0')}
-                          </div>
-                          <h3 className="mb-3 text-lg font-semibold text-[#18231d]">
-                            {feature.title}
-                          </h3>
-                          <p className="leading-7 text-[#5f6a62]">{feature.description}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* Section 6: Community Details */}
         <div ref={masterPlanRef} />
