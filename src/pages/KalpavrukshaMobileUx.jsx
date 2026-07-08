@@ -5,13 +5,20 @@ import { trackEvent, trackWhatsAppClick } from '../utils/analytics';
 import { captureGoogleAdsAttribution, getGoogleAdsAttributionPayload } from '../utils/googleAdsAttribution';
 import { KALPAVRUKSHA_WHATSAPP_NUMBER } from '../utils/kalpavrukshaWhatsapp';
 import ZohoSalesIQWidgetLoader, { openZohoSalesIQChat } from '../components/ZohoSalesIQWidgetLoader';
-import siteEntranceWall from '../assets/kalpavruksha/live-entrance-wall-1200.webp';
 import siteCompoundWall from '../assets/kalpavruksha/live-compound-wall-1200.webp';
 import siteClubhouseLawn from '../assets/kalpavruksha/live-clubhouse-lawn-1200.webp';
 import siteSeatingPavilion from '../assets/kalpavruksha/live-seating-pavilion-1200.webp';
 import siteMainGate from '../assets/kalpavruksha/live-main-gate-1200.webp';
+import galleryClubhouse from '../assets/kalpavruksha/club house.webp';
+import galleryContourGarden from '../assets/kalpavruksha/contour garden.webp';
+import galleryArrivalCourt from '../assets/kalpavruksha/arrival court.webp';
+import galleryLotusPond from '../assets/kalpavruksha/lotus pond 2.webp';
 
 const CALL_URL = 'tel:+918988896666';
+const EASY_HOMES_OFFICE_ADDRESS = [
+  '4th Floor, adjacent to GIG International School,',
+  'Gollapudi, Vijayawada, Andhra Pradesh 521225',
+];
 const KALPAVRUKSHA_FONT_STYLESHEET =
   'https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap';
 const GOOGLE_REVIEW_FALLBACK = {
@@ -46,11 +53,6 @@ const KALPAVRUKSHA_ZOHO_CHAT_QUESTION =
 
 const siteImages = [
   {
-    title: 'Entrance wall',
-    image: siteEntranceWall,
-    alt: 'Kalpavruksha entrance wall at the live site',
-  },
-  {
     title: 'Main gate',
     image: siteMainGate,
     alt: 'Kalpavruksha main gate at the live site',
@@ -72,11 +74,40 @@ const siteImages = [
   },
 ];
 
+const galleryImages = [
+  {
+    title: 'Modern Clubhouse',
+    category: 'Project gallery',
+    image: galleryClubhouse,
+    alt: 'Kalpavruksha clubhouse exterior with landscaped lawns and lifestyle amenities',
+  },
+  {
+    title: 'Contour Garden',
+    category: 'Project gallery',
+    image: galleryContourGarden,
+    alt: 'Kalpavruksha contour garden with landscaped pathways and open recreational greens',
+  },
+  {
+    title: 'Arrival Court',
+    category: 'Project gallery',
+    image: galleryArrivalCourt,
+    alt: 'Kalpavruksha arrival court with landscaped entry features inside the gated layout',
+  },
+  {
+    title: 'Lotus Pond Retreat',
+    category: 'Project gallery',
+    image: galleryLotusPond,
+    alt: 'Kalpavruksha lotus pond water feature with curved walkways and reflective landscaping',
+  },
+];
+
 const quickFacts = [
-  ['From Vijayawada', '7.5 km'],
-  ['From Amaravati', '13.5 km'],
-  ['Approval', 'CRDA Layout'],
-  ['Plot Sizes', '174-525 Sq.yd.'],
+  { label: 'Price From', value: 'Rs. 31 Lakhs', detail: 'onwards' },
+  { label: 'Location', value: 'Vemavaram' },
+  { label: 'Access', value: '5 KM', detail: 'from West Bypass & Rayanapadu', wide: true },
+  { label: 'Project Area', value: '11 Acres' },
+  { label: 'Plot Sizes', value: '174-525', detail: 'Sq.yd.' },
+  { label: 'Developer Maintenance', value: 'Till Dec 2030', wide: true },
 ];
 
 const amenities = [
@@ -222,6 +253,7 @@ export default function KalpavrukshaMobileUx({
 }) {
   const rootRef = useRef(null);
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
+  const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
   const [lightboxImage, setLightboxImage] = useState(null);
   const [form, setForm] = useState({ name: '', phone: '', consent: false });
   const [status, setStatus] = useState('');
@@ -235,6 +267,7 @@ export default function KalpavrukshaMobileUx({
   };
 
   const activeHeroImage = siteImages[activeHeroIndex] || siteImages[0];
+  const activeGalleryImage = galleryImages[activeGalleryIndex] || galleryImages[0];
   const trackingContext = useMemo(() => ({
     landing_variant: landingVariant,
     landingVariant,
@@ -265,6 +298,14 @@ export default function KalpavrukshaMobileUx({
     const timerId = window.setInterval(() => {
       setActiveHeroIndex((current) => (current + 1) % siteImages.length);
     }, 4200);
+
+    return () => window.clearInterval(timerId);
+  }, []);
+
+  useEffect(() => {
+    const timerId = window.setInterval(() => {
+      setActiveGalleryIndex((current) => (current + 1) % galleryImages.length);
+    }, 4600);
 
     return () => window.clearInterval(timerId);
   }, []);
@@ -521,7 +562,7 @@ export default function KalpavrukshaMobileUx({
           name="description"
           content="Kalpavruksha by Easy Homes: CRDA and RERA approved residential plots near Vijayawada and Amaravati with clubhouse, parks, CC roads and underground utilities."
         />
-        <link rel="preload" as="image" href={siteEntranceWall} type="image/webp" fetchPriority="high" />
+        <link rel="preload" as="image" href={siteMainGate} type="image/webp" fetchPriority="high" />
         <link
           rel="stylesheet"
           href={KALPAVRUKSHA_FONT_STYLESHEET}
@@ -1066,29 +1107,58 @@ export default function KalpavrukshaMobileUx({
           .kmux-facts {
             display:grid;
             grid-template-columns:1fr 1fr;
-            gap:10px;
-            background:var(--cream);
+            gap:12px;
+            background:
+              radial-gradient(circle at 92% 4%, rgba(215,169,79,.18), transparent 34%),
+              linear-gradient(180deg, var(--cream), var(--cream-2));
           }
 
           .kmux-theme-v2 .kmux-facts {
-            background:linear-gradient(180deg, #fff5e7, #f1ddc0);
+            background:
+              radial-gradient(circle at 8% 0%, rgba(181,111,55,.16), transparent 36%),
+              linear-gradient(180deg, #fff5e7, #f1ddc0);
           }
 
           .kmux-fact {
-            min-height:112px;
+            position:relative;
+            min-width:0;
+            min-height:118px;
             display:flex;
             flex-direction:column;
-            justify-content:space-between;
-            padding:16px;
+            justify-content:flex-start;
+            gap:9px;
+            padding:18px;
             border:1px solid var(--line);
-            border-radius:22px;
-            background:rgba(255,255,255,.70);
-            box-shadow:0 14px 28px rgba(67,45,20,.08);
+            border-radius:24px;
+            overflow:hidden;
+            background:linear-gradient(145deg, rgba(255,255,255,.90), rgba(255,250,241,.72));
+            box-shadow:0 14px 32px rgba(67,45,20,.075);
+          }
+
+          .kmux-fact::after {
+            content:'';
+            position:absolute;
+            right:-24px;
+            bottom:-30px;
+            width:76px;
+            height:76px;
+            border-radius:50%;
+            background:rgba(215,169,79,.10);
+            pointer-events:none;
+          }
+
+          .kmux-fact.is-wide {
+            grid-column:1 / -1;
+            min-height:104px;
+          }
+
+          .kmux-fact.is-wide .kmux-value {
+            font-size:24px;
           }
 
           .kmux-theme-v2 .kmux-fact {
-            border-radius:26px 26px 12px 26px;
-            background:rgba(255,250,242,.78);
+            border-radius:28px 28px 14px 28px;
+            background:linear-gradient(145deg, rgba(255,255,255,.88), rgba(255,246,231,.76));
           }
 
           .kmux-label {
@@ -1101,73 +1171,25 @@ export default function KalpavrukshaMobileUx({
           }
 
           .kmux-value {
-            margin:0;
+            position:relative;
+            z-index:1;
+            margin:auto 0 0;
             color:var(--ink);
-            font-size:20px;
-            line-height:1.12;
+            font-size:clamp(18px, 5vw, 22px);
+            line-height:1.08;
             font-weight:900;
+            letter-spacing:-.025em;
+            overflow-wrap:anywhere;
           }
 
-          .kmux-availability {
-            background:var(--paper);
-          }
-
-          .kmux-availability-card {
-            padding:18px;
-            border:1px solid var(--line);
-            border-radius:26px;
-            background:linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,246,231,.76));
-            box-shadow:var(--shadow);
-          }
-
-          .kmux-theme-v2 .kmux-availability-card {
-            border-radius:30px 18px 30px 18px;
-          }
-
-          .kmux-bar {
-            display:flex;
-            height:18px;
-            overflow:hidden;
-            border-radius:999px;
-            background:#ddd1ba;
-            margin:4px 0 15px;
-          }
-
-          .kmux-bar .sold { background:var(--pine); }
-          .kmux-bar .reserved { background:var(--gold); }
-          .kmux-bar .available { background:var(--gold-light); }
-
-          .kmux-legend {
-            display:flex;
-            flex-wrap:wrap;
-            gap:12px 14px;
-            margin-bottom:16px;
-          }
-
-          .kmux-legend-item {
-            display:flex;
-            align-items:center;
-            gap:7px;
-            color:var(--ink);
-            font-size:12.5px;
+          .kmux-fact-detail {
+            position:relative;
+            z-index:1;
+            margin:-3px 0 0;
+            color:var(--muted);
+            font-size:12px;
+            line-height:1.35;
             font-weight:700;
-          }
-
-          .kmux-legend-dot {
-            width:10px;
-            height:10px;
-            border-radius:3px;
-            flex-shrink:0;
-          }
-
-          .kmux-urgency-note {
-            border:1px solid rgba(184,134,59,.30);
-            background:#fff9ec;
-            padding:13px 14px;
-            border-radius:16px;
-            color:#3a2a16;
-            font-size:13.5px;
-            line-height:1.45;
           }
 
           .kmux-amenities {
@@ -1223,6 +1245,124 @@ export default function KalpavrukshaMobileUx({
             color:var(--muted);
             font-size:14px;
             line-height:1.5;
+          }
+
+          .kmux-gallery {
+            background:
+              radial-gradient(circle at 88% 6%, rgba(215,169,79,.16), transparent 30%),
+              linear-gradient(180deg, var(--paper), var(--cream));
+          }
+
+          .kmux-gallery-frame {
+            width:100%;
+            padding:0;
+            border:1px solid var(--line);
+            border-radius:28px;
+            overflow:hidden;
+            color:#fffaf0;
+            background:var(--pine-dark);
+            box-shadow:var(--shadow);
+            text-align:left;
+            cursor:pointer;
+          }
+
+          .kmux-theme-v2 .kmux-gallery-frame {
+            border-radius:32px 32px 16px 32px;
+          }
+
+          .kmux-gallery-image {
+            position:relative;
+            height:288px;
+            overflow:hidden;
+            background:#d9ceb9;
+          }
+
+          .kmux-gallery-image::after {
+            content:'';
+            position:absolute;
+            inset:48% 0 0;
+            background:linear-gradient(180deg, transparent, rgba(12,29,23,.82));
+            pointer-events:none;
+          }
+
+          .kmux-gallery-image img {
+            width:100%;
+            height:112%;
+            display:block;
+            object-fit:cover;
+            object-position:center top;
+            transform:translateY(-2%);
+            animation:kmux-gallery-image-in 720ms ease both;
+          }
+
+          .kmux-gallery-caption {
+            position:absolute;
+            z-index:2;
+            left:18px;
+            right:18px;
+            bottom:16px;
+            display:flex;
+            align-items:flex-end;
+            justify-content:space-between;
+            gap:14px;
+          }
+
+          .kmux-gallery-caption small {
+            display:block;
+            margin-bottom:5px;
+            color:var(--gold-light);
+            font-size:10px;
+            font-weight:900;
+            letter-spacing:.18em;
+            text-transform:uppercase;
+          }
+
+          .kmux-gallery-caption strong {
+            display:block;
+            color:#fffaf0;
+            font-family:'Fraunces', serif;
+            font-size:1.45rem;
+            line-height:1.05;
+          }
+
+          .kmux-gallery-count {
+            flex:0 0 auto;
+            padding:7px 10px;
+            border:1px solid rgba(255,255,255,.28);
+            border-radius:999px;
+            background:rgba(15,36,28,.68);
+            color:#fff8df;
+            font-size:10px;
+            font-weight:900;
+            letter-spacing:.14em;
+          }
+
+          .kmux-gallery-controls {
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:8px;
+            margin-top:15px;
+          }
+
+          .kmux-gallery-controls button {
+            width:8px;
+            height:8px;
+            padding:0;
+            border:0;
+            border-radius:999px;
+            background:rgba(23,54,41,.22);
+            transition:width 260ms ease, background 260ms ease;
+          }
+
+          .kmux-gallery-controls button.is-active {
+            width:34px;
+            background:var(--gold);
+          }
+
+          @keyframes kmux-gallery-image-in {
+            from { opacity:.55; transform:translateY(-2%) scale(1.035); }
+            to { opacity:1; transform:translateY(-2%) scale(1); }
           }
 
           .kmux-personas {
@@ -1560,13 +1700,22 @@ export default function KalpavrukshaMobileUx({
             }
 
             .kmux-facts {
-              grid-template-columns:repeat(4, minmax(0, 1fr));
+              grid-template-columns:repeat(3, minmax(0, 1fr));
               gap:14px;
               padding:36px 44px;
             }
 
             .kmux-fact {
               min-height:138px;
+            }
+
+            .kmux-fact.is-wide {
+              grid-column:auto;
+              min-height:138px;
+            }
+
+            .kmux-fact.is-wide .kmux-value {
+              font-size:clamp(20px, 2.4vw, 25px);
             }
 
             .kmux-amenities,
@@ -1584,6 +1733,15 @@ export default function KalpavrukshaMobileUx({
             .kmux-amenity-card,
             .kmux-persona-card {
               height:100%;
+            }
+
+            .kmux-gallery-frame {
+              max-width:760px;
+              margin:0 auto;
+            }
+
+            .kmux-gallery-image {
+              height:420px;
             }
 
             .kmux-form {
@@ -1839,32 +1997,13 @@ export default function KalpavrukshaMobileUx({
         </section>
 
         <section id="kmux-facts" className="kmux-section kmux-facts" aria-label="Kalpavruksha quick facts">
-          {quickFacts.map(([label, value]) => (
-            <div className="kmux-fact kmux-reveal" key={label}>
-              <p className="kmux-label">{label}</p>
-              <p className="kmux-value">{value}</p>
+          {quickFacts.map((fact) => (
+            <div className={`kmux-fact kmux-reveal ${fact.wide ? 'is-wide' : ''}`} key={fact.label}>
+              <p className="kmux-label">{fact.label}</p>
+              <p className="kmux-value">{fact.value}</p>
+              {fact.detail && <p className="kmux-fact-detail">{fact.detail}</p>}
             </div>
           ))}
-        </section>
-
-        <section className="kmux-section kmux-availability">
-          <div className="kmux-availability-card kmux-reveal">
-            <h2 className="kmux-section-title">Plot availability - Phase 1</h2>
-            <p className="kmux-section-note">87 plots in this phase. Here&apos;s exactly where things stand today.</p>
-            <div className="kmux-bar" role="img" aria-label="17 sold, 6 reserved, 64 available out of 87 plots">
-              <span className="sold" style={{ width: '19.5%' }} />
-              <span className="reserved" style={{ width: '6.9%' }} />
-              <span className="available" style={{ width: '73.6%' }} />
-            </div>
-            <div className="kmux-legend">
-              <div className="kmux-legend-item"><span className="kmux-legend-dot" style={{ background: 'var(--pine)' }} />Sold - <b>17</b></div>
-              <div className="kmux-legend-item"><span className="kmux-legend-dot" style={{ background: 'var(--gold)' }} />Reserved - <b>6</b></div>
-              <div className="kmux-legend-item"><span className="kmux-legend-dot" style={{ background: 'var(--gold-light)' }} />Available - <b>64</b></div>
-            </div>
-            <div className="kmux-urgency-note">
-              Price increases once <b>40</b> plots are sold. At <b>17</b> sold today, that&apos;s <b>23</b> plots away.
-            </div>
-          </div>
         </section>
 
         <section id="kmux-layout" className="kmux-section kmux-amenities">
@@ -1881,6 +2020,51 @@ export default function KalpavrukshaMobileUx({
               </div>
             </article>
           ))}
+        </section>
+
+        <section id="kmux-gallery" className="kmux-section kmux-gallery">
+          <div className="kmux-reveal">
+            <h2 className="kmux-section-title">Picture the life that awaits</h2>
+            <p className="kmux-section-note">
+              Explore the clubhouse, landscaped gardens, arrival court and lotus pond planned for the community.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="kmux-gallery-frame kmux-reveal"
+            aria-label={`Open ${activeGalleryImage.title} gallery image`}
+            onClick={() => setLightboxImage(activeGalleryImage)}
+          >
+            <div className="kmux-gallery-image">
+              <img
+                key={activeGalleryImage.title}
+                src={activeGalleryImage.image}
+                alt={activeGalleryImage.alt}
+                loading="lazy"
+                decoding="async"
+              />
+              <span className="kmux-gallery-caption">
+                <span>
+                  <small>Project gallery</small>
+                  <strong>{activeGalleryImage.title}</strong>
+                </span>
+                <span className="kmux-gallery-count">
+                  {String(activeGalleryIndex + 1).padStart(2, '0')} / {galleryImages.length}
+                </span>
+              </span>
+            </div>
+          </button>
+          <div className="kmux-gallery-controls" aria-label="Project gallery slides">
+            {galleryImages.map((item, index) => (
+              <button
+                key={item.title}
+                type="button"
+                className={index === activeGalleryIndex ? 'is-active' : ''}
+                aria-label={`Show ${item.title}`}
+                onClick={() => setActiveGalleryIndex(index)}
+              />
+            ))}
+          </div>
         </section>
 
         <section className="kmux-section kmux-personas">
@@ -1958,7 +2142,9 @@ export default function KalpavrukshaMobileUx({
 
         <footer className="kmux-footer">
           <div className="kmux-fwordmark">Easy Homes</div>
-          <div>Kalpavruksha, Keelespuram, Amaravati Growth Corridor, Andhra Pradesh</div>
+          {EASY_HOMES_OFFICE_ADDRESS.map((line) => (
+            <div key={line}>{line}</div>
+          ))}
           <div>CRDA Approved Layout</div>
           <div>RERA ID: P06160035909</div>
           <div>Phone: +91 89888 96666</div>
@@ -1998,7 +2184,7 @@ export default function KalpavrukshaMobileUx({
         <div className="kmux-lightbox" role="dialog" aria-modal="true" aria-label={lightboxImage.title}>
           <button type="button" aria-label="Close image preview" onClick={() => setLightboxImage(null)}>x</button>
           <div className="kmux-lightbox-caption">
-            <small>Site image</small>
+            <small>{lightboxImage.category || 'Site image'}</small>
             <strong>{lightboxImage.title}</strong>
           </div>
           <img src={lightboxImage.image} alt={lightboxImage.alt} />

@@ -940,13 +940,6 @@ const KalpavrukshaPage = () => {
 
   const sitePhotoPlaceholders = [
     {
-      label: 'Entrance wall',
-      title: 'Entrance wall',
-      detail: 'Latest site photo showing the front boundary wall and entry frontage at Kalpavruksha.',
-      image: require('../assets/kalpavruksha/live-entrance-wall-1200.webp'),
-      alt: 'Kalpavruksha live site entrance wall and frontage',
-    },
-    {
       label: 'Main gate',
       title: 'Main gate',
       detail: 'Latest site photo showing the tree-themed main gate and internal road alignment.',
@@ -1011,27 +1004,6 @@ const KalpavrukshaPage = () => {
   const visibleProjectSnapshotStats = projectSnapshotStats.filter((item) => item.value || item.detail);
   const primaryProjectSnapshotStat = visibleProjectSnapshotStats.find((item) => item.label === 'Price From');
   const supportingProjectSnapshotStats = visibleProjectSnapshotStats.filter((item) => item.label !== 'Price From');
-
-  const availabilityStats = [
-    {
-      label: 'Booked so far',
-      value: KALPAVRUKSHA_TRUTH.bookedPlots,
-      unit: 'Plots',
-      detail: 'Current booking progress shared by the project team.'
-    },
-    {
-      label: 'Possession',
-      value: KALPAVRUKSHA_TRUTH.possession,
-      unit: '',
-      detail: 'Expected possession timeline from the project details.'
-    },
-    {
-      label: 'Developer Maintenance',
-      value: 'Till Dec 2030',
-      unit: '',
-      detail: 'Developer maintenance is planned through December 2030.'
-    }
-  ];
 
   const locationHighlights = [
     {
@@ -3251,75 +3223,6 @@ const KalpavrukshaPage = () => {
           </div>
         </section>
 
-        {/* Honest availability */}
-        <section className="border-t border-[#e5d8bf] bg-[linear-gradient(180deg,#f7eddb_0%,#efe0c7_100%)] py-9 md:py-12">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="kalpa-v1-luxe-card overflow-hidden rounded-[30px] border border-[#dcc9a3] bg-[linear-gradient(135deg,#fffdfa_0%,#f7efe1_54%,#efe0c4_100%)] p-5 shadow-[0_20px_52px_rgba(83,64,31,0.1)] md:p-7">
-              <div className="grid gap-5 lg:grid-cols-[0.82fr,1.18fr] lg:items-center">
-                <div>
-                  <div className="inline-flex items-center rounded-full border border-[#d7ba82] bg-white/90 px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#8b6328] shadow-sm">
-                    Honest Availability
-                  </div>
-                  <h2 className="mt-4 text-2xl font-bold tracking-[-0.03em] text-[#18231d] md:text-[2.35rem]">
-                    Availability, stated plainly
-                  </h2>
-                  <p className="mt-3 text-base leading-7 text-[#5f6a62]">
-                    Current progress is presented clearly so buyers can discuss availability with confidence.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  {availabilityStats.map((item, index) => (
-                    <div
-                      key={item.label}
-                      className="kalpa-v1-luxe-card kalpa-v1-reveal-scale rounded-[22px] border border-[#eadfcb] bg-white/[0.88] p-4 shadow-[0_12px_26px_rgba(83,64,31,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#d8b46c]/60 hover:bg-white hover:shadow-[0_18px_34px_rgba(83,64,31,0.09)]"
-                      style={{ '--kalpa-reveal-delay': `${index * 70}ms` }}
-                    >
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#9a8d71]">{item.label}</p>
-                      {item.value && (
-                        <div className="mt-3 flex items-baseline gap-1.5">
-                          {Number.isFinite(Number(item.value)) && !String(item.value).includes('-') ? (
-                            <AnimatedNumber
-                              value={item.value}
-                              className="kalpa-v1-number-pop text-2xl font-bold text-[#18231d]"
-                            />
-                          ) : (
-                            <span className="kalpa-v1-number-pop text-2xl font-bold text-[#18231d]" style={{ '--kalpa-reveal-delay': `${100 + index * 65}ms` }}>{item.value}</span>
-                          )}
-                          {item.unit && <span className="text-sm font-semibold text-[#8b6328]">{item.unit}</span>}
-                        </div>
-                      )}
-                      <p className={`${item.value ? 'mt-2' : 'mt-3'} text-sm leading-relaxed text-[#627067]`}>{item.detail}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-5 grid gap-3 border-t border-[#eadfcb] pt-5 md:grid-cols-3">
-                {[
-                  ['01', 'Slot confirmation', 'We confirm the requested slot before the visit.'],
-                  ['02', 'Route assistance', 'Directions and pickup support stay optional, not forced.'],
-                  ['03', 'On-site clarity', 'Inspect layout, roads, amenities, and available plot choices.'],
-                ].map(([step, title, detail], index) => (
-                  <div
-                    key={title}
-                    className="kalpa-v1-luxe-card kalpa-v1-reveal rounded-[22px] border border-[#eadfcb] bg-white/[0.82] p-4 shadow-[0_12px_26px_rgba(83,64,31,0.055)]"
-                    style={{ '--kalpa-reveal-delay': `${index * 65}ms` }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#fff5df] text-[11px] font-bold text-[#8b6328] ring-1 ring-[#dcc18a]">
-                        {step}
-                      </span>
-                      <h3 className="text-sm font-bold text-[#18231d]">{title}</h3>
-                    </div>
-                    <p className="mt-3 text-sm leading-6 text-[#627067]">{detail}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Section 3: Video Walkthrough */}
         <section
           className="relative overflow-hidden border-t border-[#e7dbc2] bg-[radial-gradient(circle_at_top_left,rgba(214,189,130,0.16),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(214,189,130,0.08),transparent_28%),linear-gradient(180deg,#fdf8ef_0%,#f2e7d7_100%)] py-14 md:py-20"
@@ -4210,6 +4113,10 @@ const KalpavrukshaPage = () => {
                 </div>
                 <p className="max-w-sm leading-7 text-white/[0.74]">
                   by Easy Homes - Creating communities where hearts belong
+                </p>
+                <p className="mt-5 max-w-sm text-sm leading-6 text-white/[0.62]">
+                  4th Floor, adjacent to GIG International School,<br />
+                  Gollapudi, Vijayawada, Andhra Pradesh 521225
                 </p>
               </div>
 

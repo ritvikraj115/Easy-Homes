@@ -260,24 +260,6 @@ const snapshotCards = [
   },
 ];
 
-const availabilityCards = [
-  {
-    label: 'Booked So Far',
-    value: `${PROJECT.bookedPlots} plots`,
-    detail: 'Current booking progress shared by the project team.',
-  },
-  {
-    label: 'Possession',
-    value: PROJECT.possession,
-    detail: 'Expected possession timeline from the project details.',
-  },
-  {
-    label: 'Developer Maintenance',
-    value: PROJECT.maintenance,
-    detail: 'Developer maintenance is planned through December 2030.',
-  },
-];
-
 const locationChips = [
   { label: '7.5 km', detail: 'Vijayawada' },
   { label: '5 km', detail: 'West Bypass & Rayanapadu' },
@@ -316,13 +298,6 @@ const differenceItems = [
 ];
 
 const sitePhotoPlaceholders = [
-  {
-    label: 'Entrance wall',
-    title: 'Entrance wall',
-    detail: 'Latest site photo showing the front boundary wall and entry frontage at Kalpavruksha.',
-    image: require('../assets/kalpavruksha/live-entrance-wall-1200.webp'),
-    alt: 'Kalpavruksha live site entrance wall and frontage',
-  },
   {
     label: 'Main gate',
     title: 'Main gate',
@@ -636,18 +611,6 @@ function ProjectMetricValue({ label, value, unit, className = '' }) {
   }
 
   return <span className={className}>{value} {unit || ''}</span>;
-}
-
-function AvailabilityMetricValue({ item, className = '' }) {
-  if (item.label === 'Booked So Far') {
-    return <CountUpValue end={17} suffix=" plots" className={className} />;
-  }
-
-  if (item.label === 'Price Clarity') {
-    return <span className={className}>{PROJECT.priceRange}</span>;
-  }
-
-  return <span className={className}>{item.value}</span>;
 }
 
 function LocationMetricValue({ label, className = '' }) {
@@ -1795,33 +1758,6 @@ export default function KalpavrukshaV2() {
             </div>
           </section>
 
-          <section className="kv2-section-shell bg-[linear-gradient(125deg,#d5c397_0%,#f1dfbf_45%,#d7dfc5_100%)] px-5 py-12 text-[#27382c] md:py-16 lg:px-6">
-            <div className="relative z-10 mx-auto max-w-5xl">
-              <div className="grid gap-4 lg:grid-cols-[0.9fr,1.1fr] lg:items-end">
-                <div className="kv2-reveal-target">
-                  <div className="inline-flex items-center rounded-full border border-[#52684a]/25 bg-[#fff7e8]/50 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8b5526]">
-                    Honest Availability
-                  </div>
-                  <h2 className="mt-4 max-w-xl text-[1.58rem] font-bold leading-[1.12] tracking-[-0.04em] md:text-[2.65rem]">
-                    Clear availability, no pressure
-                  </h2>
-                </div>
-                <p className="kv2-reveal-target max-w-xl text-sm leading-7 text-[#52684a] md:text-base md:leading-8 lg:justify-self-end">
-                  Current progress is presented clearly so buyers can discuss availability and plan a site visit with confidence.
-                </p>
-              </div>
-              <div className="mt-7 grid gap-3 sm:grid-cols-3">
-                {availabilityCards.map((item) => (
-                  <div key={item.label} className="kv2-card-lift rounded-[24px] border border-[#fff7e8]/80 bg-[#fff7e8]/58 p-4 shadow-[0_22px_46px_rgba(82,104,74,0.12)] backdrop-blur md:rounded-[28px] md:p-5">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8b5526]/70">{item.label}</p>
-                    <AvailabilityMetricValue item={item} className="mt-2 block text-xl font-bold tracking-[-0.03em] text-[#27382c] md:text-2xl" />
-                    <p className="mt-2 text-sm leading-6 text-[#5f684f]">{item.detail}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
           <section className="kv2-section-shell border-y border-[#b56f37]/12 bg-[linear-gradient(135deg,#f7ecd9_0%,#e2d1aa_52%,#dbe0c7_100%)] px-5 py-12 text-[#27382c] md:py-16 lg:px-6">
             <div className="relative z-10 mx-auto max-w-5xl">
               <SectionHeader
@@ -2368,7 +2304,8 @@ export default function KalpavrukshaV2() {
                 Premium residential open plots near Vijayawada by Easy Homes.
               </p>
               <p className="mt-3 text-sm leading-7 text-[#fff7e8]/56">
-                {PROJECT.location}
+                4th Floor, adjacent to GIG International School,<br />
+                Gollapudi, Vijayawada, Andhra Pradesh 521225
               </p>
             </div>
 
