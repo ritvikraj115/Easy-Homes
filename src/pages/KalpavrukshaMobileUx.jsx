@@ -1230,8 +1230,7 @@ export default function KalpavrukshaMobileUx({
             fill:none;
           }
 
-          .kmux-amenity-copy h3,
-          .kmux-persona-card h3 {
+          .kmux-amenity-copy h3 {
             margin:0 0 6px;
             color:var(--pine-dark);
             font-size:17px;
@@ -1239,8 +1238,7 @@ export default function KalpavrukshaMobileUx({
             font-weight:900;
           }
 
-          .kmux-amenity-copy p,
-          .kmux-persona-card p {
+          .kmux-amenity-copy p {
             margin:0;
             color:var(--muted);
             font-size:14px;
@@ -1363,37 +1361,6 @@ export default function KalpavrukshaMobileUx({
           @keyframes kmux-gallery-image-in {
             from { opacity:.55; transform:translateY(-2%) scale(1.035); }
             to { opacity:1; transform:translateY(-2%) scale(1); }
-          }
-
-          .kmux-personas {
-            background:var(--paper);
-          }
-
-          .kmux-persona-card {
-            margin-top:12px;
-            padding:18px;
-            border:1px solid var(--line);
-            border-radius:26px;
-            background:rgba(255,255,255,.75);
-            box-shadow:0 14px 28px rgba(67,45,20,.08);
-          }
-
-          .kmux-theme-v2 .kmux-persona-card {
-            border-radius:30px 18px 30px 18px;
-          }
-
-          .kmux-persona-card a,
-          .kmux-persona-card button {
-            display:inline-flex;
-            margin-top:13px;
-            padding:0;
-            border:0;
-            color:var(--gold);
-            background:transparent;
-            text-decoration:none;
-            font-size:14px;
-            font-weight:900;
-            cursor:pointer;
           }
 
           .kmux-cta-band {
@@ -1718,20 +1685,17 @@ export default function KalpavrukshaMobileUx({
               font-size:clamp(20px, 2.4vw, 25px);
             }
 
-            .kmux-amenities,
-            .kmux-personas {
+            .kmux-amenities {
               display:grid;
               grid-template-columns:repeat(2, minmax(0, 1fr));
               gap:16px;
             }
 
-            .kmux-amenities > .kmux-reveal:first-child,
-            .kmux-personas > .kmux-reveal:first-child {
+            .kmux-amenities > .kmux-reveal:first-child {
               grid-column:1 / -1;
             }
 
-            .kmux-amenity-card,
-            .kmux-persona-card {
+            .kmux-amenity-card {
               height:100%;
             }
 
@@ -2065,22 +2029,6 @@ export default function KalpavrukshaMobileUx({
               />
             ))}
           </div>
-        </section>
-
-        <section className="kmux-section kmux-personas">
-          <div className="kmux-reveal">
-            <h2 className="kmux-section-title">Built for two kinds of buyers</h2>
-          </div>
-          <article className="kmux-persona-card kmux-reveal">
-            <h3>Building in Vijayawada or Guntur, in 2-3 years?</h3>
-            <p>Lock in a CRDA-approved plot now, at Phase 1 pricing, while you plan and save toward construction.</p>
-            <a href="#book" onClick={() => trackFormOpen('mobile_persona_available_plots')}>See available plots -&gt;</a>
-          </article>
-          <article className="kmux-persona-card kmux-reveal">
-            <h3>Investing from Hyderabad?</h3>
-            <p>An AP-origin capital-region asset you can track remotely, with site visits arranged around your travel dates.</p>
-            <button type="button" onClick={() => openSiteVisitForm('mobile_persona_plan_visit')}>Plan a visit -&gt;</button>
-          </article>
         </section>
 
         <section className="kmux-section kmux-cta-band">
