@@ -699,7 +699,7 @@ export default function KalpavrukshaV2() {
   const [stickyCtaVisible, setStickyCtaVisible] = useState(false);
   const [layoutPreviewOpen, setLayoutPreviewOpen] = useState(false);
   const [useMobileClientUx, setUseMobileClientUx] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 699px)').matches
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 1024px)').matches
   );
   const [shouldRenderReviews, setShouldRenderReviews] = useState(false);
   const [googleReviewSummary, setGoogleReviewSummary] = useState(KALPAVRUKSHA_GOOGLE_RATING);
@@ -747,7 +747,7 @@ export default function KalpavrukshaV2() {
       return undefined;
     }
 
-    const mediaQuery = window.matchMedia('(max-width: 699px)');
+    const mediaQuery = window.matchMedia('(max-width: 1024px)');
     const syncMobileUx = (event = mediaQuery) => {
       setUseMobileClientUx(Boolean(event.matches));
     };
@@ -1392,7 +1392,7 @@ export default function KalpavrukshaV2() {
         hideFloatButton
         homeWidgets={KALPAVRUKSHA_ZOHO_HOME_WIDGETS}
         theme={KALPAVRUKSHA_ZOHO_THEME}
-        autoLoad={false}
+        autoLoad
       />
       <Helmet>
         <title>Kalpavruksha Open Plots in Vijayawada | CRDA Approved Plots Near Amaravati | Easy Homes</title>

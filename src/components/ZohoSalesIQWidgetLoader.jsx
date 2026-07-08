@@ -114,9 +114,7 @@ function applyZohoSalesIQConfiguration({ hideFloatButton, homeWidgets, theme }) 
     return;
   }
 
-  if (hideFloatButton) {
-    setZohoSalesIQFloatButtonVisibility('hide');
-  }
+  setZohoSalesIQFloatButtonVisibility(hideFloatButton ? 'hide' : 'show');
 
   applyZohoSalesIQTheme(salesiq, theme);
 

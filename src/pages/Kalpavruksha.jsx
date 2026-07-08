@@ -342,7 +342,7 @@ const KalpavrukshaPage = () => {
   const [toast, setToast] = useState(null);
   const [activeHeroSlideIndex, setActiveHeroSlideIndex] = useState(0);
   const [useMobileClientUx, setUseMobileClientUx] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 699px)').matches
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 1024px)').matches
   );
   const [shouldRenderReviews, setShouldRenderReviews] = useState(false);
   const [googleReviewSummary, setGoogleReviewSummary] = useState(KALPAVRUKSHA_GOOGLE_RATING);
@@ -405,7 +405,7 @@ const KalpavrukshaPage = () => {
       return undefined;
     }
 
-    const mediaQuery = window.matchMedia('(max-width: 699px)');
+    const mediaQuery = window.matchMedia('(max-width: 1024px)');
     const syncMobileUx = (event = mediaQuery) => {
       setUseMobileClientUx(Boolean(event.matches));
     };
@@ -2003,7 +2003,7 @@ const KalpavrukshaPage = () => {
         hideFloatButton
         homeWidgets={KALPAVRUKSHA_ZOHO_HOME_WIDGETS}
         theme={KALPAVRUKSHA_ZOHO_THEME}
-        autoLoad={false}
+        autoLoad
       />
       <Helmet>
         <title>{projectTitle}</title>

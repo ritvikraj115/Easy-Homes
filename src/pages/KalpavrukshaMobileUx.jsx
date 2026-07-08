@@ -4,7 +4,7 @@ import api from '../api';
 import { trackEvent, trackWhatsAppClick } from '../utils/analytics';
 import { captureGoogleAdsAttribution, getGoogleAdsAttributionPayload } from '../utils/googleAdsAttribution';
 import { KALPAVRUKSHA_WHATSAPP_NUMBER } from '../utils/kalpavrukshaWhatsapp';
-import ZohoSalesIQWidgetLoader from '../components/ZohoSalesIQWidgetLoader';
+import ZohoSalesIQWidgetLoader, { openZohoSalesIQChat } from '../components/ZohoSalesIQWidgetLoader';
 import siteEntranceWall from '../assets/kalpavruksha/live-entrance-wall-1200.webp';
 import siteCompoundWall from '../assets/kalpavruksha/live-compound-wall-1200.webp';
 import siteClubhouseLawn from '../assets/kalpavruksha/live-clubhouse-lawn-1200.webp';
@@ -41,6 +41,8 @@ const KALPAVRUKSHA_ZOHO_HOME_WIDGETS = [
     ],
   },
 ];
+const KALPAVRUKSHA_ZOHO_CHAT_QUESTION =
+  'Hi Easy Homes, I want details about Kalpavruksha open plots, pricing, and site visit availability.';
 
 const siteImages = [
   {
@@ -142,6 +144,13 @@ const WhatsAppIcon = () => (
   </svg>
 );
 
+const ChatIcon = () => (
+  <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8" fill="none" aria-hidden="true">
+    <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.7 8.7 0 0 1-7.8 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.5A8.4 8.4 0 0 1 4 11.7 8.7 8.7 0 0 1 8.7 4a8.4 8.4 0 0 1 3.8-.9h.5a8.6 8.6 0 0 1 8 8v.4z" />
+    <path d="M8.5 11h.01M12 11h.01M15.5 11h.01" />
+  </svg>
+);
+
 const SmallTreeIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true">
     <path d="M12 3C9 7 7 10 7 13.5C7 17 9.2 19 12 19C14.8 19 17 17 17 13.5C17 10 15 7 12 3Z" />
@@ -217,6 +226,7 @@ export default function KalpavrukshaMobileUx({
   const [form, setForm] = useState({ name: '', phone: '', consent: false });
   const [status, setStatus] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showFloatingChat, setShowFloatingChat] = useState(false);
   const isV2 = landingVariant === 'B' || landingVersion === 'v2';
 
   const reviewSummary = {
@@ -241,11 +251,53 @@ export default function KalpavrukshaMobileUx({
   }, []);
 
   useEffect(() => {
+    if (typeof document === 'undefined') {
+      return undefined;
+    }
+
+    document.body.classList.add('kalpa-mobile-ux-active');
+    return () => {
+      document.body.classList.remove('kalpa-mobile-ux-active');
+    };
+  }, []);
+
+  useEffect(() => {
     const timerId = window.setInterval(() => {
       setActiveHeroIndex((current) => (current + 1) % siteImages.length);
     }, 4200);
 
     return () => window.clearInterval(timerId);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    let ticking = false;
+    const updateVisibility = () => {
+      const hero = rootRef.current?.querySelector('.kmux-hero');
+      const heroHeight = hero?.offsetHeight || window.innerHeight || 1;
+      setShowFloatingChat((window.scrollY || window.pageYOffset || 0) > heroHeight * 0.5);
+      ticking = false;
+    };
+
+    const requestUpdate = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(updateVisibility);
+    };
+
+    updateVisibility();
+    window.addEventListener('scroll', requestUpdate, { passive: true });
+    window.addEventListener('resize', requestUpdate);
+    window.addEventListener('orientationchange', requestUpdate);
+
+    return () => {
+      window.removeEventListener('scroll', requestUpdate);
+      window.removeEventListener('resize', requestUpdate);
+      window.removeEventListener('orientationchange', requestUpdate);
+    };
   }, []);
 
   useEffect(() => {
@@ -324,6 +376,32 @@ export default function KalpavrukshaMobileUx({
       placement,
       link_url: buildWhatsAppUrl(message || defaultMessage),
     });
+  };
+
+  const launchLiveChat = async (placement) => {
+    trackEvent('live_chat_open', {
+      ...trackingContext,
+      ...buildGoogleAdsEventParams(),
+      event_category: 'lead',
+      placement,
+      provider: 'zoho_salesiq',
+    });
+
+    const opened = await openZohoSalesIQChat({
+      question: KALPAVRUKSHA_ZOHO_CHAT_QUESTION,
+      timeoutMs: 12000,
+    });
+
+    if (opened) return;
+
+    trackEvent('live_chat_unavailable', {
+      ...trackingContext,
+      ...buildGoogleAdsEventParams(),
+      event_category: 'lead',
+      placement,
+      provider: 'zoho_salesiq',
+    });
+    setStatus('Live chat is temporarily unavailable. Please call or WhatsApp us.');
   };
 
   const trackReviewClick = () => {
@@ -1334,6 +1412,279 @@ export default function KalpavrukshaMobileUx({
             height:21px;
           }
 
+          body.kalpa-mobile-ux-active #zsiq_float,
+          body.kalpa-mobile-ux-active #zsiq_floatmain,
+          body.kalpa-mobile-ux-active .zsiq_floatmain {
+            display:none !important;
+          }
+
+          .kmux-chat-float {
+            position:fixed;
+            z-index:82;
+            right:14px;
+            bottom:calc(env(safe-area-inset-bottom) + 88px);
+            width:46px;
+            height:46px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border:1px solid #d7ba82;
+            border-radius:999px;
+            background:linear-gradient(180deg,#fffefb 0%,#f4ead8 100%);
+            color:#8b6328;
+            box-shadow:0 18px 36px rgba(83,64,31,.15);
+            opacity:0;
+            pointer-events:none;
+            transform:translateY(10px) scale(.96);
+            transition:opacity 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+          }
+
+          .kmux-theme-v2 .kmux-chat-float {
+            border-color:rgba(181,111,55,.28);
+            background:#fff7e8;
+            color:#8b5526;
+            box-shadow:0 18px 36px rgba(82,104,74,.15);
+          }
+
+          .kmux-chat-float.is-visible {
+            opacity:.9;
+            pointer-events:auto;
+            transform:translateY(0) scale(1);
+          }
+
+          .kmux-chat-float:hover {
+            opacity:1;
+            transform:translateY(-2px) scale(1.03);
+            box-shadow:0 22px 42px rgba(83,64,31,.18);
+          }
+
+          .kmux-chat-float svg {
+            width:20px;
+            height:20px;
+          }
+
+          @media (min-width:700px) {
+            .kalpa-mobile-ux-shell {
+              padding:20px 20px 118px;
+            }
+
+            .kmux-page {
+              max-width:920px;
+              border:1px solid var(--line);
+              border-radius:36px;
+              overflow:hidden;
+            }
+
+            .kmux-topmark {
+              left:28px;
+              right:28px;
+              top:24px;
+              min-height:72px;
+              padding:14px 18px;
+              border-radius:30px;
+            }
+
+            .kmux-wordmark strong {
+              font-size:22px;
+              letter-spacing:.16em;
+            }
+
+            .kmux-hero {
+              padding:122px 30px 118px;
+            }
+
+            .kmux-hero-content {
+              display:block;
+              max-width:720px;
+              margin:0 auto;
+              padding:30px;
+              border-radius:36px;
+            }
+
+            .kmux-theme-v2 .kmux-hero-content {
+              padding:28px;
+              border-radius:38px 38px 20px 38px;
+            }
+
+            .kmux-reviews-badge,
+            .kmux-eyebrow,
+            .kmux-hero h1,
+            .kmux-sub,
+            .kmux-hero-actions {
+              grid-column:auto;
+            }
+
+            .kmux-hero h1 {
+              max-width:600px;
+              font-size:clamp(2.32rem, 6.2vw, 3.45rem);
+            }
+
+            .kmux-theme-v2 .kmux-hero h1 {
+              font-size:clamp(2.22rem, 5.8vw, 3.25rem);
+            }
+
+            .kmux-sub {
+              max-width:620px;
+              font-size:16px;
+            }
+
+            .kmux-hero-gallery {
+              grid-column:auto;
+              grid-row:auto;
+              height:min(46vw, 340px);
+              min-height:280px;
+              margin:22px 0 12px;
+            }
+
+            .kmux-hero-dots {
+              grid-column:auto;
+              margin:0 0 4px;
+              justify-content:center;
+            }
+
+            .kmux-hero-actions {
+              max-width:520px;
+            }
+
+            .kmux-section {
+              padding:46px 44px;
+            }
+
+            .kmux-section-title {
+              font-size:36px;
+            }
+
+            .kmux-section-note {
+              max-width:680px;
+              font-size:16px;
+            }
+
+            .kmux-facts {
+              grid-template-columns:repeat(4, minmax(0, 1fr));
+              gap:14px;
+              padding:36px 44px;
+            }
+
+            .kmux-fact {
+              min-height:138px;
+            }
+
+            .kmux-amenities,
+            .kmux-personas {
+              display:grid;
+              grid-template-columns:repeat(2, minmax(0, 1fr));
+              gap:16px;
+            }
+
+            .kmux-amenities > .kmux-reveal:first-child,
+            .kmux-personas > .kmux-reveal:first-child {
+              grid-column:1 / -1;
+            }
+
+            .kmux-amenity-card,
+            .kmux-persona-card {
+              height:100%;
+            }
+
+            .kmux-form {
+              max-width:640px;
+              margin:0 auto;
+              padding:24px;
+            }
+
+            .kmux-footer {
+              padding:34px 42px 42px;
+            }
+
+            .kmux-stickybar {
+              bottom:18px;
+              max-width:580px;
+              width:auto;
+              min-width:min(560px, calc(100vw - 40px));
+              justify-content:center;
+              align-items:center;
+              border:1px solid var(--line);
+              border-radius:28px;
+              padding:10px;
+              background:rgba(255,248,238,.94);
+              box-shadow:0 18px 48px rgba(40,28,12,.18);
+            }
+
+            .kmux-stickybar .kmux-icon-btn {
+              width:50px;
+              height:50px;
+              border-radius:18px;
+            }
+
+            .kmux-theme-v2 .kmux-stickybar .kmux-icon-btn {
+              border-radius:999px;
+            }
+
+            .kmux-stickybar .kmux-visit {
+              flex:0 0 250px;
+              min-height:50px;
+              padding:0 30px;
+              font-size:15px;
+            }
+
+            .kmux-chat-float {
+              right:calc((100vw - min(920px, calc(100vw - 40px))) / 2 + 16px);
+              bottom:calc(env(safe-area-inset-bottom) + 118px);
+              width:50px;
+              height:50px;
+            }
+          }
+
+          @media (min-width:860px) {
+            .kmux-hero-content {
+              display:grid;
+              grid-template-columns:minmax(260px, .92fr) minmax(310px, 1.08fr);
+              column-gap:24px;
+              row-gap:14px;
+              align-items:center;
+              max-width:none;
+              margin:0;
+            }
+
+            .kmux-reviews-badge,
+            .kmux-eyebrow,
+            .kmux-hero h1,
+            .kmux-sub,
+            .kmux-hero-actions {
+              grid-column:1;
+            }
+
+            .kmux-hero h1 {
+              max-width:410px;
+              font-size:clamp(2.45rem, 5.2vw, 4rem);
+            }
+
+            .kmux-theme-v2 .kmux-hero h1 {
+              font-size:clamp(2.35rem, 4.9vw, 3.65rem);
+            }
+
+            .kmux-sub {
+              max-width:420px;
+            }
+
+            .kmux-hero-gallery {
+              grid-column:2;
+              grid-row:1 / span 5;
+              height:340px;
+              min-height:0;
+              margin:0;
+            }
+
+            .kmux-hero-dots {
+              grid-column:2;
+              margin:0;
+            }
+
+            .kmux-hero-actions {
+              max-width:420px;
+            }
+          }
+
           .kmux-lightbox {
             position:fixed;
             z-index:100;
@@ -1632,6 +1983,16 @@ export default function KalpavrukshaMobileUx({
           Book Site Visit
         </button>
       </nav>
+
+      <button
+        type="button"
+        className={`kmux-chat-float ${showFloatingChat ? 'is-visible' : ''}`}
+        aria-label="Open live chat"
+        title="Open live chat"
+        onClick={() => launchLiveChat('mobile_floating_chat')}
+      >
+        <ChatIcon />
+      </button>
 
       {lightboxImage && (
         <div className="kmux-lightbox" role="dialog" aria-modal="true" aria-label={lightboxImage.title}>
