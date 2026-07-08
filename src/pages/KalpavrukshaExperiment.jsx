@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { Suspense, lazy, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
-import KalpavrukshaPage from './Kalpavruksha';
-import KalpavrukshaV2 from './KalpavrukshaV2';
 import { trackPageView } from '../utils/analytics';
+
+const KalpavrukshaPage = lazy(() => import('./Kalpavruksha'));
+const KalpavrukshaV2 = lazy(() => import('./KalpavrukshaV2'));
 
 const STORAGE_KEY = 'kalpavruksha_landing_variant';
 const AB_TEST_NAME = 'kalpavruksha_landing_page';
@@ -36,6 +37,10 @@ function storeVariant(variant) {
 
 function assignRandomVariant() {
   return Math.random() < 0.5 ? 'A' : 'B';
+}
+
+function VariantFallback() {
+  return <div className="min-h-screen bg-[#fbf4e8]" aria-hidden="true" />;
 }
 
 export default function KalpavrukshaExperiment() {
@@ -76,5 +81,9 @@ export default function KalpavrukshaExperiment() {
     trackPageView(pagePayload);
   }, [activeVariant, location.pathname, location.search]);
 
-  return activeVariant === 'B' ? <KalpavrukshaV2 /> : <KalpavrukshaPage />;
+  return (
+    <Suspense fallback={<VariantFallback />}>
+      {activeVariant === 'B' ? <KalpavrukshaV2 /> : <KalpavrukshaPage />}
+    </Suspense>
+  );
 }

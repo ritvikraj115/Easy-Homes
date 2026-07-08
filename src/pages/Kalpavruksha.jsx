@@ -342,7 +342,7 @@ const KalpavrukshaPage = () => {
   const [toast, setToast] = useState(null);
   const [activeHeroSlideIndex, setActiveHeroSlideIndex] = useState(0);
   const [useMobileClientUx, setUseMobileClientUx] = useState(
-    () => typeof window !== 'undefined' && window.innerWidth < 700
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 699px)').matches
   );
   const [shouldRenderReviews, setShouldRenderReviews] = useState(false);
   const [googleReviewSummary, setGoogleReviewSummary] = useState(KALPAVRUKSHA_GOOGLE_RATING);
@@ -405,16 +405,24 @@ const KalpavrukshaPage = () => {
       return undefined;
     }
 
-    const syncMobileUx = () => {
-      setUseMobileClientUx(window.innerWidth < 700);
+    const mediaQuery = window.matchMedia('(max-width: 699px)');
+    const syncMobileUx = (event = mediaQuery) => {
+      setUseMobileClientUx(Boolean(event.matches));
     };
 
     syncMobileUx();
-    window.addEventListener('resize', syncMobileUx);
-    window.addEventListener('orientationchange', syncMobileUx);
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', syncMobileUx);
+    } else {
+      mediaQuery.addListener(syncMobileUx);
+    }
+
     return () => {
-      window.removeEventListener('resize', syncMobileUx);
-      window.removeEventListener('orientationchange', syncMobileUx);
+      if (typeof mediaQuery.removeEventListener === 'function') {
+        mediaQuery.removeEventListener('change', syncMobileUx);
+      } else {
+        mediaQuery.removeListener(syncMobileUx);
+      }
     };
   }, []);
 
@@ -1557,6 +1565,14 @@ const KalpavrukshaPage = () => {
       google_ads_attributed: attribution?.hasGoogleAdsClick || undefined,
       google_ads_click_id_type: attribution?.clickIdType,
       google_ads_campaign_id: attribution?.campaignId,
+      gclid: attribution?.gclid,
+      gbraid: attribution?.gbraid,
+      wbraid: attribution?.wbraid,
+      utm_source: attribution?.utmSource,
+      utm_medium: attribution?.utmMedium,
+      utm_campaign: attribution?.utmCampaign,
+      utm_term: attribution?.utmTerm,
+      utm_content: attribution?.utmContent,
     }));
   };
 
@@ -1800,6 +1816,14 @@ const KalpavrukshaPage = () => {
         google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
         google_ads_click_id_type: googleAdsAttribution?.clickIdType,
         google_ads_campaign_id: googleAdsAttribution?.campaignId,
+        gclid: googleAdsAttribution?.gclid,
+        gbraid: googleAdsAttribution?.gbraid,
+        wbraid: googleAdsAttribution?.wbraid,
+        utm_source: googleAdsAttribution?.utmSource,
+        utm_medium: googleAdsAttribution?.utmMedium,
+        utm_campaign: googleAdsAttribution?.utmCampaign,
+        utm_term: googleAdsAttribution?.utmTerm,
+        utm_content: googleAdsAttribution?.utmContent,
       }));
       setShowVisitModal(false);
       setForm(DEFAULT_SITE_VISIT_FORM);
@@ -1885,6 +1909,14 @@ const KalpavrukshaPage = () => {
         google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
         google_ads_click_id_type: googleAdsAttribution?.clickIdType,
         google_ads_campaign_id: googleAdsAttribution?.campaignId,
+        gclid: googleAdsAttribution?.gclid,
+        gbraid: googleAdsAttribution?.gbraid,
+        wbraid: googleAdsAttribution?.wbraid,
+        utm_source: googleAdsAttribution?.utmSource,
+        utm_medium: googleAdsAttribution?.utmMedium,
+        utm_campaign: googleAdsAttribution?.utmCampaign,
+        utm_term: googleAdsAttribution?.utmTerm,
+        utm_content: googleAdsAttribution?.utmContent,
       }));
 
       closeDownloadLeadModal();

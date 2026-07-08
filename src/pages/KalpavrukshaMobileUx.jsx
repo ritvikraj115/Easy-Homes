@@ -115,6 +115,20 @@ const buildWhatsAppUrl = (message) =>
 
 const normalizePhone = (value) => String(value || '').replace(/\D/g, '').slice(-10);
 
+const buildGoogleAdsEventParams = (attribution = getGoogleAdsAttributionPayload()) => ({
+  google_ads_attributed: attribution?.hasGoogleAdsClick || undefined,
+  google_ads_click_id_type: attribution?.clickIdType,
+  google_ads_campaign_id: attribution?.campaignId,
+  gclid: attribution?.gclid,
+  gbraid: attribution?.gbraid,
+  wbraid: attribution?.wbraid,
+  utm_source: attribution?.utmSource,
+  utm_medium: attribution?.utmMedium,
+  utm_campaign: attribution?.utmCampaign,
+  utm_term: attribution?.utmTerm,
+  utm_content: attribution?.utmContent,
+});
+
 const PhoneIcon = () => (
   <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8" fill="none" aria-hidden="true">
     <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.5 2.1L8 9.7a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2z" />
@@ -267,6 +281,7 @@ export default function KalpavrukshaMobileUx({
   const trackFormOpen = (placement) => {
     trackEvent('form_open', {
       ...trackingContext,
+      ...buildGoogleAdsEventParams(),
       event_category: 'engagement',
       form_name: 'kalpavruksha_brochure_map_mobile',
       placement,
@@ -288,6 +303,7 @@ export default function KalpavrukshaMobileUx({
   const trackPhoneClick = (placement) => {
     trackEvent('phone_click', {
       ...trackingContext,
+      ...buildGoogleAdsEventParams(),
       event_category: 'lead',
       placement,
       phone_number: CALL_URL.replace('tel:', ''),
@@ -303,6 +319,7 @@ export default function KalpavrukshaMobileUx({
 
     trackWhatsAppClick({
       ...trackingContext,
+      ...buildGoogleAdsEventParams(),
       event_category: 'lead',
       placement,
       link_url: buildWhatsAppUrl(message || defaultMessage),
@@ -365,6 +382,7 @@ export default function KalpavrukshaMobileUx({
 
       const mobileConversionPayload = {
         ...trackingContext,
+        ...buildGoogleAdsEventParams(googleAdsAttribution),
         event_category: 'conversion',
         form_name: 'kalpavruksha_brochure_map_mobile',
         placement: 'mobile_brochure_map_form',
@@ -383,17 +401,6 @@ export default function KalpavrukshaMobileUx({
         website_version: landingVersion,
         landing_page_version: landingVersion,
         landing_page_variant: landingVariant,
-        google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
-        google_ads_click_id_type: googleAdsAttribution?.clickIdType,
-        google_ads_campaign_id: googleAdsAttribution?.campaignId,
-        gclid: googleAdsAttribution?.gclid,
-        gbraid: googleAdsAttribution?.gbraid,
-        wbraid: googleAdsAttribution?.wbraid,
-        utm_source: googleAdsAttribution?.utmSource,
-        utm_medium: googleAdsAttribution?.utmMedium,
-        utm_campaign: googleAdsAttribution?.utmCampaign,
-        utm_term: googleAdsAttribution?.utmTerm,
-        utm_content: googleAdsAttribution?.utmContent,
       };
 
       trackEvent('brochure_downloaded', {
@@ -424,7 +431,7 @@ export default function KalpavrukshaMobileUx({
         hideFloatButton
         homeWidgets={KALPAVRUKSHA_ZOHO_HOME_WIDGETS}
         theme={KALPAVRUKSHA_ZOHO_THEME}
-        autoLoad
+        autoLoad={false}
       />
       <div
         ref={rootRef}
@@ -437,7 +444,6 @@ export default function KalpavrukshaMobileUx({
           content="Kalpavruksha by Easy Homes: CRDA and RERA approved residential plots near Vijayawada and Amaravati with clubhouse, parks, CC roads and underground utilities."
         />
         <link rel="preload" as="image" href={siteEntranceWall} type="image/webp" fetchPriority="high" />
-        <link rel="preload" as="style" href={KALPAVRUKSHA_FONT_STYLESHEET} />
         <link
           rel="stylesheet"
           href={KALPAVRUKSHA_FONT_STYLESHEET}
@@ -737,6 +743,15 @@ export default function KalpavrukshaMobileUx({
             animation:kmux-hero-image-in 680ms ease both;
           }
 
+          .kmux-hero-gallery::after {
+            content:'';
+            position:absolute;
+            z-index:1;
+            inset:42% 0 0;
+            background:linear-gradient(180deg, rgba(12,29,23,0) 0%, rgba(12,29,23,.78) 100%);
+            pointer-events:none;
+          }
+
           .kmux-live-marker {
             position:absolute;
             z-index:2;
@@ -758,9 +773,65 @@ export default function KalpavrukshaMobileUx({
             pointer-events:none;
           }
 
+          .kmux-site-image-label {
+            position:absolute;
+            z-index:2;
+            left:14px;
+            right:14px;
+            bottom:13px;
+            display:flex;
+            align-items:flex-end;
+            justify-content:space-between;
+            gap:10px;
+            color:#fff8df;
+            text-align:left;
+            pointer-events:none;
+          }
+
+          .kmux-site-image-label small {
+            display:block;
+            margin:0 0 4px;
+            color:var(--gold-light);
+            font-size:10px;
+            line-height:1.2;
+            font-weight:900;
+            letter-spacing:.18em;
+            text-transform:uppercase;
+          }
+
+          .kmux-site-image-label strong {
+            display:block;
+            color:#fffaf0;
+            font-family:'Fraunces', serif;
+            font-size:1.28rem;
+            line-height:1.05;
+            font-weight:700;
+            text-shadow:0 8px 22px rgba(0,0,0,.35);
+          }
+
+          .kmux-site-image-count {
+            flex:0 0 auto;
+            border:1px solid rgba(255,255,255,.30);
+            border-radius:999px;
+            background:rgba(15,36,28,.68);
+            padding:6px 9px;
+            color:#fff8df;
+            font-size:10px;
+            font-weight:900;
+            letter-spacing:.14em;
+          }
+
           .kmux-theme-v2 .kmux-live-marker {
             color:#fff8df;
             background:rgba(34,51,39,.76);
+          }
+
+          .kmux-theme-v2 .kmux-site-image-label small {
+            color:#ffd88a;
+          }
+
+          .kmux-theme-v2 .kmux-site-image-count {
+            background:rgba(34,51,39,.72);
           }
 
           .kmux-live-dot {
@@ -876,6 +947,14 @@ export default function KalpavrukshaMobileUx({
             position:relative;
             padding:34px 22px;
             border-top:1px solid var(--line);
+          }
+
+          @supports (content-visibility: auto) {
+            .kmux-section,
+            .kmux-footer {
+              content-visibility:auto;
+              contain-intrinsic-size:1px 560px;
+            }
           }
 
           .kmux-reveal {
@@ -1287,6 +1366,34 @@ export default function KalpavrukshaMobileUx({
             object-fit:contain;
             box-shadow:0 26px 80px rgba(0,0,0,.42);
           }
+
+          .kmux-lightbox-caption {
+            position:absolute;
+            left:18px;
+            right:76px;
+            top:18px;
+            min-height:42px;
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            color:#fff8df;
+            text-align:left;
+          }
+
+          .kmux-lightbox-caption small {
+            color:var(--gold-light);
+            font-size:10px;
+            font-weight:900;
+            letter-spacing:.18em;
+            text-transform:uppercase;
+          }
+
+          .kmux-lightbox-caption strong {
+            margin-top:2px;
+            font-family:'Fraunces', serif;
+            font-size:1.15rem;
+            line-height:1.05;
+          }
         `}
       </style>
 
@@ -1341,6 +1448,15 @@ export default function KalpavrukshaMobileUx({
                 decoding="async"
                 fetchPriority={activeHeroIndex === 0 ? 'high' : 'low'}
               />
+              <span className="kmux-site-image-label">
+                <span>
+                  <small>Site image</small>
+                  <strong>{activeHeroImage.title}</strong>
+                </span>
+                <span className="kmux-site-image-count">
+                  {String(activeHeroIndex + 1).padStart(2, '0')} / {siteImages.length}
+                </span>
+              </span>
             </button>
             <div className="kmux-hero-dots" aria-label="Live site slideshow">
               {siteImages.map((item, index) => (
@@ -1520,6 +1636,10 @@ export default function KalpavrukshaMobileUx({
       {lightboxImage && (
         <div className="kmux-lightbox" role="dialog" aria-modal="true" aria-label={lightboxImage.title}>
           <button type="button" aria-label="Close image preview" onClick={() => setLightboxImage(null)}>x</button>
+          <div className="kmux-lightbox-caption">
+            <small>Site image</small>
+            <strong>{lightboxImage.title}</strong>
+          </div>
           <img src={lightboxImage.image} alt={lightboxImage.alt} />
         </div>
       )}

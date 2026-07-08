@@ -699,7 +699,7 @@ export default function KalpavrukshaV2() {
   const [stickyCtaVisible, setStickyCtaVisible] = useState(false);
   const [layoutPreviewOpen, setLayoutPreviewOpen] = useState(false);
   const [useMobileClientUx, setUseMobileClientUx] = useState(
-    () => typeof window !== 'undefined' && window.innerWidth < 700
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 699px)').matches
   );
   const [shouldRenderReviews, setShouldRenderReviews] = useState(false);
   const [googleReviewSummary, setGoogleReviewSummary] = useState(KALPAVRUKSHA_GOOGLE_RATING);
@@ -747,16 +747,24 @@ export default function KalpavrukshaV2() {
       return undefined;
     }
 
-    const syncMobileUx = () => {
-      setUseMobileClientUx(window.innerWidth < 700);
+    const mediaQuery = window.matchMedia('(max-width: 699px)');
+    const syncMobileUx = (event = mediaQuery) => {
+      setUseMobileClientUx(Boolean(event.matches));
     };
 
     syncMobileUx();
-    window.addEventListener('resize', syncMobileUx);
-    window.addEventListener('orientationchange', syncMobileUx);
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', syncMobileUx);
+    } else {
+      mediaQuery.addListener(syncMobileUx);
+    }
+
     return () => {
-      window.removeEventListener('resize', syncMobileUx);
-      window.removeEventListener('orientationchange', syncMobileUx);
+      if (typeof mediaQuery.removeEventListener === 'function') {
+        mediaQuery.removeEventListener('change', syncMobileUx);
+      } else {
+        mediaQuery.removeListener(syncMobileUx);
+      }
     };
   }, []);
 
@@ -1103,6 +1111,14 @@ export default function KalpavrukshaV2() {
       google_ads_attributed: attribution?.hasGoogleAdsClick || undefined,
       google_ads_click_id_type: attribution?.clickIdType,
       google_ads_campaign_id: attribution?.campaignId,
+      gclid: attribution?.gclid,
+      gbraid: attribution?.gbraid,
+      wbraid: attribution?.wbraid,
+      utm_source: attribution?.utmSource,
+      utm_medium: attribution?.utmMedium,
+      utm_campaign: attribution?.utmCampaign,
+      utm_term: attribution?.utmTerm,
+      utm_content: attribution?.utmContent,
     }));
     window.open(url, '_blank', 'noopener,noreferrer');
   };
@@ -1235,6 +1251,14 @@ export default function KalpavrukshaV2() {
         google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
         google_ads_click_id_type: googleAdsAttribution?.clickIdType,
         google_ads_campaign_id: googleAdsAttribution?.campaignId,
+        gclid: googleAdsAttribution?.gclid,
+        gbraid: googleAdsAttribution?.gbraid,
+        wbraid: googleAdsAttribution?.wbraid,
+        utm_source: googleAdsAttribution?.utmSource,
+        utm_medium: googleAdsAttribution?.utmMedium,
+        utm_campaign: googleAdsAttribution?.utmCampaign,
+        utm_term: googleAdsAttribution?.utmTerm,
+        utm_content: googleAdsAttribution?.utmContent,
       });
       trackEvent('book_site_visit_submitted', withTrackingContext({
         ...trackingPayload,
@@ -1306,6 +1330,14 @@ export default function KalpavrukshaV2() {
         google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
         google_ads_click_id_type: googleAdsAttribution?.clickIdType,
         google_ads_campaign_id: googleAdsAttribution?.campaignId,
+        gclid: googleAdsAttribution?.gclid,
+        gbraid: googleAdsAttribution?.gbraid,
+        wbraid: googleAdsAttribution?.wbraid,
+        utm_source: googleAdsAttribution?.utmSource,
+        utm_medium: googleAdsAttribution?.utmMedium,
+        utm_campaign: googleAdsAttribution?.utmCampaign,
+        utm_term: googleAdsAttribution?.utmTerm,
+        utm_content: googleAdsAttribution?.utmContent,
       });
       trackEvent('brochure_downloaded', withTrackingContext({
         ...trackingPayload,
@@ -1368,7 +1400,6 @@ export default function KalpavrukshaV2() {
           name="description"
           content="Explore Kalpavruksha by Easy Homes, a CRDA-approved residential plotted community with 105 open plots across 11 acres in Vemavaram, 5 km from West Bypass and Rayanapadu, with plot sizes from 174 to 525 square yards, premium infrastructure, and clubhouse amenities."
         />
-        <link rel="preload" as="style" href={KALPAVRUKSHA_FONT_STYLESHEET} />
         <link
           rel="stylesheet"
           href={KALPAVRUKSHA_FONT_STYLESHEET}

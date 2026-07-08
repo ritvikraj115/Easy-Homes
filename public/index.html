@@ -43,26 +43,33 @@
     })(window, document, 'script', 'dataLayer', '%REACT_APP_GTM_ID%');
   </script>
 
-  <!-- Preconnect -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
   <noscript><img height="1" width="1" style="display:none"
       src="https://www.facebook.com/tr?id=2391828714581394&ev=PageView&noscript=1" /></noscript>
 
-  <!-- Preload fonts stylesheet -->
-  <link rel="preload" as="style"
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap" />
+  <script>
+    (function (w, d) {
+      var path = w.location && w.location.pathname ? w.location.pathname : '';
+      if (/^\/kalpavruksha2?\/?$/i.test(path)) return;
 
-  <!-- Load fonts non-blocking -->
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap"
-    media="print" onload="this.media='all'" />
+      var fontHref = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap';
+      var loadBaseFonts = function () {
+        if (d.querySelector('link[data-easyhomes-base-fonts]')) return;
+        var link = d.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = fontHref;
+        link.media = 'print';
+        link.setAttribute('data-easyhomes-base-fonts', 'true');
+        link.onload = function () { this.media = 'all'; };
+        d.head.appendChild(link);
+      };
 
-  <noscript>
-    <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap" />
-  </noscript>
+      if ('requestIdleCallback' in w) {
+        w.requestIdleCallback(loadBaseFonts, { timeout: 1800 });
+      } else {
+        w.setTimeout(loadBaseFonts, 1200);
+      }
+    })(window, document);
+  </script>
 
   <style>
     body {

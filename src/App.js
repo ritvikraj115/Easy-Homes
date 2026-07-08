@@ -6,6 +6,7 @@ import MainLayout from './layouts/MainLayout';
 import PlainLayout from './layouts/PlainLayout';
 import { trackPageView } from './utils/analytics';
 import { captureGoogleAdsAttributionFromLocation } from './utils/googleAdsAttribution';
+import KalpavrukshaExperimentPage from './pages/KalpavrukshaExperiment';
 
 const SearchResults = lazy(() => import('./pages/SearchProperties'));
 const Favourites = lazy(() => import('./pages/Favourites'));
@@ -18,7 +19,6 @@ const PropertyDetails = lazy(() => import('./pages/Propertydetails'));
 const Compare = lazy(() => import('./pages/Compare'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const Home = lazy(() => import('./pages/Home'));
-const KalpavrukshaExperimentPage = lazy(() => import('./pages/KalpavrukshaExperiment'));
 const KalpavrukshaV2Page = lazy(() => import('./pages/KalpavrukshaV2'));
 const ThankYouPage = lazy(() => import('./pages/ThankYouPage'));
 const AdminPanel = lazy(() => import('./pages/AdminPanel'));
@@ -92,7 +92,7 @@ function App() {
           <Route path="/compare" element={withSuspense(<Compare />)} />
           <Route path="/profile" element={withSuspense(<ProfilePage />)} />
           {/* Kalpavruksha page */}
-          <Route path="/kalpavruksha" element={withSuspense(<KalpavrukshaExperimentPage />)} />
+          <Route path="/kalpavruksha" element={<KalpavrukshaExperimentPage />} />
           <Route path="/kalpavruksha2" element={withSuspense(<KalpavrukshaV2Page />)} />
           <Route path="/projects" element={<Navigate to="/kalpavruksha/" replace />} />
           {/* Thankyou page */}
