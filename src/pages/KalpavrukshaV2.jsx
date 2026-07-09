@@ -662,6 +662,7 @@ export default function KalpavrukshaV2() {
   const [googleReviewSummary, setGoogleReviewSummary] = useState(KALPAVRUKSHA_GOOGLE_RATING);
   const [pickupMapCenter, setPickupMapCenter] = useState(PICKUP_MAP_DEFAULT_CENTER);
   const [pickupMapLoadError, setPickupMapLoadError] = useState(false);
+  const [visitModalViewportStyle, setVisitModalViewportStyle] = useState({ height: '100dvh' });
 
   const heroRef = useRef(null);
   const snapshotRef = useRef(null);
@@ -673,6 +674,7 @@ export default function KalpavrukshaV2() {
   const reviewsRef = useRef(null);
   const faqRef = useRef(null);
   const finalCtaRef = useRef(null);
+  const visitFormBodyRef = useRef(null);
   const pickupGeocodeRequestRef = useRef(0);
   const todayDate = new Date().toISOString().split('T')[0];
   const activeGalleryImage = galleryImages[mobileGalleryIndex] || galleryImages[0];
@@ -939,6 +941,54 @@ export default function KalpavrukshaV2() {
   }, []);
 
   useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+
+    const shouldLockScroll = visitModalOpen || brochureModalOpen || layoutPreviewOpen || Boolean(selectedGalleryImage);
+    if (!shouldLockScroll) return undefined;
+
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+    };
+  }, [brochureModalOpen, layoutPreviewOpen, selectedGalleryImage, visitModalOpen]);
+
+  useEffect(() => {
+    if (!visitModalOpen || typeof window === 'undefined') {
+      setVisitModalViewportStyle({ height: '100dvh' });
+      return undefined;
+    }
+
+    const updateVisitModalViewport = () => {
+      const viewport = window.visualViewport;
+      const viewportHeight = viewport?.height || window.innerHeight || 0;
+      const viewportOffsetTop = viewport?.offsetTop || 0;
+
+      setVisitModalViewportStyle({
+        height: `${Math.max(420, Math.floor(viewportHeight))}px`,
+        top: `${Math.floor(viewportOffsetTop)}px`,
+      });
+    };
+
+    updateVisitModalViewport();
+    window.visualViewport?.addEventListener('resize', updateVisitModalViewport);
+    window.visualViewport?.addEventListener('scroll', updateVisitModalViewport);
+    window.addEventListener('resize', updateVisitModalViewport);
+    window.addEventListener('orientationchange', updateVisitModalViewport);
+
+    return () => {
+      window.visualViewport?.removeEventListener('resize', updateVisitModalViewport);
+      window.visualViewport?.removeEventListener('scroll', updateVisitModalViewport);
+      window.removeEventListener('resize', updateVisitModalViewport);
+      window.removeEventListener('orientationchange', updateVisitModalViewport);
+    };
+  }, [visitModalOpen]);
+
+  useEffect(() => {
     if (!visitModalOpen || !visitForm.preferredDate) {
       setAvailableSlots([]);
       setSlotsError('');
@@ -1099,6 +1149,27 @@ export default function KalpavrukshaV2() {
     reverseGeocodePickup(lat, lng);
   };
 
+  const setVisitPickupMode = (value) => {
+    const scroller = visitFormBodyRef.current;
+    const scrollTop = scroller?.scrollTop || 0;
+
+    setVisitForm((current) => ({
+      ...current,
+      pickupMode: value,
+      pickupLat: value === 'manual' ? '' : current.pickupLat,
+      pickupLng: value === 'manual' ? '' : current.pickupLng,
+    }));
+
+    if (typeof window !== 'undefined' && scroller) {
+      window.requestAnimationFrame(() => {
+        scroller.scrollTop = scrollTop;
+        window.setTimeout(() => {
+          scroller.scrollTop = scrollTop;
+        }, 0);
+      });
+    }
+  };
+
   const handleVisitInput = (event) => {
     const { name, value } = event.target;
 
@@ -1119,12 +1190,7 @@ export default function KalpavrukshaV2() {
     }
 
     if (name === 'pickupMode') {
-      setVisitForm((current) => ({
-        ...current,
-        pickupMode: value,
-        pickupLat: value === 'manual' ? '' : current.pickupLat,
-        pickupLng: value === 'manual' ? '' : current.pickupLng,
-      }));
+      setVisitPickupMode(value);
       return;
     }
 
@@ -1326,7 +1392,14 @@ export default function KalpavrukshaV2() {
       setVisitModalOpen(false);
       setVisitStep(1);
       setVisitForm(DEFAULT_SITE_VISIT_FORM);
-      navigate('/thank-you');
+      navigate('/thank-you?type=site-visit', {
+        state: {
+          thankYouType: 'site-visit',
+          project: PROJECT.name,
+          leadType: 'site_visit',
+          returnTo: '/kalpavruksha2/',
+        },
+      });
     } catch (error) {
       showToast(error.response?.data?.message || 'Failed to submit. Please try again.');
     } finally {
@@ -1406,7 +1479,14 @@ export default function KalpavrukshaV2() {
 
       setBrochureForm(DEFAULT_BROCHURE_FORM);
       setBrochureModalOpen(false);
-      navigate('/thank-you');
+      navigate('/thank-you?type=brochure-map', {
+        state: {
+          thankYouType: 'brochure-map',
+          project: PROJECT.name,
+          leadType: 'brochure_map_request',
+          returnTo: '/kalpavruksha2/',
+        },
+      });
     } catch (error) {
       showToast(error.response?.data?.message || 'Failed to submit. Please try again.');
     } finally {
@@ -2541,8 +2621,16 @@ export default function KalpavrukshaV2() {
         )}
 
         {visitModalOpen && (
-          <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto bg-[#243528]/72 px-3 py-3 md:items-center md:p-6" onClick={(event) => { if (event.target === event.currentTarget) closeVisitModal(); }}>
-            <div className="my-2 flex max-h-[calc(100dvh-1rem)] w-full max-w-2xl flex-col overflow-hidden rounded-[32px] border border-[#d6bd8f] bg-[#f8efdf] shadow-[0_34px_90px_rgba(39,56,44,0.32)] md:my-6 md:max-h-[calc(100vh-3rem)]">
+          <div
+            className="fixed left-0 right-0 top-0 z-[120] flex items-center justify-center overflow-hidden bg-[#06120c]/90 px-3 py-3 md:p-6"
+            style={{
+              ...visitModalViewportStyle,
+              backdropFilter: 'blur(20px) saturate(120%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(120%)',
+            }}
+            onClick={(event) => { if (event.target === event.currentTarget) closeVisitModal(); }}
+          >
+            <div className="flex max-h-[calc(100%-0.75rem)] w-full max-w-2xl flex-col overflow-hidden rounded-[32px] border border-[#d6bd8f] bg-[#f8efdf] shadow-[0_34px_90px_rgba(0,0,0,0.55)] md:max-h-[calc(100%-2rem)]">
               <div className="flex items-start justify-between gap-4 border-b border-[#d6bd8f] bg-[linear-gradient(135deg,#52684a_0%,#7f8d62_100%)] px-6 py-5 text-[#fff7e8]">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#f1cf8f]">Step {visitStep} of 2</p>
@@ -2554,12 +2642,16 @@ export default function KalpavrukshaV2() {
               </div>
 
               <form onSubmit={submitVisit} className="flex min-h-0 flex-1 flex-col">
-                <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
+                <div
+                  ref={visitFormBodyRef}
+                  className="flex-1 space-y-5 overflow-y-auto overscroll-contain px-6 py-5"
+                  style={{ overflowAnchor: 'none', WebkitOverflowScrolling: 'touch' }}
+                >
                   {visitStep === 1 ? (
                     <>
                       <div>
                         <label className={formLabelClass}>Name</label>
-                        <input name="name" value={visitForm.name} onChange={handleVisitInput} className={formInputClass} autoFocus placeholder="Your name" required />
+                        <input name="name" value={visitForm.name} onChange={handleVisitInput} className={formInputClass} placeholder="Your name" required />
                       </div>
                       <div>
                         <label className={formLabelClass}>Phone</label>
@@ -2613,28 +2705,24 @@ export default function KalpavrukshaV2() {
                           <div>
                             <label className={formLabelClass}>Pickup Address Input</label>
                             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                              <label className={pickupModeCardClass(visitForm.pickupMode === 'manual')}>
-                                <input
-                                  type="radio"
-                                  name="pickupMode"
-                                  value="manual"
-                                  checked={visitForm.pickupMode === 'manual'}
-                                  onChange={handleVisitInput}
-                                  className="sr-only"
-                                />
+                              <button
+                                type="button"
+                                aria-pressed={visitForm.pickupMode === 'manual'}
+                                onMouseDown={(event) => event.preventDefault()}
+                                onClick={() => setVisitPickupMode('manual')}
+                                className={`${pickupModeCardClass(visitForm.pickupMode === 'manual')} w-full text-left`}
+                              >
                                 <span>Manual Address</span>
-                              </label>
-                              <label className={pickupModeCardClass(visitForm.pickupMode === 'map')}>
-                                <input
-                                  type="radio"
-                                  name="pickupMode"
-                                  value="map"
-                                  checked={visitForm.pickupMode === 'map'}
-                                  onChange={handleVisitInput}
-                                  className="sr-only"
-                                />
+                              </button>
+                              <button
+                                type="button"
+                                aria-pressed={visitForm.pickupMode === 'map'}
+                                onMouseDown={(event) => event.preventDefault()}
+                                onClick={() => setVisitPickupMode('map')}
+                                className={`${pickupModeCardClass(visitForm.pickupMode === 'map')} w-full text-left`}
+                              >
                                 <span>Select on Map</span>
-                              </label>
+                              </button>
                             </div>
                           </div>
 
