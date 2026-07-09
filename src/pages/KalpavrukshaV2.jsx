@@ -673,7 +673,6 @@ export default function KalpavrukshaV2() {
   const reviewsRef = useRef(null);
   const faqRef = useRef(null);
   const finalCtaRef = useRef(null);
-  const visitFormBodyRef = useRef(null);
   const pickupGeocodeRequestRef = useRef(0);
   const todayDate = new Date().toISOString().split('T')[0];
   const activeGalleryImage = galleryImages[mobileGalleryIndex] || galleryImages[0];
@@ -1100,24 +1099,6 @@ export default function KalpavrukshaV2() {
     reverseGeocodePickup(lat, lng);
   };
 
-  const setVisitPickupMode = (value) => {
-    const scroller = visitFormBodyRef.current;
-    const scrollTop = scroller?.scrollTop || 0;
-
-    setVisitForm((current) => ({
-      ...current,
-      pickupMode: value,
-      pickupLat: value === 'manual' ? '' : current.pickupLat,
-      pickupLng: value === 'manual' ? '' : current.pickupLng,
-    }));
-
-    if (typeof window !== 'undefined' && scroller) {
-      window.requestAnimationFrame(() => {
-        scroller.scrollTop = scrollTop;
-      });
-    }
-  };
-
   const handleVisitInput = (event) => {
     const { name, value } = event.target;
 
@@ -1138,7 +1119,12 @@ export default function KalpavrukshaV2() {
     }
 
     if (name === 'pickupMode') {
-      setVisitPickupMode(value);
+      setVisitForm((current) => ({
+        ...current,
+        pickupMode: value,
+        pickupLat: value === 'manual' ? '' : current.pickupLat,
+        pickupLng: value === 'manual' ? '' : current.pickupLng,
+      }));
       return;
     }
 
@@ -1340,14 +1326,7 @@ export default function KalpavrukshaV2() {
       setVisitModalOpen(false);
       setVisitStep(1);
       setVisitForm(DEFAULT_SITE_VISIT_FORM);
-      navigate('/thank-you?type=site-visit', {
-        state: {
-          thankYouType: 'site-visit',
-          project: PROJECT.name,
-          leadType: 'site_visit',
-          returnTo: '/kalpavruksha2/',
-        },
-      });
+      navigate('/thank-you');
     } catch (error) {
       showToast(error.response?.data?.message || 'Failed to submit. Please try again.');
     } finally {
@@ -1427,14 +1406,7 @@ export default function KalpavrukshaV2() {
 
       setBrochureForm(DEFAULT_BROCHURE_FORM);
       setBrochureModalOpen(false);
-      navigate('/thank-you?type=brochure-map', {
-        state: {
-          thankYouType: 'brochure-map',
-          project: PROJECT.name,
-          leadType: 'brochure_map_request',
-          returnTo: '/kalpavruksha2/',
-        },
-      });
+      navigate('/thank-you');
     } catch (error) {
       showToast(error.response?.data?.message || 'Failed to submit. Please try again.');
     } finally {
@@ -2569,8 +2541,8 @@ export default function KalpavrukshaV2() {
         )}
 
         {visitModalOpen && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center overflow-hidden bg-[#243528]/72 px-3 py-3 md:p-6" onClick={(event) => { if (event.target === event.currentTarget) closeVisitModal(); }}>
-            <div className="flex max-h-[calc(100dvh-1.5rem)] w-full max-w-2xl flex-col overflow-hidden rounded-[32px] border border-[#d6bd8f] bg-[#f8efdf] shadow-[0_34px_90px_rgba(39,56,44,0.32)] md:max-h-[calc(100dvh-3rem)]">
+          <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto bg-[#243528]/72 px-3 py-3 md:items-center md:p-6" onClick={(event) => { if (event.target === event.currentTarget) closeVisitModal(); }}>
+            <div className="my-2 flex max-h-[calc(100dvh-1rem)] w-full max-w-2xl flex-col overflow-hidden rounded-[32px] border border-[#d6bd8f] bg-[#f8efdf] shadow-[0_34px_90px_rgba(39,56,44,0.32)] md:my-6 md:max-h-[calc(100vh-3rem)]">
               <div className="flex items-start justify-between gap-4 border-b border-[#d6bd8f] bg-[linear-gradient(135deg,#52684a_0%,#7f8d62_100%)] px-6 py-5 text-[#fff7e8]">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#f1cf8f]">Step {visitStep} of 2</p>
@@ -2582,7 +2554,7 @@ export default function KalpavrukshaV2() {
               </div>
 
               <form onSubmit={submitVisit} className="flex min-h-0 flex-1 flex-col">
-                <div ref={visitFormBodyRef} className="flex-1 space-y-5 overflow-y-auto overscroll-contain px-6 py-5">
+                <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
                   {visitStep === 1 ? (
                     <>
                       <div>
@@ -2641,24 +2613,28 @@ export default function KalpavrukshaV2() {
                           <div>
                             <label className={formLabelClass}>Pickup Address Input</label>
                             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                              <button
-                                type="button"
-                                aria-pressed={visitForm.pickupMode === 'manual'}
-                                onMouseDown={(event) => event.preventDefault()}
-                                onClick={() => setVisitPickupMode('manual')}
-                                className={pickupModeCardClass(visitForm.pickupMode === 'manual')}
-                              >
+                              <label className={pickupModeCardClass(visitForm.pickupMode === 'manual')}>
+                                <input
+                                  type="radio"
+                                  name="pickupMode"
+                                  value="manual"
+                                  checked={visitForm.pickupMode === 'manual'}
+                                  onChange={handleVisitInput}
+                                  className="sr-only"
+                                />
                                 <span>Manual Address</span>
-                              </button>
-                              <button
-                                type="button"
-                                aria-pressed={visitForm.pickupMode === 'map'}
-                                onMouseDown={(event) => event.preventDefault()}
-                                onClick={() => setVisitPickupMode('map')}
-                                className={pickupModeCardClass(visitForm.pickupMode === 'map')}
-                              >
+                              </label>
+                              <label className={pickupModeCardClass(visitForm.pickupMode === 'map')}>
+                                <input
+                                  type="radio"
+                                  name="pickupMode"
+                                  value="map"
+                                  checked={visitForm.pickupMode === 'map'}
+                                  onChange={handleVisitInput}
+                                  className="sr-only"
+                                />
                                 <span>Select on Map</span>
-                              </button>
+                              </label>
                             </div>
                           </div>
 
