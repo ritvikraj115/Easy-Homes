@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import api from '../api';
+import { MAP_LIBRARIES, MAPS_LOADER_ID } from '../config/googleMaps';
 import YouTubeLiteEmbed from '../components/YouTubeLiteEmbed';
 import ZohoSalesIQWidgetLoader, { openZohoSalesIQChat } from '../components/ZohoSalesIQWidgetLoader';
 import {
@@ -47,6 +48,7 @@ const KALPAVRUKSHA_FONT_STYLESHEET =
   'https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap';
 const preloadReviewsSection = () => import('../components/ReviewProject');
 const ReviewsSection = React.lazy(preloadReviewsSection);
+const PickupLocationMap = React.lazy(() => import('../components/PickupLocationMap'));
 
 const LANDING_VARIANT = 'B';
 const LANDING_VERSION = 'v2';
@@ -63,6 +65,8 @@ const LAYOUT_ASSET = {
   fileName: 'Kalpavruksha Master Layout.pdf',
   source: 'Website',
 };
+const PICKUP_MAP_DEFAULT_CENTER = { lat: 16.553755, lng: 80.570832 };
+const PICKUP_MAP_CONTAINER_STYLE = { width: '100%', height: '220px' };
 
 const PROJECT = {
   name: 'Kalpavruksha',
@@ -138,6 +142,9 @@ const DEFAULT_SITE_VISIT_FORM = {
   preferredTime: '',
   transportRequired: 'No',
   pickupAddress: '',
+  pickupMode: 'manual',
+  pickupLat: '',
+  pickupLng: '',
 };
 const DEFAULT_BROCHURE_FORM = {
   name: '',
@@ -653,6 +660,8 @@ export default function KalpavrukshaV2() {
   );
   const [shouldRenderReviews, setShouldRenderReviews] = useState(false);
   const [googleReviewSummary, setGoogleReviewSummary] = useState(KALPAVRUKSHA_GOOGLE_RATING);
+  const [pickupMapCenter, setPickupMapCenter] = useState(PICKUP_MAP_DEFAULT_CENTER);
+  const [pickupMapLoadError, setPickupMapLoadError] = useState(false);
 
   const heroRef = useRef(null);
   const snapshotRef = useRef(null);
@@ -664,10 +673,12 @@ export default function KalpavrukshaV2() {
   const reviewsRef = useRef(null);
   const faqRef = useRef(null);
   const finalCtaRef = useRef(null);
+  const pickupGeocodeRequestRef = useRef(0);
   const todayDate = new Date().toISOString().split('T')[0];
   const activeGalleryImage = galleryImages[mobileGalleryIndex] || galleryImages[0];
   const activeSitePhoto = sitePhotoPlaceholders[sitePhotoIndex] || sitePhotoPlaceholders[0];
   const selectedGalleryImageIndex = galleryImages.findIndex((item) => item.image === selectedGalleryImage?.image);
+  const pickupMapApiKey = process.env.REACT_APP_MAP_KEY || '';
 
   const showToast = (msg, type = 'error') => {
     setToast({ msg, type });
@@ -960,6 +971,12 @@ export default function KalpavrukshaV2() {
     };
   }, [visitForm.preferredDate, visitModalOpen]);
 
+  useEffect(() => {
+    if (!visitModalOpen || visitForm.pickupMode !== 'map') {
+      setPickupMapLoadError(false);
+    }
+  }, [visitForm.pickupMode, visitModalOpen]);
+
   const openVisitModal = (source = 'lp_b_site_visit') => {
     setVisitSource(source);
     setVisitStep(1);
@@ -1021,8 +1038,96 @@ export default function KalpavrukshaV2() {
     });
   };
 
+  const reverseGeocodePickup = (lat, lng) => {
+    const requestId = Date.now();
+    pickupGeocodeRequestRef.current = requestId;
+    const fallbackText = `Selected location near ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+
+    setVisitForm((current) => ({
+      ...current,
+      pickupAddress: 'Fetching address from map...',
+      pickupLat: String(lat),
+      pickupLng: String(lng),
+    }));
+
+    if (!window.google?.maps) {
+      setVisitForm((current) => ({
+        ...current,
+        pickupAddress: fallbackText,
+        pickupLat: String(lat),
+        pickupLng: String(lng),
+      }));
+      return;
+    }
+
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+      if (pickupGeocodeRequestRef.current !== requestId) return;
+
+      if (status === 'OK' && results && results[0]) {
+        setVisitForm((current) => ({
+          ...current,
+          pickupAddress: results[0].formatted_address || fallbackText,
+          pickupLat: String(lat),
+          pickupLng: String(lng),
+        }));
+        return;
+      }
+
+      setVisitForm((current) => ({
+        ...current,
+        pickupAddress: fallbackText,
+        pickupLat: String(lat),
+        pickupLng: String(lng),
+      }));
+    });
+  };
+
+  const onPickupMapClick = (event) => {
+    const lat = event?.latLng?.lat?.();
+    const lng = event?.latLng?.lng?.();
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    setPickupMapCenter({ lat, lng });
+    reverseGeocodePickup(lat, lng);
+  };
+
+  const onPickupMarkerDragEnd = (event) => {
+    const lat = event?.latLng?.lat?.();
+    const lng = event?.latLng?.lng?.();
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    setPickupMapCenter({ lat, lng });
+    reverseGeocodePickup(lat, lng);
+  };
+
   const handleVisitInput = (event) => {
     const { name, value } = event.target;
+
+    if (name === 'transportRequired') {
+      setVisitForm((current) => (
+        value === 'No'
+          ? {
+              ...current,
+              transportRequired: value,
+              pickupAddress: '',
+              pickupMode: 'manual',
+              pickupLat: '',
+              pickupLng: '',
+            }
+          : { ...current, transportRequired: value }
+      ));
+      return;
+    }
+
+    if (name === 'pickupMode') {
+      setVisitForm((current) => ({
+        ...current,
+        pickupMode: value,
+        pickupLat: value === 'manual' ? '' : current.pickupLat,
+        pickupLng: value === 'manual' ? '' : current.pickupLng,
+      }));
+      return;
+    }
+
     setVisitForm((current) => ({ ...current, [name]: value }));
   };
 
@@ -1183,9 +1288,9 @@ export default function KalpavrukshaV2() {
         landing_version: LANDING_VERSION,
         version: LANDING_VERSION,
         pickupAddress: pickupRequired ? visitForm.pickupAddress.trim() : undefined,
-        pickupMode: pickupRequired ? 'manual' : undefined,
-        pickupLat: undefined,
-        pickupLng: undefined,
+        pickupMode: pickupRequired ? visitForm.pickupMode : undefined,
+        pickupLat: pickupRequired ? (visitForm.pickupLat || undefined) : undefined,
+        pickupLng: pickupRequired ? (visitForm.pickupLng || undefined) : undefined,
         googleAdsAttribution: googleAdsAttribution || undefined,
       });
 
@@ -1197,7 +1302,7 @@ export default function KalpavrukshaV2() {
         source: visitSource,
         interest: selectedInterest,
         transport_required: visitForm.transportRequired,
-        pickup_mode: pickupRequired ? 'manual' : undefined,
+        pickup_mode: pickupRequired ? visitForm.pickupMode : undefined,
         google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
         google_ads_click_id_type: googleAdsAttribution?.clickIdType,
         google_ads_campaign_id: googleAdsAttribution?.campaignId,
@@ -1221,7 +1326,14 @@ export default function KalpavrukshaV2() {
       setVisitModalOpen(false);
       setVisitStep(1);
       setVisitForm(DEFAULT_SITE_VISIT_FORM);
-      navigate('/thank-you');
+      navigate('/thank-you?type=site-visit', {
+        state: {
+          thankYouType: 'site-visit',
+          project: PROJECT.name,
+          leadType: 'site_visit',
+          returnTo: '/kalpavruksha2/',
+        },
+      });
     } catch (error) {
       showToast(error.response?.data?.message || 'Failed to submit. Please try again.');
     } finally {
@@ -1301,7 +1413,14 @@ export default function KalpavrukshaV2() {
 
       setBrochureForm(DEFAULT_BROCHURE_FORM);
       setBrochureModalOpen(false);
-      navigate('/thank-you');
+      navigate('/thank-you?type=brochure-map', {
+        state: {
+          thankYouType: 'brochure-map',
+          project: PROJECT.name,
+          leadType: 'brochure_map_request',
+          returnTo: '/kalpavruksha2/',
+        },
+      });
     } catch (error) {
       showToast(error.response?.data?.message || 'Failed to submit. Please try again.');
     } finally {
@@ -1324,6 +1443,10 @@ export default function KalpavrukshaV2() {
       ? 'border-[#b56f37] bg-[#f2d6aa] text-[#27382c] shadow-sm'
       : 'border-[#d6bd8f] bg-[#fff7e8] text-[#5f684f] hover:border-[#b56f37]'
   }`;
+  const pickupModeCardClass = (active) =>
+    active
+      ? 'flex min-h-[3.15rem] cursor-pointer flex-col justify-center rounded-2xl border border-[#b56f37] bg-[#f2d6aa] px-4 py-3 text-sm font-semibold text-[#27382c] shadow-sm'
+      : 'flex min-h-[3.15rem] cursor-pointer flex-col justify-center rounded-2xl border border-[#d6bd8f] bg-[#fff7e8] px-4 py-3 text-sm font-semibold text-[#5f684f] transition hover:border-[#b56f37]';
 
   if (useMobileClientUx && !visitModalOpen) {
     return (
@@ -2493,16 +2616,84 @@ export default function KalpavrukshaV2() {
                         <label className={formLabelClass}>Need Transport?</label>
                         <div className="grid grid-cols-2 gap-2">
                           {['No', 'Yes'].map((value) => (
-                            <button key={value} type="button" onClick={() => setVisitForm((current) => ({ ...current, transportRequired: value }))} className={chipClass(visitForm.transportRequired === value)}>
+                            <button key={value} type="button" onClick={() => handleVisitInput({ target: { name: 'transportRequired', value } })} className={chipClass(visitForm.transportRequired === value)}>
                               {value}
                             </button>
                           ))}
                         </div>
                       </div>
                       {visitForm.transportRequired === 'Yes' && (
-                        <div>
-                          <label className={formLabelClass}>Pickup Address</label>
-                          <textarea name="pickupAddress" value={visitForm.pickupAddress} onChange={handleVisitInput} className={`${formInputClass} min-h-[7rem] py-3`} placeholder="Enter pickup address" />
+                        <div className="space-y-4">
+                          <div>
+                            <label className={formLabelClass}>Pickup Address Input</label>
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                              <label className={pickupModeCardClass(visitForm.pickupMode === 'manual')}>
+                                <input
+                                  type="radio"
+                                  name="pickupMode"
+                                  value="manual"
+                                  checked={visitForm.pickupMode === 'manual'}
+                                  onChange={handleVisitInput}
+                                  className="sr-only"
+                                />
+                                <span>Manual Address</span>
+                              </label>
+                              <label className={pickupModeCardClass(visitForm.pickupMode === 'map')}>
+                                <input
+                                  type="radio"
+                                  name="pickupMode"
+                                  value="map"
+                                  checked={visitForm.pickupMode === 'map'}
+                                  onChange={handleVisitInput}
+                                  className="sr-only"
+                                />
+                                <span>Select on Map</span>
+                              </label>
+                            </div>
+                          </div>
+
+                          {visitForm.pickupMode === 'map' && (
+                            <div className="overflow-hidden rounded-[22px] border border-[#d6bd8f] bg-white">
+                              {!pickupMapApiKey ? (
+                                <div className="p-3 text-xs text-[#5f684f]">
+                                  Map is unavailable right now. Enter the pickup address manually below.
+                                </div>
+                              ) : pickupMapLoadError ? (
+                                <div className="p-3 text-xs text-[#8b3f2d]">
+                                  Map failed to load. Enter the pickup address manually below.
+                                </div>
+                              ) : (
+                                <Suspense fallback={<div className="p-3 text-xs text-[#5f684f]">Loading map...</div>}>
+                                  <PickupLocationMap
+                                    apiKey={pickupMapApiKey}
+                                    center={pickupMapCenter}
+                                    containerStyle={PICKUP_MAP_CONTAINER_STYLE}
+                                    libraries={MAP_LIBRARIES}
+                                    mapLoaderId={MAPS_LOADER_ID}
+                                    onLoadError={() => setPickupMapLoadError(true)}
+                                    onMapClick={onPickupMapClick}
+                                    onMarkerDragEnd={onPickupMarkerDragEnd}
+                                    selectedPosition={
+                                      visitForm.pickupLat && visitForm.pickupLng
+                                        ? { lat: Number(visitForm.pickupLat), lng: Number(visitForm.pickupLng) }
+                                        : null
+                                    }
+                                  />
+                                </Suspense>
+                              )}
+                            </div>
+                          )}
+
+                          <div>
+                            <label className={formLabelClass}>Pickup Address</label>
+                            <textarea
+                              name="pickupAddress"
+                              value={visitForm.pickupAddress}
+                              onChange={handleVisitInput}
+                              className={`${formInputClass} min-h-[7rem] py-3`}
+                              placeholder={visitForm.pickupMode === 'map' ? 'Click map/drag marker to fill textual address, or type manually' : 'Enter pickup address'}
+                            />
+                          </div>
                         </div>
                       )}
                     </>

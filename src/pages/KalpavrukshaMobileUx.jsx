@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { trackEvent, trackWhatsAppClick } from '../utils/analytics';
 import { captureGoogleAdsAttribution, getGoogleAdsAttributionPayload } from '../utils/googleAdsAttribution';
@@ -123,8 +124,8 @@ const amenities = [
   },
   {
     icon: 'clubhouse',
-    title: 'Clubhouse',
-    text: 'Infinity pool, private theatre, banquet hall, BBQ deck and an AC gym.',
+    title: 'Site Office',
+    text: 'On-site support desk for project details, layout guidance, booking assistance, and site-visit coordination.',
   },
   {
     icon: 'sports',
@@ -251,11 +252,12 @@ export default function KalpavrukshaMobileUx({
   googleReviewSummary = GOOGLE_REVIEW_FALLBACK,
   onBookSiteVisit,
 }) {
+  const navigate = useNavigate();
   const rootRef = useRef(null);
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
   const [lightboxImage, setLightboxImage] = useState(null);
-  const [form, setForm] = useState({ name: '', phone: '', consent: false });
+  const [form, setForm] = useState({ name: '', phone: '' });
   const [status, setStatus] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showFloatingChat, setShowFloatingChat] = useState(false);
@@ -468,8 +470,8 @@ export default function KalpavrukshaMobileUx({
 
     const name = form.name.trim();
     const phone = normalizePhone(form.phone);
-    if (!name || phone.length !== 10 || !form.consent) {
-      setStatus('Please enter your name, 10-digit mobile number, and consent.');
+    if (!name || phone.length !== 10) {
+      setStatus('Please enter your name and a valid 10-digit mobile number.');
       return;
     }
 
@@ -535,8 +537,9 @@ export default function KalpavrukshaMobileUx({
         conversion_type: 'generate_lead',
       });
 
-      setForm({ name: '', phone: '', consent: false });
+      setForm({ name: '', phone: '' });
       setStatus('Thank you. Our team will send the brochure and location map on WhatsApp shortly.');
+      navigate('/thank-you?type=brochure-map');
     } catch (error) {
       setStatus(error.response?.data?.message || 'Something went wrong. Please try again.');
     } finally {
@@ -1907,10 +1910,10 @@ export default function KalpavrukshaMobileUx({
               aria-label={`Open ${activeHeroImage.title} photo`}
               onClick={() => setLightboxImage(activeHeroImage)}
             >
-              <span className="kmux-live-marker">
+              {/* <span className="kmux-live-marker">
                 <span className="kmux-live-dot" />
                 Live from the site
-              </span>
+              </span> */}
               <img
                 key={activeHeroImage.title}
                 src={activeHeroImage.image}
@@ -2072,15 +2075,9 @@ export default function KalpavrukshaMobileUx({
                 inputMode="numeric"
               />
             </div>
-            <label className="kmux-consent">
-              <input
-                name="consent"
-                type="checkbox"
-                checked={form.consent}
-                onChange={handleChange}
-              />
-              <span>I agree to be contacted by Easy Homes about Kalpavruksha, on call and WhatsApp.</span>
-            </label>
+            <p className="kmux-whatsapp-note">
+              We will send Kalpavruksha project details, price, location, and site visit updates on WhatsApp.
+            </p>
             <button type="submit" className="kmux-cta-primary" disabled={isSubmitting}>
               {isSubmitting ? 'Submitting...' : 'Send Me the Brochure on WhatsApp'}
             </button>

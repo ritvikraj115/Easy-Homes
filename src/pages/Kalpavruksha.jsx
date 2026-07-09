@@ -1763,7 +1763,7 @@ const KalpavrukshaPage = () => {
       setShowVisitModal(false);
       setForm(DEFAULT_SITE_VISIT_FORM);
       setVisitFormStep(1);
-      navigate('/thank-you');
+      navigate('/thank-you?type=site-visit');
     } catch (err) {
       console.error(err);
       const msg = err.response?.data?.message || 'Failed to submit. Please try again.';
@@ -1859,7 +1859,7 @@ const KalpavrukshaPage = () => {
       if (!isBrochureRequest) {
         triggerAssetDownload(selectedDownloadAsset);
       }
-      navigate('/thank-you');
+      navigate(isBrochureRequest ? '/thank-you?type=brochure-map' : '/thank-you');
     } catch (err) {
       console.error(err);
       const msg = err.response?.data?.message || 'Failed to submit. Please try again.';
