@@ -5,7 +5,7 @@ const ADMIN_TOKEN_KEY = 'admin_token';
 const DEFAULT_KALPAVRUKSHA_SITE_IMAGES = [
   { id: 'main-gate', label: 'Main gate', imageUrl: '', alt: '' },
   { id: 'compound-wall', label: 'Compound wall', imageUrl: '', alt: '' },
-  { id: 'clubhouse-lawn', label: 'Clubhouse lawn', imageUrl: '', alt: '' },
+  { id: 'clubhouse-lawn', label: 'Site Office', imageUrl: '', alt: '' },
   { id: 'seating-pavilion', label: 'Seating pavilion', imageUrl: '', alt: '' },
 ];
 const KALPAVRUKSHA_IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif,image/avif';

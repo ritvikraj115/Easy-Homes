@@ -18,12 +18,12 @@ const THANK_YOU_CONTENT = {
     primaryAction: "Back to Kalpavruksha",
   },
   "brochure-map": {
-    eyebrow: "Brochure & Map Request Received",
-    title: "We will send the Kalpavruksha brochure and map on WhatsApp.",
+    eyebrow: "Location & Project Details Request Received",
+    title: "We will send the Kalpavruksha location and project details on WhatsApp.",
     description:
-      "Thank you for sharing your details. Our team will send the project brochure, location pin, master plan, price details, and latest site-visit assistance on WhatsApp.",
+      "Thank you for sharing your details. Our team will send the location pin, master plan, project details, price details, and latest site-visit assistance on WhatsApp.",
     points: [
-      "You will receive the brochure and project map details on WhatsApp.",
+      "You will receive the location and project details on WhatsApp.",
       "Our team can also share current pricing, available plot options, and location guidance.",
       "For faster assistance, keep your phone reachable after submitting the form.",
     ],

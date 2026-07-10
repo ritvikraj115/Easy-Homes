@@ -231,7 +231,7 @@ test('hero price CTA scrolls to the brochure and map form', () => {
   renderPage();
 
   window.scrollTo.mockClear();
-  fireEvent.click(screen.getAllByRole('button', { name: 'Get Price & Location' })[0]);
+  fireEvent.click(screen.getAllByRole('button', { name: 'Location & Project Details' })[0]);
 
   expect(trackEvent).toHaveBeenCalledWith(
     'form_open',
@@ -276,7 +276,7 @@ test('project nav links scroll to the matching section', () => {
 test('conversion-first sections show verified project essentials near the top', () => {
   renderPage();
 
-  expect(screen.getAllByRole('button', { name: 'Get Price & Location' }).length).toBeGreaterThan(0);
+  expect(screen.getAllByRole('button', { name: 'Location & Project Details' }).length).toBeGreaterThan(0);
   expect(screen.getByText('What makes Kalpavruksha different')).toBeInTheDocument();
   expect(screen.getByText('Built for buyers who value transparency, lifestyle, and long-term appreciation.')).toBeInTheDocument();
   expect(screen.getByText('Sunrise framed by the hills')).toBeInTheDocument();
@@ -310,7 +310,7 @@ test('brochure hash link opens the brochure form directly', async () => {
 
   renderPage();
 
-  expect(await screen.findByRole('heading', { name: 'Get the brochure & map' })).toBeInTheDocument();
+  expect(await screen.findByRole('heading', { name: 'Location & Project Details' })).toBeInTheDocument();
   act(() => {
     jest.advanceTimersByTime(150);
   });
@@ -514,7 +514,7 @@ test('site visit keeps fallback slots active when Zoho availability cannot load'
 test('brochure and map request submits the lead without a client-side download', async () => {
   renderPage();
 
-  fireEvent.click(screen.getByRole('button', { name: 'Download Project Brochure' }));
+  fireEvent.click(screen.getAllByRole('button', { name: 'Location & Project Details' })[0]);
 
   const downloadForm = document.querySelector('form');
   fireEvent.change(downloadForm.querySelector('input[name="name"]'), {
@@ -586,16 +586,16 @@ test('gallery modal next and previous controls keep sliding through images', () 
     screen.getAllByAltText('Kalpavruksha clubhouse exterior with landscaped lawns and premium lifestyle amenities')[0],
   );
 
-  expect(screen.getByText('1 / 4')).toBeInTheDocument();
+  expect(screen.getByText('1 / 3')).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole('button', { name: 'Show next gallery image' }));
-  expect(screen.getByText('2 / 4')).toBeInTheDocument();
+  expect(screen.getByText('2 / 3')).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole('button', { name: 'Show next gallery image' }));
-  expect(screen.getByText('3 / 4')).toBeInTheDocument();
+  expect(screen.getByText('3 / 3')).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole('button', { name: 'Show previous gallery image' }));
-  expect(screen.getByText('2 / 4')).toBeInTheDocument();
+  expect(screen.getByText('2 / 3')).toBeInTheDocument();
 });
 
 test('location keeps the shared directions link and no longer renders the travel map', () => {
@@ -611,7 +611,7 @@ test('floating action icons become available after the hero is scrolled', async 
   renderPage();
 
   await waitFor(() => {
-    expect(screen.getByRole('button', { name: 'Go to brochure and map form' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Go to location and project details form' })).toBeInTheDocument();
   });
 
   expect(screen.queryByRole('button', { name: /Quick Actions/i })).not.toBeInTheDocument();
@@ -619,7 +619,7 @@ test('floating action icons become available after the hero is scrolled', async 
   expect(screen.getByRole('button', { name: 'Open live chat' })).toBeInTheDocument();
 
   window.scrollTo.mockClear();
-  fireEvent.click(screen.getByRole('button', { name: 'Go to brochure and map form' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Go to location and project details form' }));
 
   expect(trackEvent).toHaveBeenCalledWith(
     'form_open',
@@ -672,7 +672,7 @@ test('V2 price CTA uses the established brochure download GTM contract', () => {
     </HelmetProvider>,
   );
 
-  fireEvent.click(screen.getAllByRole('button', { name: 'Get Price & Location' })[0]);
+  fireEvent.click(screen.getAllByRole('button', { name: 'Location & Project Details' })[0]);
 
   expect(trackEvent).toHaveBeenCalledWith('form_open', expect.objectContaining({
     form_name: 'kalpavruksha_download_form',
@@ -695,7 +695,7 @@ test('mobile brochure form uses the shared lead endpoint and brochure_downloaded
   fireEvent.change(screen.getByLabelText('Phone number'), {
     target: { name: 'phone', value: '9876543210' },
   });
-  fireEvent.click(screen.getByRole('button', { name: 'Send Me the Brochure on WhatsApp' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Send Location & Project Details on WhatsApp' }));
 
   await waitFor(() => {
     expect(api.post).toHaveBeenCalledWith('/api/leads/layout-download', expect.objectContaining({

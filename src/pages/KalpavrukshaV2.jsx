@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  FileText,
   Landmark,
   Layers,
   MapPin,
@@ -175,13 +176,6 @@ const galleryImages = [
     maskEmbeddedLabel: true,
   },
   {
-    title: 'Arrival Court',
-    label: 'Arrival',
-    image: require('../assets/kalpavruksha/arrival court.webp'),
-    alt: 'Kalpavruksha arrival court inside the gated layout',
-    maskEmbeddedLabel: true,
-  },
-  {
     title: 'Lotus Pond Retreat',
     label: 'Lifestyle',
     image: require('../assets/kalpavruksha/lotus pond 2.webp'),
@@ -315,11 +309,11 @@ const DEFAULT_KALPAVRUKSHA_SITE_PHOTOS = [
   },
   {
     id: 'clubhouse-lawn',
-    label: 'Clubhouse lawn',
-    title: 'Clubhouse lawn',
-    detail: 'Latest site photo showing the lawn, walking path and clubhouse-side progress.',
+    label: 'Site Office',
+    title: 'Site Office',
+    detail: 'Latest site photo showing the support area for project guidance, booking assistance, and site-visit coordination.',
     image: require('../assets/kalpavruksha/live-clubhouse-lawn-1200.webp'),
-    alt: 'Kalpavruksha live site clubhouse lawn and walking path',
+    alt: 'Kalpavruksha live site office and walking path',
   },
   {
     id: 'seating-pavilion',
@@ -1848,10 +1842,10 @@ export default function KalpavrukshaV2() {
                       <button
                         type="button"
                         onClick={() => scrollToBrochureMapForm('lp_b_hero_price_location_cta')}
-                        aria-label="Get Price & Location"
+                        aria-label="Location & Project Details"
                         className="rounded-xl bg-[#b56f37] px-4 py-3 text-sm font-bold uppercase tracking-[0.02em] text-[#fff7e8] shadow-[0_14px_30px_rgba(181,111,55,0.28)]"
                       >
-                        Get Price & Location
+                        Location & Project Details
                       </button>
                       <button
                         type="button"
@@ -2066,7 +2060,7 @@ export default function KalpavrukshaV2() {
                   <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
-              <div className="mx-auto mt-5 grid max-w-5xl grid-cols-4 gap-3">
+              <div className="mx-auto mt-5 grid max-w-3xl grid-cols-3 gap-3">
                 {galleryImages.map((item, index) => (
                   <button
                     key={item.title}
@@ -2114,9 +2108,9 @@ export default function KalpavrukshaV2() {
                     </div>
                   ))}
                 </div>
-                <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                  <CtaButton onClick={() => scrollToBrochureMapForm('lp_b_master_plan_brochure_cta')} variant="gold" icon={<Download className="h-5 w-5" />}>
-                    Get Free Brochure
+                <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                  <CtaButton onClick={() => scrollToBrochureMapForm('lp_b_master_plan_brochure_cta')} variant="gold" icon={<FileText className="h-5 w-5" />}>
+                    Location & Project Details
                   </CtaButton>
                   <CtaButton onClick={() => downloadLayoutPdf('lp_b_master_plan')} variant="dark" icon={<Download className="h-5 w-5" />}>
                     Download Layout PDF
@@ -2334,10 +2328,10 @@ export default function KalpavrukshaV2() {
 
               <div className="px-5 py-7 md:px-8 md:py-8">
                 <h3 className="kv2-display text-[1.45rem] font-semibold leading-tight tracking-[-0.02em] text-[#27382c] md:text-[1.9rem]">
-                  Get the brochure & map
+                  Location & Project Details
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-[#5f684f] md:text-base">
-                  Receive the project brochure, location pin, master plan and the latest site-visit assistance details.
+                  Receive the location pin, project details, master plan and the latest site-visit assistance details.
                 </p>
                 <form onSubmit={submitBrochure} className="mt-6 space-y-4">
                   <label className="block">
@@ -2373,7 +2367,7 @@ export default function KalpavrukshaV2() {
                     disabled={brochureSubmitting}
                     className="inline-flex min-h-[3.35rem] w-full items-center justify-center rounded-2xl bg-[#b56f37] px-5 text-base font-semibold text-[#fff7e8] shadow-[0_16px_34px_rgba(181,111,55,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#a76430] disabled:cursor-not-allowed disabled:opacity-70"
                   >
-                    {brochureSubmitting ? 'Submitting...' : 'Send Me the Brochure on WhatsApp'}
+                    {brochureSubmitting ? 'Submitting...' : 'Send Location & Project Details on WhatsApp'}
                   </button>
                 </form>
               </div>
@@ -2812,7 +2806,7 @@ export default function KalpavrukshaV2() {
               <div className="flex items-start justify-between gap-4 border-b border-[#d6bd8f] bg-[linear-gradient(135deg,#52684a_0%,#7f8d62_100%)] px-6 py-5 text-[#fff7e8]">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#f1cf8f]">Document Access</p>
-                  <h3 className="mt-2 text-2xl font-bold">Get Free Brochure</h3>
+                  <h3 className="mt-2 text-2xl font-bold">Location & Project Details</h3>
                 </div>
                 <button type="button" onClick={closeBrochureModal} className="rounded-full border border-[#fff7e8]/20 bg-[#fff7e8]/14 p-2 text-[#fff7e8]">
                   <X className="h-5 w-5" />
@@ -2832,7 +2826,7 @@ export default function KalpavrukshaV2() {
                   We will send Kalpavruksha project details, price, location, and site visit updates on WhatsApp.
                 </p>
                 <button type="submit" disabled={brochureSubmitting} className="inline-flex min-h-[3.25rem] w-full items-center justify-center rounded-2xl bg-[#b56f37] px-6 font-semibold text-[#fff7e8] shadow-[0_14px_30px_rgba(181,111,55,0.24)] disabled:opacity-70">
-                  {brochureSubmitting ? 'Submitting...' : 'Send Me the Brochure on WhatsApp'}
+                  {brochureSubmitting ? 'Submitting...' : 'Send Location & Project Details on WhatsApp'}
                 </button>
               </form>
             </div>

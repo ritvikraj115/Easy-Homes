@@ -2,6 +2,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
   Download,
+  FileText,
   MapPin,
   MessageCircle,
   Phone,
@@ -98,8 +99,8 @@ const DOWNLOAD_ASSET_CONFIG = {
   brochure: {
     url: '/mainBrouche.pdf',
     fileName: 'Kalpavruksha Project Brochure.pdf',
-    title: 'Download Project Brochure',
-    description: 'Share your details to access the Kalpavruksha project brochure.',
+    title: 'Location & Project Details',
+    description: 'Share your details to receive Kalpavruksha location and project details.',
     source: 'Website',
     leadStatus: 'Brochure and Map Requested on WhatsApp'
   }
@@ -235,7 +236,6 @@ const withLandingVariant = (payload = {}) => ({
 const KALPAVRUKSHA_GALLERY_IMAGES = [
   { title: "Modern Clubhouse", image: require("../assets/kalpavruksha/club house.webp"), alt: "Kalpavruksha clubhouse exterior with landscaped lawns and premium lifestyle amenities", maskEmbeddedLabel: true },
   { title: "Contour Garden", image: require("../assets/kalpavruksha/contour garden.webp"), alt: "Kalpavruksha contour garden with landscaped pathways and open recreational greens", maskEmbeddedLabel: true },
-  { title: "Arrival Court", image: require("../assets/kalpavruksha/arrival court.webp"), alt: "Kalpavruksha arrival court with landscaped entry features inside the gated layout", maskEmbeddedLabel: true },
   { title: "Lotus Pond Retreat", image: require("../assets/kalpavruksha/lotus pond 2.webp"), alt: "Kalpavruksha lotus pond water feature with curved walkways and reflective landscaping", maskEmbeddedLabel: true }
 ];
 const DEFAULT_KALPAVRUKSHA_SITE_PHOTOS = [
@@ -257,11 +257,11 @@ const DEFAULT_KALPAVRUKSHA_SITE_PHOTOS = [
   },
   {
     id: 'clubhouse-lawn',
-    label: 'Clubhouse lawn',
-    title: 'Clubhouse lawn',
-    detail: 'Latest site photo showing the lawn, walking path and clubhouse-side progress.',
+    label: 'Site Office',
+    title: 'Site Office',
+    detail: 'Latest site photo showing the support area for project guidance, booking assistance, and site-visit coordination.',
     image: require('../assets/kalpavruksha/live-clubhouse-lawn-1200.webp'),
-    alt: 'Kalpavruksha live site clubhouse lawn and walking path',
+    alt: 'Kalpavruksha live site office and walking path',
   },
   {
     id: 'seating-pavilion',
@@ -2877,12 +2877,12 @@ const KalpavrukshaPage = () => {
                         <div className="mt-4 flex flex-col gap-3 sm:mt-6 sm:flex-row sm:items-center sm:gap-3.5">
                           <button
                             type="button"
-                            aria-label="Get Price & Location"
+                            aria-label="Location & Project Details"
                             onClick={() => scrollToBrochureMapForm('hero_price_location_cta')}
                             className="kalpa-v1-cta-sheen inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#cba159] px-6 py-3.5 text-[15px] font-semibold text-[#1d1609] shadow-[0_18px_38px_rgba(203,161,89,0.28)] transition-all duration-300 hover:bg-[#d4ab68] hover:shadow-[0_22px_42px_rgba(203,161,89,0.34)] sm:min-h-14 sm:w-auto sm:min-w-[13.5rem] sm:px-8 sm:text-base"
                           >
-                            <Download className="h-4 w-4 sm:h-5 sm:w-5" />
-                            <span>Get Price & Location</span>
+                            <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
+                            <span>Location & Project Details</span>
                           </button>
 
                           <button
@@ -3160,8 +3160,8 @@ const KalpavrukshaPage = () => {
                         className="w-full !min-h-[3.05rem] !px-4 !py-2.5"
                       />
                       <CTAButton
-                        icon={<Download className="w-5 h-5" />}
-                        text="Get Price & Location"
+                        icon={<FileText className="w-5 h-5" />}
+                        text="Location & Project Details"
                         onClick={() => scrollToBrochureMapForm('snapshot_price_location_cta')}
                         className="w-full !min-h-[3.05rem] !border-white/[0.16] !bg-white/[0.10] !px-4 !py-2.5 !text-white hover:!bg-white/[0.16] hover:!text-white"
                       />
@@ -3214,20 +3214,14 @@ const KalpavrukshaPage = () => {
                       See the layout, then visit the exact site.
                     </h3>
                     <p className="mt-2 max-w-2xl text-sm leading-6 text-[#627067]">
-                      The cleanest buyer flow is simple: check the layout document, confirm current pricing, and book a slot only if the essentials match.
+                      The cleanest buyer flow is simple: check the layout document, then book a slot only if the essentials match.
                     </p>
                   </div>
-                  <div className="grid gap-2 sm:grid-cols-3 lg:min-w-[34rem]">
+                  <div className="grid gap-2 sm:grid-cols-2 lg:min-w-[24rem]">
                     <CTAButton
                       icon={<Download className="w-4 h-4" />}
                       text="Download Layout"
                       onClick={() => openDownloadLeadModal('layout', 'snapshot_decision_layout')}
-                      className="w-full !min-h-[3rem] !px-4 !py-2.5"
-                    />
-                    <CTAButton
-                      icon={<Download className="w-4 h-4" />}
-                      text="Get Price"
-                      onClick={() => scrollToBrochureMapForm('snapshot_decision_price_cta')}
                       className="w-full !min-h-[3rem] !px-4 !py-2.5"
                     />
                     <CTAButton
@@ -3449,7 +3443,7 @@ const KalpavrukshaPage = () => {
                     <ChevronRight className="h-4 w-4" />
                   </button>
                 </div>
-                <div className="mt-5 grid grid-cols-4 gap-3">
+                <div className="mx-auto mt-5 grid max-w-3xl grid-cols-3 gap-3">
                   {KALPAVRUKSHA_GALLERY_IMAGES.map((item, index) => (
                     <button
                       key={item.title}
@@ -3843,10 +3837,10 @@ const KalpavrukshaPage = () => {
 
               <div className="px-5 py-7 md:px-8 md:py-8">
                 <h3 className="font-serif text-[1.45rem] font-bold leading-tight text-[#18231d] md:text-[1.8rem]">
-                  Get the brochure & map
+                  Location & Project Details
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-[#647067] md:text-base">
-                  Receive the project brochure, location pin, master plan and the latest site-visit assistance details.
+                  Receive the location pin, project details, master plan and the latest site-visit assistance details.
                 </p>
                 <form onSubmit={(event) => submitLayoutLead(event, 'brochure')} className="mt-6 space-y-4">
                   <label className="block">
@@ -3882,7 +3876,7 @@ const KalpavrukshaPage = () => {
                     disabled={downloadSubmitting}
                     className="inline-flex min-h-[3.4rem] w-full items-center justify-center rounded-2xl bg-[#d9ad4f] px-5 text-base font-bold text-[#102319] shadow-[0_16px_34px_rgba(217,173,79,0.24)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#e2bb69] disabled:cursor-not-allowed disabled:opacity-70"
                   >
-                    {downloadSubmitting ? 'Submitting...' : 'Send Me the Brochure on WhatsApp'}
+                    {downloadSubmitting ? 'Submitting...' : 'Send Location & Project Details on WhatsApp'}
                   </button>
                 </form>
               </div>
@@ -3933,8 +3927,8 @@ const KalpavrukshaPage = () => {
                         </p>
                         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                           <CTAButton
-                            icon={<Download className="w-4 h-4" />}
-                            text="Download Project Brochure"
+                            icon={<FileText className="w-4 h-4" />}
+                            text="Location & Project Details"
                             onClick={() => scrollToBrochureMapForm('buyer_guide_brochure')}
                             className="!min-h-[3rem] !px-4 !py-2.5"
                           />
@@ -4018,10 +4012,10 @@ const KalpavrukshaPage = () => {
                 type="button"
                 onClick={() => scrollToBrochureMapForm('floating_brochure_icon')}
                 className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-[#d7ba82] bg-[linear-gradient(180deg,#fffefb_0%,#f4ead8_100%)] text-[#8b6328] shadow-[0_20px_42px_rgba(83,64,31,0.16)] transition-all duration-200 hover:-translate-y-1 hover:scale-[1.03] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b16f]/24"
-                aria-label="Go to brochure and map form"
-                title="Go to brochure and map form"
+                aria-label="Go to location and project details form"
+                title="Go to location and project details form"
               >
-                <Download className="h-5 w-5" />
+                <FileText className="h-5 w-5" />
               </button>
 
               <button
@@ -4123,8 +4117,8 @@ const KalpavrukshaPage = () => {
                   onClick={() => scrollToBrochureMapForm('footer_current_price_cta')}
                   className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/[0.12] px-5 py-3 text-sm font-semibold text-white/[0.82] transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/[0.08] hover:text-white"
                 >
-                  <Download className="h-4 w-4" />
-                  <span>Ask for current price</span>
+                  <FileText className="h-4 w-4" />
+                  <span>Location & Project Details</span>
                 </button>
               </div>
             </div>

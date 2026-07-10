@@ -12,7 +12,6 @@ import siteSeatingPavilion from '../assets/kalpavruksha/live-seating-pavilion-12
 import siteMainGate from '../assets/kalpavruksha/live-main-gate-1200.webp';
 import galleryClubhouse from '../assets/kalpavruksha/club house.webp';
 import galleryContourGarden from '../assets/kalpavruksha/contour garden.webp';
-import galleryArrivalCourt from '../assets/kalpavruksha/arrival court.webp';
 import galleryLotusPond from '../assets/kalpavruksha/lotus pond 2.webp';
 
 const CALL_URL = 'tel:+918988896666';
@@ -67,9 +66,9 @@ const DEFAULT_SITE_IMAGES = [
   },
   {
     id: 'clubhouse-lawn',
-    title: 'Clubhouse lawn',
+    title: 'Site Office',
     image: siteClubhouseLawn,
-    alt: 'Kalpavruksha clubhouse lawn and walking path at the live site',
+    alt: 'Kalpavruksha site office and walking path at the live site',
   },
   {
     id: 'seating-pavilion',
@@ -91,12 +90,6 @@ const galleryImages = [
     category: 'Project gallery',
     image: galleryContourGarden,
     alt: 'Kalpavruksha contour garden with landscaped pathways and open recreational greens',
-  },
-  {
-    title: 'Arrival Court',
-    category: 'Project gallery',
-    image: galleryArrivalCourt,
-    alt: 'Kalpavruksha arrival court with landscaped entry features inside the gated layout',
   },
   {
     title: 'Lotus Pond Retreat',
@@ -417,7 +410,7 @@ export default function KalpavrukshaMobileUx({
   const openWhatsApp = (placement, message) => {
     const pageUrl = typeof window !== 'undefined' ? window.location.href : undefined;
     const defaultMessage = [
-      'Hi Easy Homes, I want current price and location details for Kalpavruksha.',
+      'Hi Easy Homes, I want location and project details for Kalpavruksha.',
       pageUrl ? `Page: ${pageUrl}` : '',
     ].filter(Boolean).join('\n');
 
@@ -538,7 +531,7 @@ export default function KalpavrukshaMobileUx({
       });
 
       setForm({ name: '', phone: '' });
-      setStatus('Thank you. Our team will send the brochure and location map on WhatsApp shortly.');
+      setStatus('Thank you. Our team will send the location and project details on WhatsApp shortly.');
       navigate('/thank-you?type=brochure-map', {
         state: {
           thankYouType: 'brochure-map',
@@ -1954,7 +1947,7 @@ export default function KalpavrukshaMobileUx({
             </div>
             <div className="kmux-hero-actions">
               <a href="#book" className="kmux-cta-primary" onClick={() => trackFormOpen('mobile_hero_get_price')}>
-                Get Price & Location
+                Location & Project Details
               </a>
               <a
                 href={buildWhatsAppUrl('Hi Easy Homes, I would like details on Kalpavruksha.')}
@@ -2000,7 +1993,7 @@ export default function KalpavrukshaMobileUx({
           <div className="kmux-reveal">
             <h2 className="kmux-section-title">Picture the life that awaits</h2>
             <p className="kmux-section-note">
-              Explore the clubhouse, landscaped gardens, arrival court and lotus pond planned for the community.
+              Explore the clubhouse, landscaped gardens and lotus pond planned for the community.
             </p>
           </div>
           <button
@@ -2053,7 +2046,7 @@ export default function KalpavrukshaMobileUx({
 
         <section className="kmux-section kmux-form-wrap" id="book">
           <div className="kmux-reveal">
-            <h2 className="kmux-section-title">Get the brochure & map</h2>
+            <h2 className="kmux-section-title">Location & Project Details</h2>
             <p className="kmux-section-note">Sent straight to your WhatsApp - location pin, master plan and next available visit slots.</p>
           </div>
           <form className="kmux-form kmux-reveal" onSubmit={handleLeadSubmit}>
@@ -2086,7 +2079,7 @@ export default function KalpavrukshaMobileUx({
               We will send Kalpavruksha project details, price, location, and site visit updates on WhatsApp.
             </p>
             <button type="submit" className="kmux-cta-primary" disabled={isSubmitting}>
-              {isSubmitting ? 'Submitting...' : 'Send Me the Brochure on WhatsApp'}
+              {isSubmitting ? 'Submitting...' : 'Send Location & Project Details on WhatsApp'}
             </button>
             <p className="kmux-form-status" aria-live="polite">{status}</p>
           </form>
