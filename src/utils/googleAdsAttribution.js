@@ -115,6 +115,49 @@ function writeStoredAttribution(value) {
   }
 }
 
+function captureParamsFromSearch(search, target, { overwrite = true } = {}) {
+  const normalizedSearch = normalizeText(search);
+  if (!normalizedSearch) {
+    return;
+  }
+
+  const params = new URLSearchParams(
+    normalizedSearch.startsWith('?') ? normalizedSearch : `?${normalizedSearch}`
+  );
+
+  Object.entries(URL_PARAM_TO_FIELD).forEach(([paramName, fieldName]) => {
+    const value = normalizeText(params.get(paramName));
+    if (value && (overwrite || !target[fieldName])) {
+      target[fieldName] = value;
+    }
+  });
+}
+
+function getHashSearch(hash) {
+  const normalizedHash = normalizeText(hash);
+  if (!normalizedHash) {
+    return '';
+  }
+
+  const hashBody = normalizedHash.startsWith('#') ? normalizedHash.slice(1) : normalizedHash;
+  const queryIndex = hashBody.indexOf('?');
+  if (queryIndex >= 0) {
+    return hashBody.slice(queryIndex + 1);
+  }
+
+  const ampersandIndex = hashBody.indexOf('&');
+  return ampersandIndex >= 0 ? hashBody.slice(ampersandIndex + 1) : '';
+}
+
+function getLandingPageUrl(locationLike) {
+  const href = normalizeText(locationLike?.href);
+  if (!href) {
+    return undefined;
+  }
+
+  return href.split('#')[0].split('?')[0];
+}
+
 export function getGoogleAdsAttributionPayload() {
   const stored = sanitizeAttribution(readStoredRawAttribution());
   if (!stored) {
@@ -139,16 +182,10 @@ export function captureGoogleAdsAttributionFromLocation(locationLike) {
   }
 
   const currentLocation = locationLike || window.location;
-  const search = normalizeText(currentLocation?.search) || '';
-  const params = new URLSearchParams(search);
   const captured = {};
 
-  Object.entries(URL_PARAM_TO_FIELD).forEach(([paramName, fieldName]) => {
-    const value = normalizeText(params.get(paramName));
-    if (value) {
-      captured[fieldName] = value;
-    }
-  });
+  captureParamsFromSearch(getHashSearch(currentLocation?.hash), captured, { overwrite: false });
+  captureParamsFromSearch(currentLocation?.search, captured, { overwrite: true });
 
   const stored = getGoogleAdsAttributionPayload() || {};
   if (!Object.keys(captured).length) {
@@ -159,7 +196,7 @@ export function captureGoogleAdsAttributionFromLocation(locationLike) {
   const nextValue = sanitizeAttribution({
     ...stored,
     ...captured,
-    landingPage: normalizeText(currentLocation?.href?.split('?')[0]) || stored?.landingPage,
+    landingPage: getLandingPageUrl(currentLocation) || stored?.landingPage,
     firstCapturedAt: stored?.firstCapturedAt || now,
     lastCapturedAt: now,
   });
