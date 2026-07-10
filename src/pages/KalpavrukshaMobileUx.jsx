@@ -52,23 +52,27 @@ const KALPAVRUKSHA_ZOHO_HOME_WIDGETS = [
 const KALPAVRUKSHA_ZOHO_CHAT_QUESTION =
   'Hi Easy Homes, I want details about Kalpavruksha open plots, pricing, and site visit availability.';
 
-const siteImages = [
+const DEFAULT_SITE_IMAGES = [
   {
+    id: 'main-gate',
     title: 'Main gate',
     image: siteMainGate,
     alt: 'Kalpavruksha main gate at the live site',
   },
   {
+    id: 'compound-wall',
     title: 'Compound wall',
     image: siteCompoundWall,
     alt: 'Kalpavruksha compound wall and boundary work at the live site',
   },
   {
+    id: 'clubhouse-lawn',
     title: 'Clubhouse lawn',
     image: siteClubhouseLawn,
     alt: 'Kalpavruksha clubhouse lawn and walking path at the live site',
   },
   {
+    id: 'seating-pavilion',
     title: 'Seating pavilion',
     image: siteSeatingPavilion,
     alt: 'Kalpavruksha outdoor seating pavilion at the live site',
@@ -251,6 +255,7 @@ export default function KalpavrukshaMobileUx({
   landingVersion = 'v1',
   googleReviewSummary = GOOGLE_REVIEW_FALLBACK,
   onBookSiteVisit,
+  siteImages: providedSiteImages,
 }) {
   const navigate = useNavigate();
   const rootRef = useRef(null);
@@ -268,6 +273,9 @@ export default function KalpavrukshaMobileUx({
     ...googleReviewSummary,
   };
 
+  const siteImages = Array.isArray(providedSiteImages) && providedSiteImages.length
+    ? providedSiteImages
+    : DEFAULT_SITE_IMAGES;
   const activeHeroImage = siteImages[activeHeroIndex] || siteImages[0];
   const activeGalleryImage = galleryImages[activeGalleryIndex] || galleryImages[0];
   const trackingContext = useMemo(() => ({
@@ -302,7 +310,7 @@ export default function KalpavrukshaMobileUx({
     }, 4200);
 
     return () => window.clearInterval(timerId);
-  }, []);
+  }, [siteImages.length]);
 
   useEffect(() => {
     const timerId = window.setInterval(() => {
@@ -378,7 +386,8 @@ export default function KalpavrukshaMobileUx({
       ...trackingContext,
       ...buildGoogleAdsEventParams(),
       event_category: 'engagement',
-      form_name: 'kalpavruksha_brochure_map_mobile',
+      form_name: 'kalpavruksha_download_form',
+      lead_type: 'brochure_download',
       placement,
     });
   };
@@ -481,34 +490,29 @@ export default function KalpavrukshaMobileUx({
     setStatus('');
 
     try {
-      await api.post('/api/leads/enquiry', {
+      await api.post('/api/leads/layout-download', {
         project: 'Kalpavruksha',
         name,
         phone,
-        requirements: 'Mobile brochure and map request. Share brochure, location pin, master plan and next available site visit slots on WhatsApp.',
-        placement: 'mobile_brochure_map_form',
-        platform_source: 'website',
+        source: 'Website',
         platformSource: 'Website',
+        platform_source: 'website',
         leadStatus: 'Brochure and Map Requested on WhatsApp',
         landingVariant,
         landing_variant: landingVariant,
         landingVersion,
         landing_version: landingVersion,
         version: landingVersion,
-        website_version: landingVersion,
-        landing_page_version: landingVersion,
-        ab_test_name: 'kalpavruksha_landing_page',
-        googleAdsAttribution,
+        googleAdsAttribution: googleAdsAttribution || undefined,
       });
 
       const mobileConversionPayload = {
         ...trackingContext,
         ...buildGoogleAdsEventParams(googleAdsAttribution),
         event_category: 'conversion',
-        form_name: 'kalpavruksha_brochure_map_mobile',
+        form_name: 'kalpavruksha_download_form',
         placement: 'mobile_brochure_map_form',
-        source: 'kalpavruksha_mobile_brochure_map_form',
-        form_source: 'mobile_brochure_map_form',
+        source: 'kalpavruksha_download_form',
         lead_type: 'brochure_map_request',
         lead_event_id: leadEventId,
         event_id: leadEventId,
@@ -529,17 +533,20 @@ export default function KalpavrukshaMobileUx({
         conversion_type: 'brochure_map_requested',
         file_name: 'Kalpavruksha Project Brochure.pdf',
         file_extension: 'pdf',
+        link_url: '/mainBrouche.pdf',
         delivery_channel: 'whatsapp_follow_up',
-      });
-
-      trackEvent('generate_lead', {
-        ...mobileConversionPayload,
-        conversion_type: 'generate_lead',
       });
 
       setForm({ name: '', phone: '' });
       setStatus('Thank you. Our team will send the brochure and location map on WhatsApp shortly.');
-      navigate('/thank-you?type=brochure-map');
+      navigate('/thank-you?type=brochure-map', {
+        state: {
+          thankYouType: 'brochure-map',
+          project: 'Kalpavruksha',
+          leadType: 'brochure_map_request',
+          returnTo: landingVersion === 'v2' ? '/kalpavruksha2/' : '/kalpavruksha/',
+        },
+      });
     } catch (error) {
       setStatus(error.response?.data?.message || 'Something went wrong. Please try again.');
     } finally {

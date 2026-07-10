@@ -89,6 +89,88 @@
   gap: 0.75rem;
 }
 
+.admin-kalpavruksha-panel {
+  margin-top: 1rem;
+  padding: 0.95rem;
+  border: 1px solid #dce4ef;
+  border-radius: 10px;
+  background: #f8fafd;
+}
+
+.admin-kalpavruksha-heading,
+.admin-kalpavruksha-actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.admin-kalpavruksha-heading h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.admin-site-image-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+}
+
+.admin-site-image-row {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 0.7rem;
+  align-items: end;
+  padding: 0.75rem;
+  border: 1px solid #e1e7ef;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.admin-site-image-preview {
+  display: flex;
+  width: 76px;
+  height: 64px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #d7e0eb;
+  border-radius: 7px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.7rem;
+  text-align: center;
+}
+
+.admin-site-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-site-image-file,
+.admin-site-image-alt,
+.admin-remove-image-btn {
+  grid-column: 1 / -1;
+}
+
+.admin-site-image-file input[type="file"] {
+  padding: 0.5rem;
+}
+
+.admin-use-default-image-btn {
+  width: fit-content;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.admin-kalpavruksha-actions {
+  justify-content: flex-end;
+  margin-top: 0.85rem;
+}
+
 .admin-loading {
   margin: 1rem 0 0;
   color: #475569;
@@ -280,6 +362,16 @@
 
   .admin-section-wide {
     grid-column: 1 / -1;
+  }
+
+  .admin-site-image-row {
+    grid-template-columns: 76px minmax(150px, 0.7fr) minmax(260px, 1.3fr) minmax(220px, 1fr) auto;
+  }
+
+  .admin-site-image-file,
+  .admin-site-image-alt,
+  .admin-remove-image-btn {
+    grid-column: auto;
   }
 }
 

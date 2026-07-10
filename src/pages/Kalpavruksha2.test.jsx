@@ -2,6 +2,8 @@ import React from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { HelmetProvider } from 'react-helmet-async';
 import KalpavrukshaPage from './Kalpavruksha';
+import KalpavrukshaV2 from './KalpavrukshaV2';
+import KalpavrukshaMobileUx from './KalpavrukshaMobileUx';
 import api from '../api';
 import {
   trackEvent,
@@ -24,6 +26,7 @@ jest.mock('../api', () => ({
 
 jest.mock('../utils/analytics', () => ({
   trackEvent: jest.fn(),
+  trackPageView: jest.fn(),
   trackWhatsAppClick: jest.fn(),
 }));
 
@@ -137,7 +140,9 @@ function mockScrolledHeroLayout() {
 beforeEach(() => {
   jest.useFakeTimers();
   jest.clearAllMocks();
-  api.get.mockResolvedValue({ data: { success: true, slots: ['9:00 AM', '10:00 AM'] } });
+  api.get.mockResolvedValue({
+    data: { success: true, slots: ['9:00 AM', '10:00 AM'], availabilityStatus: 'live' },
+  });
   api.post.mockResolvedValue({ data: { ok: true } });
   mockPathname = '/kalpavruksha/';
   mockHash = '';
@@ -222,19 +227,27 @@ test('hero next/previous controls change slides', async () => {
   expect(await screen.findByText('Residential Plots near Vijayawada, close to Amaravati')).toBeInTheDocument();
 });
 
-test('hero WhatsApp CTA tracks the same placement flow as Kalpa', () => {
+test('hero price CTA scrolls to the brochure and map form', () => {
   renderPage();
 
-  fireEvent.click(screen.getAllByRole('button', { name: 'Get Price & Location on WhatsApp' })[0]);
+  window.scrollTo.mockClear();
+  fireEvent.click(screen.getAllByRole('button', { name: 'Get Price & Location' })[0]);
 
-  expect(trackWhatsAppClick).toHaveBeenCalledWith(
+  expect(trackEvent).toHaveBeenCalledWith(
+    'form_open',
     expect.objectContaining({
       landing_variant: 'A',
       project: 'Kalpavruksha',
-      source: 'kalpavruksha',
-      placement: 'hero_price_whatsapp',
+      source: 'hero_price_location_cta',
+      form_name: 'kalpavruksha_download_form',
+      lead_type: 'brochure_download',
     }),
   );
+  expect(trackEvent).not.toHaveBeenCalledWith('brochure_map_cta_click', expect.anything());
+  expect(trackWhatsAppClick).not.toHaveBeenCalled();
+  expect(window.scrollTo).toHaveBeenCalledWith(expect.objectContaining({
+    behavior: 'smooth',
+  }));
 });
 
 test('zoho salesiq widget script is added when live chat is opened', () => {
@@ -263,7 +276,7 @@ test('project nav links scroll to the matching section', () => {
 test('conversion-first sections show verified project essentials near the top', () => {
   renderPage();
 
-  expect(screen.getByRole('button', { name: 'Get Price & Location on WhatsApp' })).toBeInTheDocument();
+  expect(screen.getAllByRole('button', { name: 'Get Price & Location' }).length).toBeGreaterThan(0);
   expect(screen.getByText('What makes Kalpavruksha different')).toBeInTheDocument();
   expect(screen.getByText('Built for buyers who value transparency, lifestyle, and long-term appreciation.')).toBeInTheDocument();
   expect(screen.getByText('Sunrise framed by the hills')).toBeInTheDocument();
@@ -297,7 +310,10 @@ test('brochure hash link opens the brochure form directly', async () => {
 
   renderPage();
 
-  expect(await screen.findByRole('heading', { name: 'Download Project Brochure' })).toBeInTheDocument();
+  expect(await screen.findByRole('heading', { name: 'Get the brochure & map' })).toBeInTheDocument();
+  act(() => {
+    jest.advanceTimersByTime(150);
+  });
   expect(trackEvent).toHaveBeenCalledWith(
     'form_open',
     expect.objectContaining({
@@ -404,6 +420,9 @@ test('site visit form validates and submits successfully', async () => {
       pickupMode: undefined,
       pickupLat: undefined,
       pickupLng: undefined,
+      slotAvailabilityIssue: false,
+      slotAvailabilityIssueReason: undefined,
+      slotAvailabilitySource: 'zoho_live',
       googleAdsAttribution: undefined,
     });
   });
@@ -421,7 +440,7 @@ test('site visit form validates and submits successfully', async () => {
   expect(trackEvent).not.toHaveBeenCalledWith('form_submit', expect.anything());
   expect(trackEvent).not.toHaveBeenCalledWith('generate_lead', expect.anything());
   expect(trackEvent).not.toHaveBeenCalledWith('schedule_visit', expect.anything());
-  expect(mockNavigate).toHaveBeenCalledWith('/thank-you');
+  expect(mockNavigate).toHaveBeenCalledWith('/thank-you?type=site-visit');
 });
 
 test('site visit map pickup mode can populate the pickup address', async () => {
@@ -451,6 +470,47 @@ test('site visit map pickup mode can populate the pickup address', async () => {
   });
 });
 
+test('site visit keeps fallback slots active when Zoho availability cannot load', async () => {
+  api.get.mockImplementation((url) => {
+    if (url === '/api/site-visits/available-slots') {
+      return Promise.reject(new Error('Zoho availability timed out'));
+    }
+    return Promise.resolve({ data: { success: true, data: { siteImages: [] } } });
+  });
+
+  renderPage();
+  fireEvent.click(screen.getAllByRole('button', { name: 'Schedule a Visit' })[0]);
+
+  const siteVisitForm = document.querySelector('form');
+  fireEvent.change(siteVisitForm.querySelector('input[name="name"]'), {
+    target: { name: 'name', value: 'Fallback User' },
+  });
+  fireEvent.change(siteVisitForm.querySelector('input[name="phone"]'), {
+    target: { name: 'phone', value: '9876543210' },
+  });
+  fireEvent.change(siteVisitForm.querySelector('input[name="email"]'), {
+    target: { name: 'email', value: 'fallback.user@example.com' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+  fireEvent.change(siteVisitForm.querySelector('input[name="preferredDate"]'), {
+    target: { name: 'preferredDate', value: '2099-01-02' },
+  });
+
+  fireEvent.click(await screen.findByRole('button', { name: '10:15 AM' }));
+  await act(async () => {
+    fireEvent.submit(siteVisitForm);
+  });
+
+  await waitFor(() => {
+    expect(api.post).toHaveBeenCalledWith('/api/site-visits', expect.objectContaining({
+      preferredDate: '2099-01-02T10:15',
+      slotAvailabilityIssue: true,
+      slotAvailabilityIssueReason: 'Zoho availability timed out',
+      slotAvailabilitySource: 'fallback',
+    }));
+  });
+});
+
 test('brochure and map request submits the lead without a client-side download', async () => {
   renderPage();
 
@@ -462,9 +522,6 @@ test('brochure and map request submits the lead without a client-side download',
   });
   fireEvent.change(downloadForm.querySelector('input[name="phone"]'), {
     target: { name: 'phone', value: '9123456789' },
-  });
-  fireEvent.change(downloadForm.querySelector('input[name="email"]'), {
-    target: { name: 'email', value: 'brochure.user@example.com' },
   });
 
   await act(async () => {
@@ -485,7 +542,7 @@ test('brochure and map request submits the lead without a client-side download',
       leadStatus: 'Brochure and Map Requested on WhatsApp',
       name: 'Brochure User',
       phone: '9123456789',
-      email: 'brochure.user@example.com',
+      email: undefined,
       googleAdsAttribution: undefined,
     });
   });
@@ -503,7 +560,12 @@ test('brochure and map request submits the lead without a client-side download',
   expect(trackEvent).not.toHaveBeenCalledWith('form_submit', expect.anything());
   expect(trackEvent).not.toHaveBeenCalledWith('generate_lead', expect.anything());
   expect(trackEvent).not.toHaveBeenCalledWith('file_download', expect.anything());
-  expect(mockNavigate).toHaveBeenCalledWith('/thank-you');
+  expect(mockNavigate).toHaveBeenCalledWith('/thank-you?type=brochure-map', expect.objectContaining({
+    state: expect.objectContaining({
+      thankYouType: 'brochure-map',
+      leadType: 'brochure_map_request',
+    }),
+  }));
 });
 
 test('gallery cards use descriptive alt text for SEO and accessibility', () => {
@@ -549,23 +611,104 @@ test('floating action icons become available after the hero is scrolled', async 
   renderPage();
 
   await waitFor(() => {
-    expect(screen.getByRole('button', { name: 'Open brochure download' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Go to brochure and map form' })).toBeInTheDocument();
   });
 
   expect(screen.queryByRole('button', { name: /Quick Actions/i })).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Open WhatsApp chat' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Open live chat' })).toBeInTheDocument();
 
-  fireEvent.click(screen.getByRole('button', { name: 'Open brochure download' }));
+  window.scrollTo.mockClear();
+  fireEvent.click(screen.getByRole('button', { name: 'Go to brochure and map form' }));
 
-  expect(await screen.findByRole('heading', { name: 'Download Project Brochure' })).toBeInTheDocument();
   expect(trackEvent).toHaveBeenCalledWith(
     'form_open',
     expect.objectContaining({
       form_name: 'kalpavruksha_download_form',
       lead_type: 'brochure_download',
       project: 'Kalpavruksha',
+      source: 'floating_brochure_icon',
     }),
   );
+  expect(window.scrollTo).toHaveBeenCalledWith(expect.objectContaining({
+    behavior: 'smooth',
+  }));
   restoreLayout();
+});
+
+test('admin-managed site image and label replace the packaged V1 live-site image', async () => {
+  api.get.mockImplementation((url) => {
+    if (url === '/api/kalpavruksha/content') {
+      return Promise.resolve({
+        data: {
+          success: true,
+          data: {
+            siteImages: [{
+              id: 'main-gate',
+              label: 'July main gate update',
+              imageUrl: 'https://images.example.com/kalpa-main-gate.webp',
+              alt: 'Admin-managed live site image',
+            }],
+          },
+        },
+      });
+    }
+    return Promise.resolve({ data: { success: true, slots: [], availabilityStatus: 'live' } });
+  });
+
+  renderPage();
+
+  expect(await screen.findByAltText('Admin-managed live site image')).toHaveAttribute(
+    'src',
+    'https://images.example.com/kalpa-main-gate.webp',
+  );
+  expect(screen.getByText('July main gate update')).toBeInTheDocument();
+});
+
+test('V2 price CTA uses the established brochure download GTM contract', () => {
+  render(
+    <HelmetProvider>
+      <KalpavrukshaV2 />
+    </HelmetProvider>,
+  );
+
+  fireEvent.click(screen.getAllByRole('button', { name: 'Get Price & Location' })[0]);
+
+  expect(trackEvent).toHaveBeenCalledWith('form_open', expect.objectContaining({
+    form_name: 'kalpavruksha_download_form',
+    lead_type: 'brochure_download',
+    landing_variant: 'B',
+  }));
+  expect(trackEvent).not.toHaveBeenCalledWith('brochure_map_cta_click', expect.anything());
+});
+
+test('mobile brochure form uses the shared lead endpoint and brochure_downloaded event', async () => {
+  render(
+    <HelmetProvider>
+      <KalpavrukshaMobileUx landingVariant="A" landingVersion="v1" />
+    </HelmetProvider>,
+  );
+
+  fireEvent.change(screen.getByLabelText('Your name'), {
+    target: { name: 'name', value: 'Mobile User' },
+  });
+  fireEvent.change(screen.getByLabelText('Phone number'), {
+    target: { name: 'phone', value: '9876543210' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Send Me the Brochure on WhatsApp' }));
+
+  await waitFor(() => {
+    expect(api.post).toHaveBeenCalledWith('/api/leads/layout-download', expect.objectContaining({
+      project: 'Kalpavruksha',
+      name: 'Mobile User',
+      phone: '9876543210',
+      leadStatus: 'Brochure and Map Requested on WhatsApp',
+    }));
+  });
+  expect(trackEvent).toHaveBeenCalledWith('brochure_downloaded', expect.objectContaining({
+    form_name: 'kalpavruksha_download_form',
+    conversion_type: 'brochure_map_requested',
+    landing_variant: 'A',
+  }));
+  expect(trackEvent).not.toHaveBeenCalledWith('generate_lead', expect.anything());
 });

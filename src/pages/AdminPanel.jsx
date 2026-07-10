@@ -2,6 +2,43 @@ import React, { useEffect, useMemo, useState } from 'react';
 import '../assets/admin.css';
 
 const ADMIN_TOKEN_KEY = 'admin_token';
+const DEFAULT_KALPAVRUKSHA_SITE_IMAGES = [
+  { id: 'main-gate', label: 'Main gate', imageUrl: '', alt: '' },
+  { id: 'compound-wall', label: 'Compound wall', imageUrl: '', alt: '' },
+  { id: 'clubhouse-lawn', label: 'Clubhouse lawn', imageUrl: '', alt: '' },
+  { id: 'seating-pavilion', label: 'Seating pavilion', imageUrl: '', alt: '' },
+];
+const KALPAVRUKSHA_IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif,image/avif';
+const KALPAVRUKSHA_IMAGE_MAX_SIZE_BYTES = 6 * 1024 * 1024;
+
+function resolveAdminImageSrc(imageUrl) {
+  const url = String(imageUrl || '').trim();
+  if (url.startsWith('/uploads/')) {
+    return `${process.env.REACT_APP_API_URL || ''}${url}`;
+  }
+  return url;
+}
+
+function revokePreviewUrl(upload) {
+  if (upload?.previewUrl && typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+    URL.revokeObjectURL(upload.previewUrl);
+  }
+}
+
+function normalizeKalpavrukshaContent(input = {}) {
+  const source = Array.isArray(input.siteImages) && input.siteImages.length
+    ? input.siteImages
+    : DEFAULT_KALPAVRUKSHA_SITE_IMAGES;
+
+  return {
+    siteImages: source.map((item, index) => ({
+      id: String(item?.id || `site-image-${index + 1}`).trim(),
+      label: String(item?.label || `Site image ${index + 1}`).trim(),
+      imageUrl: String(item?.imageUrl || '').trim(),
+      alt: String(item?.alt || '').trim(),
+    })),
+  };
+}
 
 function createEmptyProperty() {
   return {
@@ -174,6 +211,27 @@ async function apiRequest(path, options = {}) {
   return data;
 }
 
+async function uploadKalpavrukshaSiteImage(file, adminToken) {
+  const base = process.env.REACT_APP_API_URL || '';
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const res = await fetch(`${base}/api/admin/kalpavruksha/content/site-image`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${adminToken}`,
+    },
+    body: formData,
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data?.success) {
+    throw new Error(data?.message || 'Failed to upload Kalpavruksha site image');
+  }
+
+  return data.data;
+}
+
 export default function AdminPanel() {
   const [token, setToken] = useState(() => localStorage.getItem(ADMIN_TOKEN_KEY) || '');
   const [username, setUsername] = useState('');
@@ -187,6 +245,10 @@ export default function AdminPanel() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [propertyQuery, setPropertyQuery] = useState('');
+  const [kalpavrukshaContent, setKalpavrukshaContent] = useState(() => normalizeKalpavrukshaContent());
+  const [loadingKalpavrukshaContent, setLoadingKalpavrukshaContent] = useState(false);
+  const [savingKalpavrukshaContent, setSavingKalpavrukshaContent] = useState(false);
+  const [kalpavrukshaImageUploads, setKalpavrukshaImageUploads] = useState({});
 
   const sortedProperties = useMemo(() => {
     return [...properties].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
@@ -236,8 +298,29 @@ export default function AdminPanel() {
     }
   };
 
+  const loadKalpavrukshaContent = async (adminToken) => {
+    if (!adminToken) return;
+    setLoadingKalpavrukshaContent(true);
+
+    try {
+      const data = await apiRequest('/api/admin/kalpavruksha/content', {
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      setKalpavrukshaContent(normalizeKalpavrukshaContent(data.data));
+      setKalpavrukshaImageUploads((current) => {
+        Object.values(current).forEach(revokePreviewUrl);
+        return {};
+      });
+    } catch (err) {
+      setError(err.message || 'Failed to load Kalpavruksha site images');
+    } finally {
+      setLoadingKalpavrukshaContent(false);
+    }
+  };
+
   useEffect(() => {
     loadProperties(token);
+    loadKalpavrukshaContent(token);
   }, [token]);
 
   const handleSelectProperty = (mlsNumber) => {
@@ -285,6 +368,11 @@ export default function AdminPanel() {
     setSelectedMls('__new__');
     setOriginalMlsNumber('');
     setForm(createEmptyProperty());
+    setKalpavrukshaContent(normalizeKalpavrukshaContent());
+    setKalpavrukshaImageUploads((current) => {
+      Object.values(current).forEach(revokePreviewUrl);
+      return {};
+    });
     setError('');
     setSuccess('');
   };
@@ -354,6 +442,132 @@ export default function AdminPanel() {
     }
   };
 
+  const updateKalpavrukshaSiteImage = (index, field, value) => {
+    setKalpavrukshaContent((current) => ({
+      ...current,
+      siteImages: current.siteImages.map((item, itemIndex) => (
+        itemIndex === index ? { ...item, [field]: value } : item
+      )),
+    }));
+  };
+
+  const handleKalpavrukshaSiteImageFile = (index, file) => {
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please choose an image file for Kalpavruksha site images.');
+      return;
+    }
+
+    if (file.size > KALPAVRUKSHA_IMAGE_MAX_SIZE_BYTES) {
+      setError('Kalpavruksha site image must be 6MB or smaller.');
+      return;
+    }
+
+    const imageId = kalpavrukshaContent.siteImages[index]?.id;
+    if (!imageId) return;
+
+    setError('');
+    setSuccess('');
+    setKalpavrukshaImageUploads((current) => {
+      revokePreviewUrl(current[imageId]);
+      const previewUrl = typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'
+        ? URL.createObjectURL(file)
+        : '';
+      return {
+        ...current,
+        [imageId]: {
+          file,
+          previewUrl,
+        },
+      };
+    });
+  };
+
+  const handleUseDefaultKalpavrukshaSiteImage = (index) => {
+    const imageId = kalpavrukshaContent.siteImages[index]?.id;
+    updateKalpavrukshaSiteImage(index, 'imageUrl', '');
+    if (!imageId) return;
+    setKalpavrukshaImageUploads((current) => {
+      const next = { ...current };
+      revokePreviewUrl(next[imageId]);
+      delete next[imageId];
+      return next;
+    });
+  };
+
+  const addKalpavrukshaSiteImage = () => {
+    setKalpavrukshaContent((current) => {
+      if (current.siteImages.length >= 12) return current;
+      const nextIndex = current.siteImages.length + 1;
+      return {
+        ...current,
+        siteImages: [
+          ...current.siteImages,
+          { id: `site-image-${Date.now()}`, label: `Site image ${nextIndex}`, imageUrl: '', alt: '' },
+        ],
+      };
+    });
+  };
+
+  const removeKalpavrukshaSiteImage = (index) => {
+    const imageId = kalpavrukshaContent.siteImages[index]?.id;
+    setKalpavrukshaContent((current) => ({
+      ...current,
+      siteImages: current.siteImages.filter((_, itemIndex) => itemIndex !== index),
+    }));
+    if (!imageId) return;
+    setKalpavrukshaImageUploads((current) => {
+      const next = { ...current };
+      revokePreviewUrl(next[imageId]);
+      delete next[imageId];
+      return next;
+    });
+  };
+
+  const handleKalpavrukshaContentSubmit = async (event) => {
+    event.preventDefault();
+    setSavingKalpavrukshaContent(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const normalized = normalizeKalpavrukshaContent(kalpavrukshaContent);
+      const siteImages = [];
+
+      for (const item of normalized.siteImages) {
+        const pendingUpload = kalpavrukshaImageUploads[item.id];
+        if (!pendingUpload?.file) {
+          siteImages.push(item);
+          continue;
+        }
+
+        const uploadedImage = await uploadKalpavrukshaSiteImage(pendingUpload.file, token);
+        siteImages.push({
+          ...item,
+          imageUrl: uploadedImage.imageUrl || item.imageUrl,
+        });
+      }
+
+      const payload = { ...normalized, siteImages };
+      const response = await apiRequest('/api/admin/kalpavruksha/content', {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      });
+      setKalpavrukshaContent(normalizeKalpavrukshaContent(response.data));
+      setKalpavrukshaImageUploads((current) => {
+        Object.values(current).forEach(revokePreviewUrl);
+        return {};
+      });
+      setSuccess('Kalpavruksha site images updated for V1, V2, and mobile.');
+    } catch (err) {
+      setError(err.message || 'Failed to save Kalpavruksha site images');
+    } finally {
+      setSavingKalpavrukshaContent(false);
+    }
+  };
+
   if (!token) {
     return (
       <div className="admin-panel">
@@ -410,6 +624,92 @@ export default function AdminPanel() {
             </button>
           </div>
         </div>
+
+        <form className="admin-kalpavruksha-panel" onSubmit={handleKalpavrukshaContentSubmit}>
+          <div className="admin-kalpavruksha-heading">
+            <div>
+              <h2>Kalpavruksha Live Site Images</h2>
+              <p className="admin-section-note">
+                Upload site images and labels once for V1, V2, and mobile. Using the default keeps the packaged site image.
+              </p>
+            </div>
+            <button type="button" className="secondary-btn" onClick={addKalpavrukshaSiteImage}>
+              Add Site Image
+            </button>
+          </div>
+
+          {loadingKalpavrukshaContent ? (
+            <p className="admin-loading">Loading Kalpavruksha site images...</p>
+          ) : (
+            <div className="admin-site-image-list">
+              {kalpavrukshaContent.siteImages.map((item, index) => (
+                <div className="admin-site-image-row" key={item.id}>
+                  <div className="admin-site-image-preview">
+                    {kalpavrukshaImageUploads[item.id]?.previewUrl || item.imageUrl ? (
+                      <img src={kalpavrukshaImageUploads[item.id]?.previewUrl || resolveAdminImageSrc(item.imageUrl)} alt="" />
+                    ) : (
+                      <span>Default image</span>
+                    )}
+                  </div>
+                  <div className="admin-field">
+                    <label htmlFor={`kalpa-site-label-${index}`}>Label</label>
+                    <input
+                      id={`kalpa-site-label-${index}`}
+                      value={item.label}
+                      onChange={(event) => updateKalpavrukshaSiteImage(index, 'label', event.target.value)}
+                      maxLength={80}
+                      required
+                    />
+                  </div>
+                  <div className="admin-field admin-site-image-file">
+                    <label htmlFor={`kalpa-site-file-${index}`}>Image file</label>
+                    <input
+                      id={`kalpa-site-file-${index}`}
+                      type="file"
+                      accept={KALPAVRUKSHA_IMAGE_ACCEPT}
+                      onChange={(event) => handleKalpavrukshaSiteImageFile(index, event.target.files?.[0])}
+                    />
+                    <span className="admin-helper">
+                      {kalpavrukshaImageUploads[item.id]?.file?.name || (item.imageUrl ? 'Uploaded image saved' : 'Default packaged image')}
+                    </span>
+                    {(kalpavrukshaImageUploads[item.id] || item.imageUrl) && (
+                      <button
+                        type="button"
+                        className="secondary-btn admin-use-default-image-btn"
+                        onClick={() => handleUseDefaultKalpavrukshaSiteImage(index)}
+                      >
+                        Use Default Image
+                      </button>
+                    )}
+                  </div>
+                  <div className="admin-field admin-site-image-alt">
+                    <label htmlFor={`kalpa-site-alt-${index}`}>Image alt text</label>
+                    <input
+                      id={`kalpa-site-alt-${index}`}
+                      value={item.alt}
+                      onChange={(event) => updateKalpavrukshaSiteImage(index, 'alt', event.target.value)}
+                      maxLength={180}
+                      placeholder="Optional accessibility description"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className="secondary-btn admin-remove-image-btn"
+                    onClick={() => removeKalpavrukshaSiteImage(index)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="admin-kalpavruksha-actions">
+            <button type="submit" className="primary-btn" disabled={savingKalpavrukshaContent || loadingKalpavrukshaContent}>
+              {savingKalpavrukshaContent ? 'Saving...' : 'Save Site Images'}
+            </button>
+          </div>
+        </form>
 
         <div className="admin-selection-panel">
           <div className="admin-field">

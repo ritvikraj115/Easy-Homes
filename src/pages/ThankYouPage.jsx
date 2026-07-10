@@ -77,7 +77,7 @@ const ThankYouPage = () => {
 
     const timerId = window.setTimeout(() => {
       navigate(returnTo, { replace: true });
-    }, 10000);
+    }, 5000);
 
     return () => window.clearTimeout(timerId);
   }, [content, navigate, returnTo]);
@@ -126,7 +126,7 @@ const ThankYouPage = () => {
             </div>
 
             <div className="mx-auto mt-6 inline-flex rounded-full border border-[#d6bd8f] bg-[#fff7e8] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#8b5526]">
-              Redirecting back to Kalpavruksha in 10 seconds
+              Redirecting back to Kalpavruksha in 5 seconds
             </div>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">

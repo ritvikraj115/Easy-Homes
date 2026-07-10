@@ -43,6 +43,12 @@ import {
   KALPAVRUKSHA_WALKTHROUGH_BROCHURE_COVER,
 } from '../assets/kalpavrukshaHeroAssets';
 import KalpavrukshaMobileUx from './KalpavrukshaMobileUx';
+import useKalpavrukshaSiteImages from '../hooks/useKalpavrukshaSiteImages';
+import {
+  DEFAULT_SLOT_AVAILABILITY,
+  getVisitSlotNetworkFallback,
+  resolveVisitSlotAvailability,
+} from '../utils/kalpavrukshaSiteVisit';
 
 const KALPAVRUKSHA_FONT_STYLESHEET =
   'https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap';
@@ -149,7 +155,6 @@ const DEFAULT_SITE_VISIT_FORM = {
 const DEFAULT_BROCHURE_FORM = {
   name: '',
   phone: '',
-  email: '',
 };
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
 const isValidEmail = (value) => EMAIL_PATTERN.test(String(value || '').trim());
@@ -291,8 +296,9 @@ const differenceItems = [
   },
 ];
 
-const sitePhotoPlaceholders = [
+const DEFAULT_KALPAVRUKSHA_SITE_PHOTOS = [
   {
+    id: 'main-gate',
     label: 'Main gate',
     title: 'Main gate',
     detail: 'Latest site photo showing the tree-themed main gate and internal road alignment.',
@@ -300,6 +306,7 @@ const sitePhotoPlaceholders = [
     alt: 'Kalpavruksha live site main gate with internal road view',
   },
   {
+    id: 'compound-wall',
     label: 'Compound wall',
     title: 'Compound wall',
     detail: 'Latest site photo showing the compound wall, boundary finish and service-side progress.',
@@ -307,6 +314,7 @@ const sitePhotoPlaceholders = [
     alt: 'Kalpavruksha live site compound wall and boundary progress',
   },
   {
+    id: 'clubhouse-lawn',
     label: 'Clubhouse lawn',
     title: 'Clubhouse lawn',
     detail: 'Latest site photo showing the lawn, walking path and clubhouse-side progress.',
@@ -314,6 +322,7 @@ const sitePhotoPlaceholders = [
     alt: 'Kalpavruksha live site clubhouse lawn and walking path',
   },
   {
+    id: 'seating-pavilion',
     label: 'Seating pavilion',
     title: 'Seating pavilion',
     detail: 'Latest site photo showing the outdoor seating pavilion and open-space development.',
@@ -643,6 +652,7 @@ export default function KalpavrukshaV2() {
   const [availableSlots, setAvailableSlots] = useState([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [slotsError, setSlotsError] = useState('');
+  const [slotAvailability, setSlotAvailability] = useState(DEFAULT_SLOT_AVAILABILITY);
   const [brochureModalOpen, setBrochureModalOpen] = useState(false);
   const [brochureForm, setBrochureForm] = useState(DEFAULT_BROCHURE_FORM);
   const [brochureSubmitting, setBrochureSubmitting] = useState(false);
@@ -675,24 +685,44 @@ export default function KalpavrukshaV2() {
   const faqRef = useRef(null);
   const finalCtaRef = useRef(null);
   const visitFormBodyRef = useRef(null);
+  const pickupModeSectionRef = useRef(null);
   const pickupGeocodeRequestRef = useRef(0);
   const todayDate = new Date().toISOString().split('T')[0];
+  const sitePhotoPlaceholders = useKalpavrukshaSiteImages(DEFAULT_KALPAVRUKSHA_SITE_PHOTOS);
   const activeGalleryImage = galleryImages[mobileGalleryIndex] || galleryImages[0];
   const activeSitePhoto = sitePhotoPlaceholders[sitePhotoIndex] || sitePhotoPlaceholders[0];
   const selectedGalleryImageIndex = galleryImages.findIndex((item) => item.image === selectedGalleryImage?.image);
   const pickupMapApiKey = process.env.REACT_APP_MAP_KEY || '';
+  const brochureMapNameInputRef = useRef(null);
 
   const showToast = (msg, type = 'error') => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 4200);
   };
 
-  const scrollToRef = (ref) => {
-    if (!ref.current || typeof window === 'undefined') return;
+  const scrollToElement = (element) => {
+    if (!element || typeof window === 'undefined') return;
 
     const headerOffset = window.innerWidth >= 1024 ? 92 : 84;
-    const top = ref.current.getBoundingClientRect().top + window.scrollY - headerOffset;
+    const top = element.getBoundingClientRect().top + window.scrollY - headerOffset;
     window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
+  };
+
+  const scrollToRef = (ref) => {
+    scrollToElement(ref.current);
+  };
+
+  const scrollToBrochureMapForm = (source = 'lp_b_brochure_map_cta') => {
+    trackEvent('form_open', withTrackingContext({
+      form_name: 'kalpavruksha_download_form',
+      lead_type: 'brochure_download',
+      project: PROJECT.name,
+      source,
+      asset_type: 'brochure',
+    }));
+    setVisitModalOpen(false);
+    setBrochureModalOpen(false);
+    scrollToElement(brochureMapNameInputRef.current || finalCtaRef.current);
   };
 
   const trackGoogleReviewsClick = (placement = 'hero_review_pill') => {
@@ -836,7 +866,7 @@ export default function KalpavrukshaV2() {
     }, 3600);
 
     return () => window.clearInterval(timerId);
-  }, [brochureModalOpen, layoutPreviewOpen, selectedGalleryImage, visitModalOpen]);
+  }, [brochureModalOpen, layoutPreviewOpen, selectedGalleryImage, sitePhotoPlaceholders.length, visitModalOpen]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || window.innerWidth >= 1024 || !isMobileGalleryInView) return;
@@ -993,6 +1023,7 @@ export default function KalpavrukshaV2() {
       setAvailableSlots([]);
       setSlotsError('');
       setSlotsLoading(false);
+      setSlotAvailability(DEFAULT_SLOT_AVAILABILITY);
       return undefined;
     }
 
@@ -1000,6 +1031,7 @@ export default function KalpavrukshaV2() {
     setSlotsLoading(true);
     setSlotsError('');
     setAvailableSlots([]);
+    setSlotAvailability(DEFAULT_SLOT_AVAILABILITY);
     setVisitForm((current) => (
       current.preferredTime ? { ...current, preferredTime: '' } : current
     ));
@@ -1008,10 +1040,15 @@ export default function KalpavrukshaV2() {
       params: { preferredDate: visitForm.preferredDate },
     }).then((response) => {
       if (!isActive) return;
-      setAvailableSlots(normalizeVisitSlots(response.data?.slots));
-    }).catch(() => {
+      const result = resolveVisitSlotAvailability(response.data, normalizeVisitSlots);
+      setAvailableSlots(result.slots);
+      setSlotAvailability(result.availability);
+    }).catch((error) => {
       if (!isActive) return;
-      setSlotsError('Available slots could not be loaded. Please try another date.');
+      const result = getVisitSlotNetworkFallback(error, normalizeVisitSlots);
+      setAvailableSlots(result.slots);
+      setSlotAvailability(result.availability);
+      setSlotsError('');
     }).finally(() => {
       if (isActive) setSlotsLoading(false);
     });
@@ -1042,17 +1079,6 @@ export default function KalpavrukshaV2() {
   const closeVisitModal = () => {
     setVisitModalOpen(false);
     setVisitStep(1);
-  };
-
-  const openBrochureModal = (source = 'lp_b_brochure') => {
-    setBrochureModalOpen(true);
-    trackEvent('form_open', withTrackingContext({
-      form_name: 'kalpavruksha_download_form',
-      lead_type: 'brochure_download',
-      project: PROJECT.name,
-      source,
-      asset_type: 'brochure',
-    }));
   };
 
   const closeBrochureModal = () => {
@@ -1151,7 +1177,6 @@ export default function KalpavrukshaV2() {
 
   const setVisitPickupMode = (value) => {
     const scroller = visitFormBodyRef.current;
-    const scrollTop = scroller?.scrollTop || 0;
 
     setVisitForm((current) => ({
       ...current,
@@ -1162,10 +1187,17 @@ export default function KalpavrukshaV2() {
 
     if (typeof window !== 'undefined' && scroller) {
       window.requestAnimationFrame(() => {
-        scroller.scrollTop = scrollTop;
-        window.setTimeout(() => {
-          scroller.scrollTop = scrollTop;
-        }, 0);
+        const targetTop = pickupModeSectionRef.current
+          ? Math.max(pickupModeSectionRef.current.offsetTop - 12, 0)
+          : scroller.scrollTop;
+        if (typeof scroller.scrollTo === 'function') {
+          scroller.scrollTo({
+            top: targetTop,
+            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+          });
+        } else {
+          scroller.scrollTop = targetTop;
+        }
       });
     }
   };
@@ -1199,7 +1231,10 @@ export default function KalpavrukshaV2() {
 
   const handleBrochureInput = (event) => {
     const { name, value } = event.target;
-    setBrochureForm((current) => ({ ...current, [name]: value }));
+    setBrochureForm((current) => ({
+      ...current,
+      [name]: name === 'phone' ? value.replace(/\D/g, '').slice(0, 10) : value,
+    }));
   };
 
   const trackCallClick = (placement) => {
@@ -1357,6 +1392,9 @@ export default function KalpavrukshaV2() {
         pickupMode: pickupRequired ? visitForm.pickupMode : undefined,
         pickupLat: pickupRequired ? (visitForm.pickupLat || undefined) : undefined,
         pickupLng: pickupRequired ? (visitForm.pickupLng || undefined) : undefined,
+        slotAvailabilityIssue: slotAvailability.issue,
+        slotAvailabilityIssueReason: slotAvailability.reason || undefined,
+        slotAvailabilitySource: slotAvailability.source,
         googleAdsAttribution: googleAdsAttribution || undefined,
       });
 
@@ -1369,6 +1407,8 @@ export default function KalpavrukshaV2() {
         interest: selectedInterest,
         transport_required: visitForm.transportRequired,
         pickup_mode: pickupRequired ? visitForm.pickupMode : undefined,
+        slot_availability_issue: slotAvailability.issue || undefined,
+        slot_availability_source: slotAvailability.source,
         google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
         google_ads_click_id_type: googleAdsAttribution?.clickIdType,
         google_ads_campaign_id: googleAdsAttribution?.campaignId,
@@ -1411,20 +1451,14 @@ export default function KalpavrukshaV2() {
     event.preventDefault();
     const trimmedName = brochureForm.name.trim();
     const trimmedPhone = brochureForm.phone.trim();
-    const trimmedEmail = brochureForm.email.trim();
 
-    if (!trimmedName || !trimmedPhone || !trimmedEmail) {
-      showToast('Please enter your name, phone number, and email address to continue.');
+    if (!trimmedName || !trimmedPhone) {
+      showToast('Please enter your name and 10-digit phone number to continue.');
       return;
     }
 
     if (!/^\d{10}$/.test(trimmedPhone)) {
       showToast('Please enter a valid 10-digit phone number.');
-      return;
-    }
-
-    if (!isValidEmail(trimmedEmail)) {
-      showToast('Please enter a valid email address.');
       return;
     }
 
@@ -1444,7 +1478,6 @@ export default function KalpavrukshaV2() {
         leadStatus: BROCHURE_ASSET.leadStatus,
         name: trimmedName,
         phone: trimmedPhone,
-        email: trimmedEmail,
         googleAdsAttribution: googleAdsAttribution || undefined,
       });
 
@@ -1452,7 +1485,7 @@ export default function KalpavrukshaV2() {
         form_name: 'kalpavruksha_download_form',
         lead_type: 'brochure_map_request',
         project: PROJECT.name,
-        source: BROCHURE_ASSET.source,
+        source: 'kalpavruksha_download_form',
         asset_type: 'brochure',
         lead_status: BROCHURE_ASSET.leadStatus,
         google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
@@ -1521,6 +1554,7 @@ export default function KalpavrukshaV2() {
         landingVersion={LANDING_VERSION}
         googleReviewSummary={googleReviewSummary}
         onBookSiteVisit={openVisitModal}
+        siteImages={sitePhotoPlaceholders}
       />
     );
   }
@@ -1813,8 +1847,8 @@ export default function KalpavrukshaV2() {
                     <div className="mx-auto mt-6 grid max-w-sm grid-cols-2 gap-3 lg:mx-0">
                       <button
                         type="button"
-                        onClick={() => openWhatsApp('lp_b_hero_price')}
-                        aria-label="Get Price & Location on WhatsApp"
+                        onClick={() => scrollToBrochureMapForm('lp_b_hero_price_location_cta')}
+                        aria-label="Get Price & Location"
                         className="rounded-xl bg-[#b56f37] px-4 py-3 text-sm font-bold uppercase tracking-[0.02em] text-[#fff7e8] shadow-[0_14px_30px_rgba(181,111,55,0.28)]"
                       >
                         Get Price & Location
@@ -2081,7 +2115,7 @@ export default function KalpavrukshaV2() {
                   ))}
                 </div>
                 <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                  <CtaButton onClick={() => openBrochureModal('lp_b_master_plan')} variant="gold" icon={<Download className="h-5 w-5" />}>
+                  <CtaButton onClick={() => scrollToBrochureMapForm('lp_b_master_plan_brochure_cta')} variant="gold" icon={<Download className="h-5 w-5" />}>
                     Get Free Brochure
                   </CtaButton>
                   <CtaButton onClick={() => downloadLayoutPdf('lp_b_master_plan')} variant="dark" icon={<Download className="h-5 w-5" />}>
@@ -2310,6 +2344,7 @@ export default function KalpavrukshaV2() {
                     <span className="text-sm font-semibold text-[#27382c]">Your name</span>
                     <input
                       name="name"
+                      ref={brochureMapNameInputRef}
                       value={brochureForm.name}
                       onChange={handleBrochureInput}
                       className="mt-2 min-h-[3.25rem] w-full rounded-2xl border border-[#b56f37]/18 bg-white px-4 text-base font-medium text-[#27382c] outline-none transition focus:border-[#b56f37] focus:ring-4 focus:ring-[#b56f37]/14"
@@ -2330,33 +2365,15 @@ export default function KalpavrukshaV2() {
                       required
                     />
                   </label>
-                  <label className="block">
-                    <span className="text-sm font-semibold text-[#27382c]">Email address</span>
-                    <input
-                      name="email"
-                      value={brochureForm.email}
-                      onChange={handleBrochureInput}
-                      className="mt-2 min-h-[3.25rem] w-full rounded-2xl border border-[#b56f37]/18 bg-white px-4 text-base font-medium text-[#27382c] outline-none transition focus:border-[#b56f37] focus:ring-4 focus:ring-[#b56f37]/14"
-                      type="email"
-                      autoComplete="email"
-                      placeholder="Email address"
-                      required
-                    />
-                  </label>
-                  <label className="flex items-start gap-3 text-sm leading-5 text-[#5f684f]">
-                    <input
-                      type="checkbox"
-                      required
-                      className="mt-0.5 h-5 w-5 rounded border-[#b56f37]/24 text-[#b56f37] focus:ring-[#b56f37]"
-                    />
-                    <span>I agree to be contacted by Easy Homes about Kalpavruksha on call, WhatsApp or email.</span>
-                  </label>
+                  <p className="rounded-2xl border border-[#b56f37]/18 bg-white/72 px-4 py-3 text-sm leading-6 text-[#5f684f]">
+                    We will send Kalpavruksha project details, price, location, and site visit updates on WhatsApp.
+                  </p>
                   <button
                     type="submit"
                     disabled={brochureSubmitting}
                     className="inline-flex min-h-[3.35rem] w-full items-center justify-center rounded-2xl bg-[#b56f37] px-5 text-base font-semibold text-[#fff7e8] shadow-[0_16px_34px_rgba(181,111,55,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#a76430] disabled:cursor-not-allowed disabled:opacity-70"
                   >
-                    {brochureSubmitting ? 'Submitting...' : 'Send Me the Brochure & Map'}
+                    {brochureSubmitting ? 'Submitting...' : 'Send Me the Brochure on WhatsApp'}
                   </button>
                 </form>
               </div>
@@ -2622,7 +2639,7 @@ export default function KalpavrukshaV2() {
 
         {visitModalOpen && (
           <div
-            className="fixed left-0 right-0 top-0 z-[120] flex items-center justify-center overflow-hidden bg-[#06120c]/90 px-3 py-3 md:p-6"
+            className="fixed left-0 right-0 top-0 z-[120] flex items-start justify-center overflow-y-auto overscroll-contain bg-[#06120c]/90 px-3 py-3 md:items-center md:p-6"
             style={{
               ...visitModalViewportStyle,
               backdropFilter: 'blur(20px) saturate(120%)',
@@ -2702,7 +2719,7 @@ export default function KalpavrukshaV2() {
                       </div>
                       {visitForm.transportRequired === 'Yes' && (
                         <div className="space-y-4">
-                          <div>
+                          <div ref={pickupModeSectionRef}>
                             <label className={formLabelClass}>Pickup Address Input</label>
                             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                               <button
@@ -2811,12 +2828,11 @@ export default function KalpavrukshaV2() {
                   <label className={formLabelClass}>Phone</label>
                   <input name="phone" value={brochureForm.phone} onChange={handleBrochureInput} className={formInputClass} inputMode="tel" maxLength={10} placeholder="10-digit mobile number" required />
                 </div>
-                <div>
-                  <label className={formLabelClass}>Email</label>
-                  <input name="email" value={brochureForm.email} onChange={handleBrochureInput} className={formInputClass} type="email" autoComplete="email" placeholder="Email address" required />
-                </div>
+                <p className="rounded-2xl border border-[#d6bd8f] bg-[#fff7e8] px-4 py-3 text-sm leading-6 text-[#5f684f]">
+                  We will send Kalpavruksha project details, price, location, and site visit updates on WhatsApp.
+                </p>
                 <button type="submit" disabled={brochureSubmitting} className="inline-flex min-h-[3.25rem] w-full items-center justify-center rounded-2xl bg-[#b56f37] px-6 font-semibold text-[#fff7e8] shadow-[0_14px_30px_rgba(181,111,55,0.24)] disabled:opacity-70">
-                  {brochureSubmitting ? 'Submitting...' : 'Download Brochure'}
+                  {brochureSubmitting ? 'Submitting...' : 'Send Me the Brochure on WhatsApp'}
                 </button>
               </form>
             </div>

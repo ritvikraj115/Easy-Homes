@@ -44,6 +44,12 @@ import {
   KALPAVRUKSHA_WALKTHROUGH_BROCHURE_COVER,
 } from '../assets/kalpavrukshaHeroAssets';
 import KalpavrukshaMobileUx from './KalpavrukshaMobileUx';
+import useKalpavrukshaSiteImages from '../hooks/useKalpavrukshaSiteImages';
+import {
+  DEFAULT_SLOT_AVAILABILITY,
+  getVisitSlotNetworkFallback,
+  resolveVisitSlotAvailability,
+} from '../utils/kalpavrukshaSiteVisit';
 
 function normalizeVisitSlot(rawSlot) {
   const text = String(rawSlot || '').trim();
@@ -232,6 +238,40 @@ const KALPAVRUKSHA_GALLERY_IMAGES = [
   { title: "Arrival Court", image: require("../assets/kalpavruksha/arrival court.webp"), alt: "Kalpavruksha arrival court with landscaped entry features inside the gated layout", maskEmbeddedLabel: true },
   { title: "Lotus Pond Retreat", image: require("../assets/kalpavruksha/lotus pond 2.webp"), alt: "Kalpavruksha lotus pond water feature with curved walkways and reflective landscaping", maskEmbeddedLabel: true }
 ];
+const DEFAULT_KALPAVRUKSHA_SITE_PHOTOS = [
+  {
+    id: 'main-gate',
+    label: 'Main gate',
+    title: 'Main gate',
+    detail: 'Latest site photo showing the tree-themed main gate and internal road alignment.',
+    image: require('../assets/kalpavruksha/live-main-gate-1200.webp'),
+    alt: 'Kalpavruksha live site main gate with internal road view',
+  },
+  {
+    id: 'compound-wall',
+    label: 'Compound wall',
+    title: 'Compound wall',
+    detail: 'Latest site photo showing the compound wall, boundary finish and service-side progress.',
+    image: require('../assets/kalpavruksha/live-compound-wall-1200.webp'),
+    alt: 'Kalpavruksha live site compound wall and boundary progress',
+  },
+  {
+    id: 'clubhouse-lawn',
+    label: 'Clubhouse lawn',
+    title: 'Clubhouse lawn',
+    detail: 'Latest site photo showing the lawn, walking path and clubhouse-side progress.',
+    image: require('../assets/kalpavruksha/live-clubhouse-lawn-1200.webp'),
+    alt: 'Kalpavruksha live site clubhouse lawn and walking path',
+  },
+  {
+    id: 'seating-pavilion',
+    label: 'Seating pavilion',
+    title: 'Seating pavilion',
+    detail: 'Latest site photo showing the outdoor seating pavilion and open-space development.',
+    image: require('../assets/kalpavruksha/live-seating-pavilion-1200.webp'),
+    alt: 'Kalpavruksha live site outdoor seating pavilion',
+  },
+];
 const CROPPED_GALLERY_IMAGE_STYLE = { height: '124%', objectPosition: 'center top' };
 const getGalleryImageStyle = (item) => (item?.maskEmbeddedLabel ? CROPPED_GALLERY_IMAGE_STYLE : undefined);
 
@@ -332,6 +372,7 @@ const KalpavrukshaPage = () => {
   const [availableVisitSlots, setAvailableVisitSlots] = useState([]);
   const [visitSlotsLoading, setVisitSlotsLoading] = useState(false);
   const [visitSlotsError, setVisitSlotsError] = useState('');
+  const [visitSlotAvailability, setVisitSlotAvailability] = useState(DEFAULT_SLOT_AVAILABILITY);
   const activeDownloadAsset = downloadAssetKey ? DOWNLOAD_ASSET_CONFIG[downloadAssetKey] : null;
   const isModalOpen = showVisitModal || Boolean(activeDownloadAsset);
   const shouldShowFloatingActions = showFloatingActions && !isModalOpen;
@@ -362,6 +403,9 @@ const KalpavrukshaPage = () => {
   const heroSectionRef = React.useRef(null);
   const footerRef = React.useRef(null);
   const reviewsRef = React.useRef(null);
+  const brochureMapRef = React.useRef(null);
+  const brochureMapNameInputRef = React.useRef(null);
+  const sitePhotoPlaceholders = useKalpavrukshaSiteImages(DEFAULT_KALPAVRUKSHA_SITE_PHOTOS);
 
   const scrollToAbout = () => {
     aboutRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -381,6 +425,31 @@ const KalpavrukshaPage = () => {
   const scrollToContact = () => {
     footerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
+  const scrollToBrochureMapFields = React.useCallback(() => {
+    const target = brochureMapNameInputRef.current || brochureMapRef.current;
+    if (!target) return;
+
+    if (typeof window === 'undefined' || typeof target.getBoundingClientRect !== 'function') {
+      target.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+
+    const headerOffset = window.innerWidth >= 1024 ? 104 : 84;
+    const top = target.getBoundingClientRect().top + window.scrollY - headerOffset;
+    window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
+  }, []);
+  const scrollToBrochureMapForm = React.useCallback((source = 'brochure_map_cta') => {
+    trackEvent('form_open', withLandingVariant({
+      form_name: 'kalpavruksha_download_form',
+      lead_type: 'brochure_download',
+      project: 'Kalpavruksha',
+      source,
+      asset_type: 'brochure',
+    }));
+    setShowVisitModal(false);
+    setDownloadAssetKey(null);
+    scrollToBrochureMapFields();
+  }, [scrollToBrochureMapFields]);
   const trackGoogleReviewsClick = (placement = 'hero_review_pill') => {
     trackEvent('google_reviews_click', withLandingVariant({
       project: 'Kalpavruksha',
@@ -607,6 +676,7 @@ const KalpavrukshaPage = () => {
       setAvailableVisitSlots([]);
       setVisitSlotsError('');
       setVisitSlotsLoading(false);
+      setVisitSlotAvailability(DEFAULT_SLOT_AVAILABILITY);
       return undefined;
     }
 
@@ -614,6 +684,7 @@ const KalpavrukshaPage = () => {
     setVisitSlotsLoading(true);
     setVisitSlotsError('');
     setAvailableVisitSlots([]);
+    setVisitSlotAvailability(DEFAULT_SLOT_AVAILABILITY);
     setForm((current) => (
       current.preferredTime ? { ...current, preferredTime: '' } : current
     ));
@@ -622,11 +693,16 @@ const KalpavrukshaPage = () => {
       params: { preferredDate: form.preferredDate },
     }).then((response) => {
       if (!isActive) return;
-      setAvailableVisitSlots(normalizeVisitSlots(response.data?.slots));
+      const result = resolveVisitSlotAvailability(response.data, normalizeVisitSlots);
+      setAvailableVisitSlots(result.slots);
+      setVisitSlotAvailability(result.availability);
     }).catch((error) => {
       if (!isActive) return;
       console.error('Available slot fetch failed:', error);
-      setVisitSlotsError('Available slots could not be loaded. Please try another date.');
+      const result = getVisitSlotNetworkFallback(error, normalizeVisitSlots);
+      setAvailableVisitSlots(result.slots);
+      setVisitSlotAvailability(result.availability);
+      setVisitSlotsError('');
     }).finally(() => {
       if (isActive) {
         setVisitSlotsLoading(false);
@@ -898,37 +974,6 @@ const KalpavrukshaPage = () => {
     {
       title: "40 & 30 ft CC roads",
       detail: 'Grand avenue entries with underground concrete drainage, ICT ducting and avenue tree plantation.',
-    },
-  ];
-
-  const sitePhotoPlaceholders = [
-    {
-      label: 'Main gate',
-      title: 'Main gate',
-      detail: 'Latest site photo showing the tree-themed main gate and internal road alignment.',
-      image: require('../assets/kalpavruksha/live-main-gate-1200.webp'),
-      alt: 'Kalpavruksha live site main gate with internal road view',
-    },
-    {
-      label: 'Compound wall',
-      title: 'Compound wall',
-      detail: 'Latest site photo showing the compound wall, boundary finish and service-side progress.',
-      image: require('../assets/kalpavruksha/live-compound-wall-1200.webp'),
-      alt: 'Kalpavruksha live site compound wall and boundary progress',
-    },
-    {
-      label: 'Clubhouse lawn',
-      title: 'Clubhouse lawn',
-      detail: 'Latest site photo showing the lawn, walking path and clubhouse-side progress.',
-      image: require('../assets/kalpavruksha/live-clubhouse-lawn-1200.webp'),
-      alt: 'Kalpavruksha live site clubhouse lawn and walking path',
-    },
-    {
-      label: 'Seating pavilion',
-      title: 'Seating pavilion',
-      detail: 'Latest site photo showing the outdoor seating pavilion and open-space development.',
-      image: require('../assets/kalpavruksha/live-seating-pavilion-1200.webp'),
-      alt: 'Kalpavruksha live site outdoor seating pavilion',
     },
   ];
 
@@ -1433,16 +1478,7 @@ const KalpavrukshaPage = () => {
       }
 
       if (normalizedHash === '#brochure' || normalizedHash === '#download-brochure') {
-        trackEvent('form_open', withLandingVariant({
-          form_name: 'kalpavruksha_download_form',
-          lead_type: 'brochure_download',
-          project: 'Kalpavruksha',
-          source: 'hash_brochure',
-          asset_type: 'brochure',
-        }));
-        setShowVisitModal(false);
-        setLayoutLeadForm(DEFAULT_LAYOUT_LEAD_FORM);
-        setDownloadAssetKey('brochure');
+        scrollToBrochureMapForm('hash_brochure');
         return;
       }
 
@@ -1474,11 +1510,14 @@ const KalpavrukshaPage = () => {
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [location.hash]);
+  }, [location.hash, scrollToBrochureMapForm]);
 
   const onLayoutLeadChange = (e) => {
     const { name, value } = e.target;
-    setLayoutLeadForm((prev) => ({ ...prev, [name]: value }));
+    setLayoutLeadForm((prev) => ({
+      ...prev,
+      [name]: name === 'phone' ? value.replace(/\D/g, '').slice(0, 10) : value,
+    }));
   };
 
   const triggerAssetDownload = (assetConfig) => {
@@ -1733,6 +1772,9 @@ const KalpavrukshaPage = () => {
         pickupMode: pickupRequired ? form.pickupMode : undefined,
         pickupLat: pickupRequired ? (form.pickupLat || undefined) : undefined,
         pickupLng: pickupRequired ? (form.pickupLng || undefined) : undefined,
+        slotAvailabilityIssue: visitSlotAvailability.issue,
+        slotAvailabilityIssueReason: visitSlotAvailability.reason || undefined,
+        slotAvailabilitySource: visitSlotAvailability.source,
         googleAdsAttribution: googleAdsAttribution || undefined,
       });
       trackEvent('book_site_visit_submitted', withLandingVariant({
@@ -1748,6 +1790,8 @@ const KalpavrukshaPage = () => {
         preferred_time: form.preferredTime,
         transport_required: form.transportRequired,
         pickup_mode: pickupRequired ? form.pickupMode : undefined,
+        slot_availability_issue: visitSlotAvailability.issue || undefined,
+        slot_availability_source: visitSlotAvailability.source,
         google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
         google_ads_click_id_type: googleAdsAttribution?.clickIdType,
         google_ads_campaign_id: googleAdsAttribution?.campaignId,
@@ -1781,9 +1825,15 @@ const KalpavrukshaPage = () => {
     const trimmedEmail = layoutLeadForm.email.trim();
     const selectedAssetKey = assetKeyOverride || downloadAssetKey;
     const selectedDownloadAsset = selectedAssetKey ? DOWNLOAD_ASSET_CONFIG[selectedAssetKey] : null;
+    const isBrochureRequest = selectedAssetKey === 'brochure';
 
-    if (!trimmedName || !trimmedPhone || !trimmedEmail) {
-      setToast({ type: 'error', msg: 'Please enter your name, phone number, and email address to continue.' });
+    if (!trimmedName || !trimmedPhone || (!isBrochureRequest && !trimmedEmail)) {
+      setToast({
+        type: 'error',
+        msg: isBrochureRequest
+          ? 'Please enter your name and 10-digit phone number to continue.'
+          : 'Please enter your name, phone number, and email address to continue.'
+      });
       setTimeout(() => setToast(null), 4000);
       return;
     }
@@ -1800,7 +1850,7 @@ const KalpavrukshaPage = () => {
       return;
     }
 
-    if (!isValidEmail(trimmedEmail)) {
+    if (trimmedEmail && !isValidEmail(trimmedEmail)) {
       setToast({ type: 'error', msg: 'Please enter a valid email address.' });
       setTimeout(() => setToast(null), 4000);
       return;
@@ -1822,11 +1872,10 @@ const KalpavrukshaPage = () => {
         leadStatus: selectedDownloadAsset.leadStatus,
         name: trimmedName,
         phone: trimmedPhone,
-        email: trimmedEmail,
+        email: trimmedEmail || undefined,
         googleAdsAttribution: googleAdsAttribution || undefined,
       });
 
-      const isBrochureRequest = selectedAssetKey === 'brochure';
       const assetType = selectedAssetKey === 'layout' ? 'master_layout' : 'brochure';
       trackEvent(`${assetType}_downloaded`, withLandingVariant({
         event_category: 'conversion',
@@ -1859,7 +1908,14 @@ const KalpavrukshaPage = () => {
       if (!isBrochureRequest) {
         triggerAssetDownload(selectedDownloadAsset);
       }
-      navigate(isBrochureRequest ? '/thank-you?type=brochure-map' : '/thank-you');
+      navigate(isBrochureRequest ? '/thank-you?type=brochure-map' : '/thank-you', isBrochureRequest ? {
+        state: {
+          thankYouType: 'brochure-map',
+          project: 'Kalpavruksha',
+          leadType: 'brochure_map_request',
+          returnTo: '/kalpavruksha/',
+        },
+      } : undefined);
     } catch (err) {
       console.error(err);
       const msg = err.response?.data?.message || 'Failed to submit. Please try again.';
@@ -1928,6 +1984,7 @@ const KalpavrukshaPage = () => {
         landingVersion={LANDING_VERSION}
         googleReviewSummary={googleReviewSummary}
         onBookSiteVisit={openVisitModal}
+        siteImages={sitePhotoPlaceholders}
       />
     );
   }
@@ -2820,11 +2877,11 @@ const KalpavrukshaPage = () => {
                         <div className="mt-4 flex flex-col gap-3 sm:mt-6 sm:flex-row sm:items-center sm:gap-3.5">
                           <button
                             type="button"
-                            aria-label="Get Price & Location on WhatsApp"
-                            onClick={() => openKalpavrukshaWhatsApp('hero_price_whatsapp')}
+                            aria-label="Get Price & Location"
+                            onClick={() => scrollToBrochureMapForm('hero_price_location_cta')}
                             className="kalpa-v1-cta-sheen inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#cba159] px-6 py-3.5 text-[15px] font-semibold text-[#1d1609] shadow-[0_18px_38px_rgba(203,161,89,0.28)] transition-all duration-300 hover:bg-[#d4ab68] hover:shadow-[0_22px_42px_rgba(203,161,89,0.34)] sm:min-h-14 sm:w-auto sm:min-w-[13.5rem] sm:px-8 sm:text-base"
                           >
-                            <FaWhatsapp className="h-4 w-4 sm:h-5 sm:w-5" />
+                            <Download className="h-4 w-4 sm:h-5 sm:w-5" />
                             <span>Get Price & Location</span>
                           </button>
 
@@ -3103,9 +3160,9 @@ const KalpavrukshaPage = () => {
                         className="w-full !min-h-[3.05rem] !px-4 !py-2.5"
                       />
                       <CTAButton
-                        icon={<FaWhatsapp className="w-5 h-5" />}
+                        icon={<Download className="w-5 h-5" />}
                         text="Get Price & Location"
-                        onClick={() => openKalpavrukshaWhatsApp('snapshot_price_whatsapp')}
+                        onClick={() => scrollToBrochureMapForm('snapshot_price_location_cta')}
                         className="w-full !min-h-[3.05rem] !border-white/[0.16] !bg-white/[0.10] !px-4 !py-2.5 !text-white hover:!bg-white/[0.16] hover:!text-white"
                       />
                     </div>
@@ -3168,9 +3225,9 @@ const KalpavrukshaPage = () => {
                       className="w-full !min-h-[3rem] !px-4 !py-2.5"
                     />
                     <CTAButton
-                      icon={<FaWhatsapp className="w-4 h-4" />}
-                      text="WhatsApp Price"
-                      onClick={() => openKalpavrukshaWhatsApp('snapshot_decision_price')}
+                      icon={<Download className="w-4 h-4" />}
+                      text="Get Price"
+                      onClick={() => scrollToBrochureMapForm('snapshot_decision_price_cta')}
                       className="w-full !min-h-[3rem] !px-4 !py-2.5"
                     />
                     <CTAButton
@@ -3764,7 +3821,7 @@ const KalpavrukshaPage = () => {
         </section>
 
         {/* Section 9: Site Visit & Brochure */}
-        <section className="relative overflow-hidden border-t border-[#e0cfa8] bg-[linear-gradient(180deg,#fff9ed_0%,#efe0c5_100%)] py-12 md:py-18" style={DEFERRED_SECTION_STYLE}>
+        <section ref={brochureMapRef} className="relative overflow-hidden border-t border-[#e0cfa8] bg-[linear-gradient(180deg,#fff9ed_0%,#efe0c5_100%)] py-12 md:py-18" style={DEFERRED_SECTION_STYLE}>
           <div className="pointer-events-none absolute -left-24 top-8 h-72 w-72 rounded-full bg-[#d7b16f]/18 blur-3xl" />
           <div className="mx-auto max-w-[36rem] px-4 sm:px-6">
             <div className="kalpa-v1-luxe-card kalpa-v1-reveal overflow-hidden rounded-[30px] border border-[#d6c296] bg-[#fffaf0] shadow-[0_24px_62px_rgba(83,64,31,0.14)]">
@@ -3796,6 +3853,7 @@ const KalpavrukshaPage = () => {
                     <span className="text-sm font-semibold text-[#18231d]">Your name</span>
                     <input
                       name="name"
+                      ref={brochureMapNameInputRef}
                       value={layoutLeadForm.name}
                       onChange={handleLayoutLeadInput}
                       className="mt-2 min-h-[3.35rem] w-full rounded-2xl border border-[#d9c8a4] bg-white px-4 text-base font-medium text-[#18231d] outline-none transition focus:border-[#d7b16f] focus:ring-4 focus:ring-[#d7b16f]/18"
@@ -3816,33 +3874,15 @@ const KalpavrukshaPage = () => {
                       required
                     />
                   </label>
-                  <label className="block">
-                    <span className="text-sm font-semibold text-[#18231d]">Email address</span>
-                    <input
-                      name="email"
-                      value={layoutLeadForm.email}
-                      onChange={handleLayoutLeadInput}
-                      className="mt-2 min-h-[3.35rem] w-full rounded-2xl border border-[#d9c8a4] bg-white px-4 text-base font-medium text-[#18231d] outline-none transition focus:border-[#d7b16f] focus:ring-4 focus:ring-[#d7b16f]/18"
-                      type="email"
-                      autoComplete="email"
-                      placeholder="Email address"
-                      required
-                    />
-                  </label>
-                  <label className="flex items-start gap-3 text-sm leading-5 text-[#647067]">
-                    <input
-                      type="checkbox"
-                      required
-                      className="mt-0.5 h-5 w-5 rounded border-[#d9c8a4] text-[#8b6328] focus:ring-[#d7b16f]"
-                    />
-                    <span>I agree to be contacted by Easy Homes about Kalpavruksha on call, WhatsApp or email.</span>
-                  </label>
+                  <p className="rounded-2xl border border-[#d9c8a4] bg-white/72 px-4 py-3 text-sm leading-6 text-[#647067]">
+                    We will send Kalpavruksha project details, price, location, and site visit updates on WhatsApp.
+                  </p>
                   <button
                     type="submit"
                     disabled={downloadSubmitting}
                     className="inline-flex min-h-[3.4rem] w-full items-center justify-center rounded-2xl bg-[#d9ad4f] px-5 text-base font-bold text-[#102319] shadow-[0_16px_34px_rgba(217,173,79,0.24)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#e2bb69] disabled:cursor-not-allowed disabled:opacity-70"
                   >
-                    {downloadSubmitting ? 'Submitting...' : 'Send Me the Brochure & Map'}
+                    {downloadSubmitting ? 'Submitting...' : 'Send Me the Brochure on WhatsApp'}
                   </button>
                 </form>
               </div>
@@ -3895,7 +3935,7 @@ const KalpavrukshaPage = () => {
                           <CTAButton
                             icon={<Download className="w-4 h-4" />}
                             text="Download Project Brochure"
-                            onClick={() => openDownloadLeadModal('brochure', 'buyer_guide_brochure')}
+                            onClick={() => scrollToBrochureMapForm('buyer_guide_brochure')}
                             className="!min-h-[3rem] !px-4 !py-2.5"
                           />
                           <CTAButton
@@ -3976,10 +4016,10 @@ const KalpavrukshaPage = () => {
             <div className="pointer-events-auto flex flex-col items-center gap-3">
               <button
                 type="button"
-                onClick={() => openDownloadLeadModal('brochure', 'floating_brochure_icon')}
+                onClick={() => scrollToBrochureMapForm('floating_brochure_icon')}
                 className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-[#d7ba82] bg-[linear-gradient(180deg,#fffefb_0%,#f4ead8_100%)] text-[#8b6328] shadow-[0_20px_42px_rgba(83,64,31,0.16)] transition-all duration-200 hover:-translate-y-1 hover:scale-[1.03] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b16f]/24"
-                aria-label="Open brochure download"
-                title="Open brochure download"
+                aria-label="Go to brochure and map form"
+                title="Go to brochure and map form"
               >
                 <Download className="h-5 w-5" />
               </button>
@@ -4080,10 +4120,10 @@ const KalpavrukshaPage = () => {
                 />
                 <button
                   type="button"
-                  onClick={() => openKalpavrukshaWhatsApp('footer_price_whatsapp')}
+                  onClick={() => scrollToBrochureMapForm('footer_current_price_cta')}
                   className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/[0.12] px-5 py-3 text-sm font-semibold text-white/[0.82] transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/[0.08] hover:text-white"
                 >
-                  <FaWhatsapp className="h-4 w-4" />
+                  <Download className="h-4 w-4" />
                   <span>Ask for current price</span>
                 </button>
               </div>
