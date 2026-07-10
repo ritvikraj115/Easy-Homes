@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { FaWhatsapp } from 'react-icons/fa';
 import api from '../api';
 import { trackEvent, trackWhatsAppClick } from '../utils/analytics';
 import { captureGoogleAdsAttribution, getGoogleAdsAttributionPayload } from '../utils/googleAdsAttribution';
@@ -50,6 +51,17 @@ const KALPAVRUKSHA_ZOHO_HOME_WIDGETS = [
 ];
 const KALPAVRUKSHA_ZOHO_CHAT_QUESTION =
   'Hi Easy Homes, I want details about Kalpavruksha open plots, pricing, and site visit availability.';
+const HASH_ACTION_DELAY_MS = 120;
+const DETAILS_FORM_HASHES = new Set([
+  '#book',
+  '#brochure',
+  '#download-brochure',
+  '#brochure-map',
+  '#details',
+  '#project-details',
+  '#location-details',
+  '#price-location',
+]);
 
 const DEFAULT_SITE_IMAGES = [
   {
@@ -251,7 +263,9 @@ export default function KalpavrukshaMobileUx({
   siteImages: providedSiteImages,
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const rootRef = useRef(null);
+  const lastHandledHashRef = useRef('');
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
   const [lightboxImage, setLightboxImage] = useState(null);
@@ -374,7 +388,7 @@ export default function KalpavrukshaMobileUx({
     return () => observer.disconnect();
   }, [isV2]);
 
-  const trackFormOpen = (placement) => {
+  const trackFormOpen = React.useCallback((placement) => {
     trackEvent('form_open', {
       ...trackingContext,
       ...buildGoogleAdsEventParams(),
@@ -383,7 +397,7 @@ export default function KalpavrukshaMobileUx({
       lead_type: 'brochure_download',
       placement,
     });
-  };
+  }, [trackingContext]);
 
   const openSiteVisitForm = (placement) => {
     if (typeof onBookSiteVisit === 'function') {
@@ -396,6 +410,34 @@ export default function KalpavrukshaMobileUx({
       document.getElementById('book')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const normalizedHash = String(location.hash || '').trim().toLowerCase();
+
+    if (!normalizedHash) {
+      lastHandledHashRef.current = '';
+      return undefined;
+    }
+
+    if (lastHandledHashRef.current === normalizedHash || !DETAILS_FORM_HASHES.has(normalizedHash)) {
+      return undefined;
+    }
+
+    lastHandledHashRef.current = normalizedHash;
+
+    const timeoutId = window.setTimeout(() => {
+      document.getElementById('book')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      trackFormOpen(normalizedHash === '#book' ? 'hash_book' : 'hash_brochure');
+    }, HASH_ACTION_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [location.hash, trackFormOpen]);
 
   const trackPhoneClick = (placement) => {
     trackEvent('phone_click', {
@@ -537,7 +579,7 @@ export default function KalpavrukshaMobileUx({
           thankYouType: 'brochure-map',
           project: 'Kalpavruksha',
           leadType: 'brochure_map_request',
-          returnTo: landingVersion === 'v2' ? '/kalpavruksha2/' : '/kalpavruksha/',
+          returnTo: '/kalpavruksha/',
         },
       });
     } catch (error) {
@@ -1009,6 +1051,81 @@ export default function KalpavrukshaMobileUx({
           .kmux-cta-primary:disabled {
             cursor:not-allowed;
             opacity:.72;
+          }
+
+          .kmux-form-submit {
+            position:relative;
+            min-height:62px;
+            padding:10px 16px 10px 12px;
+            display:grid;
+            grid-template-columns:40px minmax(0, 1fr);
+            gap:12px;
+            align-items:center;
+            overflow:hidden;
+            border-radius:20px;
+            color:#1b140c;
+            text-align:left;
+            background:linear-gradient(135deg, #edbd6b 0%, #df984a 48%, #cf7c32 100%);
+            box-shadow:0 18px 34px rgba(126,70,28,.22);
+          }
+
+          .kmux-form-submit::after {
+            content:'';
+            position:absolute;
+            inset:1px;
+            border-radius:inherit;
+            border:1px solid rgba(255,249,236,.38);
+            pointer-events:none;
+          }
+
+          .kmux-theme-v2 .kmux-form-submit {
+            border-radius:999px;
+            background:linear-gradient(135deg, #efbd68 0%, #dd9449 52%, #c97432 100%);
+          }
+
+          .kmux-submit-icon {
+            position:relative;
+            z-index:1;
+            width:40px;
+            height:40px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border-radius:999px;
+            color:#17442b;
+            background:rgba(255,250,241,.48);
+            box-shadow:inset 0 0 0 1px rgba(255,255,255,.32);
+          }
+
+          .kmux-submit-icon svg {
+            width:20px;
+            height:20px;
+          }
+
+          .kmux-submit-copy {
+            position:relative;
+            z-index:1;
+            min-width:0;
+            display:flex;
+            flex-direction:column;
+            align-items:flex-start;
+            line-height:1.12;
+          }
+
+          .kmux-submit-title {
+            font-size:14.5px;
+            font-weight:950;
+            letter-spacing:0;
+            overflow-wrap:anywhere;
+          }
+
+          .kmux-submit-subtitle {
+            margin-top:3px;
+            color:rgba(27,20,12,.68);
+            font-size:11.5px;
+            font-weight:900;
+            letter-spacing:.08em;
+            text-transform:uppercase;
           }
 
           .kmux-cta-secondary {
@@ -2078,8 +2195,18 @@ export default function KalpavrukshaMobileUx({
             <p className="kmux-whatsapp-note">
               We will send Kalpavruksha project details, price, location, and site visit updates on WhatsApp.
             </p>
-            <button type="submit" className="kmux-cta-primary" disabled={isSubmitting}>
-              {isSubmitting ? 'Submitting...' : 'Send Location & Project Details on WhatsApp'}
+            <button type="submit" className="kmux-cta-primary kmux-form-submit" disabled={isSubmitting}>
+              <span className="kmux-submit-icon" aria-hidden="true">
+                <FaWhatsapp focusable="false" />
+              </span>
+              <span className="kmux-submit-copy">
+                <span className="kmux-submit-title">
+                  {isSubmitting ? 'Submitting...' : 'Send Location & Project Details'}
+                </span>
+                <span className="kmux-submit-subtitle">
+                  {isSubmitting ? 'Please wait' : 'on WhatsApp'}
+                </span>
+              </span>
             </button>
             <p className="kmux-form-status" aria-live="polite">{status}</p>
           </form>

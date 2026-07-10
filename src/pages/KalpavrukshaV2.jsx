@@ -71,9 +71,23 @@ const LAYOUT_ASSET = {
   url: '/Kalpavruksha Master Layout.pdf',
   fileName: 'Kalpavruksha Master Layout.pdf',
   source: 'Website',
+  leadStatus: 'Downloaded Layout',
 };
 const PICKUP_MAP_DEFAULT_CENTER = { lat: 16.553755, lng: 80.570832 };
 const PICKUP_MAP_CONTAINER_STYLE = { width: '100%', height: '220px' };
+const HASH_ACTION_DELAY_MS = 120;
+const SITE_VISIT_FORM_HASHES = new Set(['#site-visit', '#visit-site', '#book-visit', '#site-visit-form']);
+const DETAILS_FORM_HASHES = new Set([
+  '#book',
+  '#brochure',
+  '#download-brochure',
+  '#brochure-map',
+  '#details',
+  '#project-details',
+  '#location-details',
+  '#price-location',
+]);
+const LAYOUT_DOWNLOAD_FORM_HASHES = new Set(['#download-layout', '#layout-download', '#layout-form', '#master-layout-form']);
 
 const PROJECT = {
   name: 'Kalpavruksha',
@@ -156,6 +170,11 @@ const DEFAULT_SITE_VISIT_FORM = {
 const DEFAULT_BROCHURE_FORM = {
   name: '',
   phone: '',
+};
+const DEFAULT_LAYOUT_LEAD_FORM = {
+  name: '',
+  phone: '',
+  email: '',
 };
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
 const isValidEmail = (value) => EMAIL_PATTERN.test(String(value || '').trim());
@@ -650,6 +669,10 @@ export default function KalpavrukshaV2() {
   const [brochureModalOpen, setBrochureModalOpen] = useState(false);
   const [brochureForm, setBrochureForm] = useState(DEFAULT_BROCHURE_FORM);
   const [brochureSubmitting, setBrochureSubmitting] = useState(false);
+  const [layoutLeadModalOpen, setLayoutLeadModalOpen] = useState(false);
+  const [layoutLeadForm, setLayoutLeadForm] = useState(DEFAULT_LAYOUT_LEAD_FORM);
+  const [layoutLeadSubmitting, setLayoutLeadSubmitting] = useState(false);
+  const [layoutLeadSource, setLayoutLeadSource] = useState('lp_b_layout');
   const [toast, setToast] = useState(null);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
   const [activeHeroSlideIndex, setActiveHeroSlideIndex] = useState(0);
@@ -681,6 +704,7 @@ export default function KalpavrukshaV2() {
   const visitFormBodyRef = useRef(null);
   const pickupModeSectionRef = useRef(null);
   const pickupGeocodeRequestRef = useRef(0);
+  const lastHandledHashRef = useRef('');
   const todayDate = new Date().toISOString().split('T')[0];
   const sitePhotoPlaceholders = useKalpavrukshaSiteImages(DEFAULT_KALPAVRUKSHA_SITE_PHOTOS);
   const activeGalleryImage = galleryImages[mobileGalleryIndex] || galleryImages[0];
@@ -694,19 +718,19 @@ export default function KalpavrukshaV2() {
     setTimeout(() => setToast(null), 4200);
   };
 
-  const scrollToElement = (element) => {
+  const scrollToElement = React.useCallback((element) => {
     if (!element || typeof window === 'undefined') return;
 
     const headerOffset = window.innerWidth >= 1024 ? 92 : 84;
     const top = element.getBoundingClientRect().top + window.scrollY - headerOffset;
     window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
-  };
+  }, []);
 
-  const scrollToRef = (ref) => {
+  const scrollToRef = React.useCallback((ref) => {
     scrollToElement(ref.current);
-  };
+  }, [scrollToElement]);
 
-  const scrollToBrochureMapForm = (source = 'lp_b_brochure_map_cta') => {
+  const scrollToBrochureMapForm = React.useCallback((source = 'lp_b_brochure_map_cta') => {
     trackEvent('form_open', withTrackingContext({
       form_name: 'kalpavruksha_download_form',
       lead_type: 'brochure_download',
@@ -716,8 +740,25 @@ export default function KalpavrukshaV2() {
     }));
     setVisitModalOpen(false);
     setBrochureModalOpen(false);
+    setLayoutLeadModalOpen(false);
     scrollToElement(brochureMapNameInputRef.current || finalCtaRef.current);
-  };
+  }, [scrollToElement]);
+
+  const openLayoutLeadModal = React.useCallback((source = 'lp_b_layout_download') => {
+    setLayoutLeadSource(source);
+    setLayoutLeadForm(DEFAULT_LAYOUT_LEAD_FORM);
+    setVisitModalOpen(false);
+    setBrochureModalOpen(false);
+    setLayoutPreviewOpen(false);
+    trackEvent('form_open', withTrackingContext({
+      form_name: 'kalpavruksha_download_form',
+      lead_type: 'master_layout_download',
+      project: PROJECT.name,
+      source,
+      asset_type: 'master_layout',
+    }));
+    setLayoutLeadModalOpen(true);
+  }, []);
 
   const trackGoogleReviewsClick = (placement = 'hero_review_pill') => {
     trackEvent('google_reviews_click', withTrackingContext({
@@ -849,7 +890,7 @@ export default function KalpavrukshaV2() {
   }, [isMobileGalleryInView, selectedGalleryImage]);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || visitModalOpen || brochureModalOpen || layoutPreviewOpen || selectedGalleryImage) return undefined;
+    if (typeof window === 'undefined' || visitModalOpen || brochureModalOpen || layoutLeadModalOpen || layoutPreviewOpen || selectedGalleryImage) return undefined;
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       return undefined;
@@ -860,7 +901,7 @@ export default function KalpavrukshaV2() {
     }, 3600);
 
     return () => window.clearInterval(timerId);
-  }, [brochureModalOpen, layoutPreviewOpen, selectedGalleryImage, sitePhotoPlaceholders.length, visitModalOpen]);
+  }, [brochureModalOpen, layoutLeadModalOpen, layoutPreviewOpen, selectedGalleryImage, sitePhotoPlaceholders.length, visitModalOpen]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || window.innerWidth >= 1024 || !isMobileGalleryInView) return;
@@ -967,7 +1008,7 @@ export default function KalpavrukshaV2() {
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;
 
-    const shouldLockScroll = visitModalOpen || brochureModalOpen || layoutPreviewOpen || Boolean(selectedGalleryImage);
+    const shouldLockScroll = visitModalOpen || brochureModalOpen || layoutLeadModalOpen || layoutPreviewOpen || Boolean(selectedGalleryImage);
     if (!shouldLockScroll) return undefined;
 
     const originalBodyOverflow = document.body.style.overflow;
@@ -979,7 +1020,7 @@ export default function KalpavrukshaV2() {
       document.body.style.overflow = originalBodyOverflow;
       document.documentElement.style.overflow = originalHtmlOverflow;
     };
-  }, [brochureModalOpen, layoutPreviewOpen, selectedGalleryImage, visitModalOpen]);
+  }, [brochureModalOpen, layoutLeadModalOpen, layoutPreviewOpen, selectedGalleryImage, visitModalOpen]);
 
   useEffect(() => {
     if (!visitModalOpen || typeof window === 'undefined') {
@@ -1058,9 +1099,10 @@ export default function KalpavrukshaV2() {
     }
   }, [visitForm.pickupMode, visitModalOpen]);
 
-  const openVisitModal = (source = 'lp_b_site_visit') => {
+  const openVisitModal = React.useCallback((source = 'lp_b_site_visit') => {
     setVisitSource(source);
     setVisitStep(1);
+    setLayoutLeadModalOpen(false);
     setVisitModalOpen(true);
     trackEvent('form_open', withTrackingContext({
       form_name: 'kalpavruksha_site_visit_form',
@@ -1068,7 +1110,71 @@ export default function KalpavrukshaV2() {
       project: PROJECT.name,
       source,
     }));
-  };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const normalizedHash = String(location.hash || '').trim().toLowerCase();
+
+    if (!normalizedHash) {
+      lastHandledHashRef.current = '';
+      return undefined;
+    }
+
+    if (lastHandledHashRef.current === normalizedHash) {
+      return undefined;
+    }
+
+    lastHandledHashRef.current = normalizedHash;
+
+    const timeoutId = window.setTimeout(() => {
+      if (SITE_VISIT_FORM_HASHES.has(normalizedHash)) {
+        setBrochureModalOpen(false);
+        setLayoutLeadModalOpen(false);
+        setLayoutPreviewOpen(false);
+        openVisitModal('hash_site_visit');
+        return;
+      }
+
+      if (LAYOUT_DOWNLOAD_FORM_HASHES.has(normalizedHash)) {
+        openLayoutLeadModal('hash_layout_download');
+        return;
+      }
+
+      if (DETAILS_FORM_HASHES.has(normalizedHash)) {
+        if (!useMobileClientUx) {
+          scrollToBrochureMapForm(normalizedHash === '#book' ? 'hash_book' : 'hash_brochure');
+        }
+        return;
+      }
+
+      if (normalizedHash === '#layout' || normalizedHash === '#master-plan' || normalizedHash === '#master-layout') {
+        scrollToRef(planRef);
+        return;
+      }
+
+      if (normalizedHash === '#location') {
+        scrollToRef(locationRef);
+        return;
+      }
+
+      if (normalizedHash === '#amenities') {
+        scrollToRef(amenitiesRef);
+        return;
+      }
+
+      if (normalizedHash === '#gallery') {
+        scrollToRef(galleryRef);
+      }
+    }, HASH_ACTION_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [location.hash, openLayoutLeadModal, openVisitModal, scrollToBrochureMapForm, scrollToRef, useMobileClientUx]);
 
   const closeVisitModal = () => {
     setVisitModalOpen(false);
@@ -1077,6 +1183,11 @@ export default function KalpavrukshaV2() {
 
   const closeBrochureModal = () => {
     setBrochureModalOpen(false);
+  };
+
+  const closeLayoutLeadModal = () => {
+    setLayoutLeadModalOpen(false);
+    setLayoutLeadForm(DEFAULT_LAYOUT_LEAD_FORM);
   };
 
   const openGalleryPreview = (item, index = null) => {
@@ -1231,6 +1342,14 @@ export default function KalpavrukshaV2() {
     }));
   };
 
+  const handleLayoutLeadInput = (event) => {
+    const { name, value } = event.target;
+    setLayoutLeadForm((current) => ({
+      ...current,
+      [name]: name === 'phone' ? value.replace(/\D/g, '').slice(0, 10) : value,
+    }));
+  };
+
   const trackCallClick = (placement) => {
     trackEvent('phone_click', withTrackingContext({
       project: PROJECT.name,
@@ -1299,7 +1418,7 @@ export default function KalpavrukshaV2() {
     showToast('Live chat is temporarily unavailable. Please try again.');
   };
 
-  const downloadLayoutPdf = (placement) => {
+  const triggerLayoutDownload = (placement, googleAdsAttribution = null) => {
     const trackingPayload = withTrackingContext({
       event_category: 'conversion',
       conversion_type: 'master_layout_download',
@@ -1311,6 +1430,18 @@ export default function KalpavrukshaV2() {
       source: LAYOUT_ASSET.source,
       placement,
       asset_type: 'master_layout',
+      lead_status: LAYOUT_ASSET.leadStatus,
+      google_ads_attributed: googleAdsAttribution?.hasGoogleAdsClick || undefined,
+      google_ads_click_id_type: googleAdsAttribution?.clickIdType,
+      google_ads_campaign_id: googleAdsAttribution?.campaignId,
+      gclid: googleAdsAttribution?.gclid,
+      gbraid: googleAdsAttribution?.gbraid,
+      wbraid: googleAdsAttribution?.wbraid,
+      utm_source: googleAdsAttribution?.utmSource,
+      utm_medium: googleAdsAttribution?.utmMedium,
+      utm_campaign: googleAdsAttribution?.utmCampaign,
+      utm_term: googleAdsAttribution?.utmTerm,
+      utm_content: googleAdsAttribution?.utmContent,
     });
 
     trackEvent('master_layout_downloaded', trackingPayload);
@@ -1431,13 +1562,65 @@ export default function KalpavrukshaV2() {
           thankYouType: 'site-visit',
           project: PROJECT.name,
           leadType: 'site_visit',
-          returnTo: '/kalpavruksha2/',
+          returnTo: '/kalpavruksha/',
         },
       });
     } catch (error) {
       showToast(error.response?.data?.message || 'Failed to submit. Please try again.');
     } finally {
       setVisitSubmitting(false);
+    }
+  };
+
+  const submitLayoutLead = async (event) => {
+    event.preventDefault();
+    const trimmedName = layoutLeadForm.name.trim();
+    const trimmedPhone = layoutLeadForm.phone.trim();
+    const trimmedEmail = layoutLeadForm.email.trim();
+
+    if (!trimmedName || !trimmedPhone || !trimmedEmail) {
+      showToast('Please enter your name, phone number, and email address to continue.');
+      return;
+    }
+
+    if (!/^\d{10}$/.test(trimmedPhone)) {
+      showToast('Please enter a valid 10-digit phone number.');
+      return;
+    }
+
+    if (!isValidEmail(trimmedEmail)) {
+      showToast('Please enter a valid email address.');
+      return;
+    }
+
+    try {
+      setLayoutLeadSubmitting(true);
+      const googleAdsAttribution = getGoogleAdsAttributionPayload();
+      await api.post('/api/leads/layout-download', {
+        project: PROJECT.name,
+        source: LAYOUT_ASSET.source,
+        platformSource: 'Website',
+        platform_source: 'website',
+        landingVariant: LANDING_VARIANT,
+        landing_variant: LANDING_VARIANT,
+        landingVersion: LANDING_VERSION,
+        landing_version: LANDING_VERSION,
+        version: LANDING_VERSION,
+        leadStatus: LAYOUT_ASSET.leadStatus,
+        name: trimmedName,
+        phone: trimmedPhone,
+        email: trimmedEmail,
+        googleAdsAttribution: googleAdsAttribution || undefined,
+      });
+
+      triggerLayoutDownload(layoutLeadSource, googleAdsAttribution);
+      setLayoutLeadForm(DEFAULT_LAYOUT_LEAD_FORM);
+      setLayoutLeadModalOpen(false);
+      navigate('/thank-you');
+    } catch (error) {
+      showToast(error.response?.data?.message || 'Failed to submit. Please try again.');
+    } finally {
+      setLayoutLeadSubmitting(false);
     }
   };
 
@@ -1511,7 +1694,7 @@ export default function KalpavrukshaV2() {
           thankYouType: 'brochure-map',
           project: PROJECT.name,
           leadType: 'brochure_map_request',
-          returnTo: '/kalpavruksha2/',
+          returnTo: '/kalpavruksha/',
         },
       });
     } catch (error) {
@@ -1541,7 +1724,7 @@ export default function KalpavrukshaV2() {
       ? 'flex min-h-[3.15rem] cursor-pointer flex-col justify-center rounded-2xl border border-[#b56f37] bg-[#f2d6aa] px-4 py-3 text-sm font-semibold text-[#27382c] shadow-sm'
       : 'flex min-h-[3.15rem] cursor-pointer flex-col justify-center rounded-2xl border border-[#d6bd8f] bg-[#fff7e8] px-4 py-3 text-sm font-semibold text-[#5f684f] transition hover:border-[#b56f37]';
 
-  if (useMobileClientUx && !visitModalOpen) {
+  if (useMobileClientUx && !visitModalOpen && !layoutLeadModalOpen) {
     return (
       <KalpavrukshaMobileUx
         landingVariant={LANDING_VARIANT}
@@ -2112,7 +2295,7 @@ export default function KalpavrukshaV2() {
                   <CtaButton onClick={() => scrollToBrochureMapForm('lp_b_master_plan_brochure_cta')} variant="gold" icon={<FileText className="h-5 w-5" />}>
                     Location & Project Details
                   </CtaButton>
-                  <CtaButton onClick={() => downloadLayoutPdf('lp_b_master_plan')} variant="dark" icon={<Download className="h-5 w-5" />}>
+                  <CtaButton onClick={() => openLayoutLeadModal('lp_b_master_plan')} variant="dark" icon={<Download className="h-5 w-5" />}>
                     Download Layout PDF
                   </CtaButton>
                 </div>
@@ -2308,7 +2491,7 @@ export default function KalpavrukshaV2() {
             </div>
           </section>
 
-          <section ref={finalCtaRef} className="kv2-section-shell border-t border-[#b56f37]/12 bg-[linear-gradient(135deg,#f7ead5_0%,#ead6b6_100%)] px-4 py-10 text-[#27382c] md:py-16">
+          <section id="book" ref={finalCtaRef} className="kv2-section-shell border-t border-[#b56f37]/12 bg-[linear-gradient(135deg,#f7ead5_0%,#ead6b6_100%)] px-4 py-10 text-[#27382c] md:py-16">
             <div className="kv2-reveal-target relative z-10 mx-auto max-w-xl overflow-hidden rounded-[32px] border border-[#b56f37]/18 bg-[#fff7e8] shadow-[0_28px_78px_rgba(82,104,74,0.16)]">
               <div className="bg-[radial-gradient(circle_at_top_right,rgba(255,226,168,0.16),transparent_34%),linear-gradient(145deg,#27382c_0%,#17271f_100%)] px-5 py-8 text-center text-[#fff7e8] md:px-8">
                 <h2 className="kv2-display text-[1.55rem] font-semibold leading-tight tracking-[-0.02em] md:text-3xl">
@@ -2333,7 +2516,7 @@ export default function KalpavrukshaV2() {
                 <p className="mt-2 text-sm leading-6 text-[#5f684f] md:text-base">
                   Receive the location pin, project details, master plan and the latest site-visit assistance details.
                 </p>
-                <form onSubmit={submitBrochure} className="mt-6 space-y-4">
+                <form id="location-details-form" onSubmit={submitBrochure} className="mt-6 space-y-4">
                   <label className="block">
                     <span className="text-sm font-semibold text-[#27382c]">Your name</span>
                     <input
@@ -2375,7 +2558,7 @@ export default function KalpavrukshaV2() {
           </section>
         </main>
 
-        {!visitModalOpen && !brochureModalOpen && !layoutPreviewOpen && !selectedGalleryImage && (
+        {!visitModalOpen && !brochureModalOpen && !layoutLeadModalOpen && !layoutPreviewOpen && !selectedGalleryImage && (
           <div className={`fixed bottom-0 left-1/2 z-[100] w-full max-w-[540px] -translate-x-1/2 rounded-t-[16px] border border-[#b56f37]/22 bg-[#fff7e8] px-3 pb-[calc(env(safe-area-inset-bottom)+0.38rem)] pt-2 shadow-[0_-14px_34px_rgba(82,104,74,0.16)] transition-all duration-300 lg:hidden ${
             stickyCtaVisible ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-full opacity-0'
           }`}>
@@ -2407,12 +2590,12 @@ export default function KalpavrukshaV2() {
           </div>
         )}
 
-        {!visitModalOpen && !brochureModalOpen && !layoutPreviewOpen && !selectedGalleryImage && stickyCtaVisible && (
+        {!visitModalOpen && !brochureModalOpen && !layoutLeadModalOpen && !layoutPreviewOpen && !selectedGalleryImage && stickyCtaVisible && (
           <div className="pointer-events-none fixed right-4 top-1/2 z-[90] hidden -translate-y-1/2 transition-all duration-300 lg:block">
             <div className="pointer-events-auto flex flex-col items-center gap-3">
               <button
                 type="button"
-                onClick={() => downloadLayoutPdf('lp_b_floating_layout')}
+                onClick={() => openLayoutLeadModal('lp_b_floating_layout')}
                 className="kv2-float-action inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#b56f37]/28 bg-[#fff7e8] text-[#8b5526] shadow-[0_18px_38px_rgba(82,104,74,0.18)] transition-all duration-200 hover:scale-[1.04] hover:bg-[#f4e6cc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b56f37]/24"
                 aria-label="Download layout PDF"
                 title="Download layout PDF"
@@ -2556,6 +2739,46 @@ export default function KalpavrukshaV2() {
           </div>
         )}
 
+        {layoutLeadModalOpen && (
+          <div
+            className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto bg-[#243528]/72 px-3 py-3 md:items-center md:p-6"
+            onClick={(event) => { if (event.target === event.currentTarget) closeLayoutLeadModal(); }}
+          >
+            <div className="my-2 w-full max-w-xl overflow-hidden rounded-[32px] border border-[#d6bd8f] bg-[#f8efdf] shadow-[0_34px_90px_rgba(39,56,44,0.32)]">
+              <div className="flex items-start justify-between gap-4 border-b border-[#d6bd8f] bg-[linear-gradient(135deg,#52684a_0%,#7f8d62_100%)] px-6 py-5 text-[#fff7e8]">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#f1cf8f]">Document Access</p>
+                  <h3 className="mt-2 text-2xl font-bold">Download Layout PDF</h3>
+                </div>
+                <button type="button" onClick={closeLayoutLeadModal} className="rounded-full border border-[#fff7e8]/20 bg-[#fff7e8]/14 p-2 text-[#fff7e8]">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <form id="layout-download" onSubmit={submitLayoutLead} className="space-y-5 px-6 py-5">
+                <div>
+                  <label className={formLabelClass}>Name</label>
+                  <input name="name" value={layoutLeadForm.name} onChange={handleLayoutLeadInput} className={formInputClass} autoFocus placeholder="Your name" required />
+                </div>
+                <div>
+                  <label className={formLabelClass}>Phone</label>
+                  <input name="phone" value={layoutLeadForm.phone} onChange={handleLayoutLeadInput} className={formInputClass} inputMode="tel" maxLength={10} placeholder="10-digit mobile number" required />
+                </div>
+                <div>
+                  <label className={formLabelClass}>Email</label>
+                  <input name="email" value={layoutLeadForm.email} onChange={handleLayoutLeadInput} className={formInputClass} type="email" autoComplete="email" placeholder="Email address" required />
+                </div>
+                <p className="rounded-2xl border border-[#d6bd8f] bg-[#fff7e8] px-4 py-3 text-sm leading-6 text-[#5f684f]">
+                  Submit your details to download the Kalpavruksha master layout PDF.
+                </p>
+                <button type="submit" disabled={layoutLeadSubmitting} className="inline-flex min-h-[3.25rem] w-full items-center justify-center rounded-2xl bg-[#52684a] px-6 font-semibold text-[#fff7e8] shadow-[0_14px_30px_rgba(82,104,74,0.24)] disabled:opacity-70">
+                  {layoutLeadSubmitting ? 'Submitting...' : 'Submit & Download'}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
         {selectedGalleryImage && (
           <div
             className="fixed inset-0 z-[130] flex items-center justify-center bg-[#18231d]/88 p-3 backdrop-blur-sm md:p-6"
@@ -2652,7 +2875,7 @@ export default function KalpavrukshaV2() {
                 </button>
               </div>
 
-              <form onSubmit={submitVisit} className="flex min-h-0 flex-1 flex-col">
+              <form id="site-visit-form" onSubmit={submitVisit} className="flex min-h-0 flex-1 flex-col">
                 <div
                   ref={visitFormBodyRef}
                   className="flex-1 space-y-5 overflow-y-auto overscroll-contain px-6 py-5"
@@ -2813,7 +3036,7 @@ export default function KalpavrukshaV2() {
                 </button>
               </div>
 
-              <form onSubmit={submitBrochure} className="space-y-5 px-6 py-5">
+              <form id="location-details-modal-form" onSubmit={submitBrochure} className="space-y-5 px-6 py-5">
                 <div>
                   <label className={formLabelClass}>Name</label>
                   <input name="name" value={brochureForm.name} onChange={handleBrochureInput} className={formInputClass} autoFocus placeholder="Your name" required />

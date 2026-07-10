@@ -324,6 +324,49 @@ test('brochure hash link opens the brochure form directly', async () => {
   );
 });
 
+test('book hash link opens the V1 location and project details form directly', () => {
+  mockHash = '#book';
+
+  renderPage();
+
+  act(() => {
+    jest.advanceTimersByTime(150);
+  });
+
+  expect(trackEvent).toHaveBeenCalledWith(
+    'form_open',
+    expect.objectContaining({
+      form_name: 'kalpavruksha_download_form',
+      lead_type: 'brochure_download',
+      source: 'hash_book',
+    }),
+  );
+  expect(window.scrollTo).toHaveBeenCalledWith(expect.objectContaining({
+    behavior: 'smooth',
+  }));
+});
+
+test('layout download hash opens the V1 layout lead form directly', async () => {
+  mockHash = '#download-layout';
+
+  renderPage();
+
+  act(() => {
+    jest.advanceTimersByTime(150);
+  });
+
+  expect(await screen.findByRole('heading', { name: 'Download Master Layout PDF' })).toBeInTheDocument();
+  expect(trackEvent).toHaveBeenCalledWith(
+    'form_open',
+    expect.objectContaining({
+      form_name: 'kalpavruksha_download_form',
+      lead_type: 'master_layout_download',
+      source: 'hash_layout_download',
+      asset_type: 'master_layout',
+    }),
+  );
+});
+
 test('location hash link scrolls to the location section', () => {
   mockHash = '#location';
 
@@ -680,6 +723,142 @@ test('V2 price CTA uses the established brochure download GTM contract', () => {
     landing_variant: 'B',
   }));
   expect(trackEvent).not.toHaveBeenCalledWith('brochure_map_cta_click', expect.anything());
+});
+
+test('book hash link opens the V2 location and project details form directly', () => {
+  mockPathname = '/kalpavruksha/';
+  mockHash = '#book';
+
+  render(
+    <HelmetProvider>
+      <KalpavrukshaV2 />
+    </HelmetProvider>,
+  );
+
+  act(() => {
+    jest.advanceTimersByTime(150);
+  });
+
+  expect(trackEvent).toHaveBeenCalledWith('form_open', expect.objectContaining({
+    form_name: 'kalpavruksha_download_form',
+    lead_type: 'brochure_download',
+    landing_variant: 'B',
+    source: 'hash_book',
+  }));
+  expect(window.scrollTo).toHaveBeenCalledWith(expect.objectContaining({
+    behavior: 'smooth',
+  }));
+});
+
+test('download layout hash opens the V2 layout lead form before downloading', async () => {
+  mockPathname = '/kalpavruksha/';
+  mockHash = '#download-layout';
+
+  render(
+    <HelmetProvider>
+      <KalpavrukshaV2 />
+    </HelmetProvider>,
+  );
+
+  act(() => {
+    jest.advanceTimersByTime(150);
+  });
+
+  expect(await screen.findByRole('heading', { name: 'Download Layout PDF' })).toBeInTheDocument();
+  expect(trackEvent).toHaveBeenCalledWith('form_open', expect.objectContaining({
+    form_name: 'kalpavruksha_download_form',
+    lead_type: 'master_layout_download',
+    landing_variant: 'B',
+    source: 'hash_layout_download',
+    asset_type: 'master_layout',
+  }));
+  expect(trackEvent).not.toHaveBeenCalledWith('master_layout_downloaded', expect.anything());
+  expect(api.post).not.toHaveBeenCalled();
+});
+
+test('V2 layout download submits lead, fires the existing GTM event, then redirects', async () => {
+  mockPathname = '/kalpavruksha/';
+
+  render(
+    <HelmetProvider>
+      <KalpavrukshaV2 />
+    </HelmetProvider>,
+  );
+
+  fireEvent.click(screen.getByRole('button', { name: 'Download Layout PDF' }));
+
+  const layoutForm = await screen.findByRole('heading', { name: 'Download Layout PDF' })
+    .then(() => document.getElementById('layout-download'));
+
+  expect(trackEvent).toHaveBeenCalledWith('form_open', expect.objectContaining({
+    form_name: 'kalpavruksha_download_form',
+    lead_type: 'master_layout_download',
+    landing_variant: 'B',
+    source: 'lp_b_master_plan',
+  }));
+  expect(trackEvent).not.toHaveBeenCalledWith('master_layout_downloaded', expect.anything());
+
+  fireEvent.change(layoutForm.querySelector('input[name="name"]'), {
+    target: { name: 'name', value: 'Layout User' },
+  });
+  fireEvent.change(layoutForm.querySelector('input[name="phone"]'), {
+    target: { name: 'phone', value: '9123456789' },
+  });
+  fireEvent.change(layoutForm.querySelector('input[name="email"]'), {
+    target: { name: 'email', value: 'layout.user@example.com' },
+  });
+
+  await act(async () => {
+    fireEvent.submit(layoutForm);
+  });
+
+  await waitFor(() => {
+    expect(api.post).toHaveBeenCalledWith('/api/leads/layout-download', expect.objectContaining({
+      project: 'Kalpavruksha',
+      source: 'Website',
+      landingVariant: 'B',
+      landing_variant: 'B',
+      landingVersion: 'v2',
+      landing_version: 'v2',
+      leadStatus: 'Downloaded Layout',
+      name: 'Layout User',
+      phone: '9123456789',
+      email: 'layout.user@example.com',
+    }));
+  });
+  expect(trackEvent).toHaveBeenCalledWith('master_layout_downloaded', expect.objectContaining({
+    conversion_type: 'master_layout_download',
+    lead_type: 'master_layout_download',
+    landing_variant: 'B',
+    landing_version: 'v2',
+    placement: 'lp_b_master_plan',
+    asset_type: 'master_layout',
+  }));
+  expect(mockNavigate).toHaveBeenCalledWith('/thank-you');
+});
+
+test('book hash link scrolls the shared mobile form directly', () => {
+  mockHash = '#book';
+
+  render(
+    <HelmetProvider>
+      <KalpavrukshaMobileUx landingVariant="A" landingVersion="v1" />
+    </HelmetProvider>,
+  );
+
+  act(() => {
+    jest.advanceTimersByTime(150);
+  });
+
+  expect(HTMLElement.prototype.scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({
+    behavior: 'smooth',
+    block: 'start',
+  }));
+  expect(trackEvent).toHaveBeenCalledWith('form_open', expect.objectContaining({
+    form_name: 'kalpavruksha_download_form',
+    lead_type: 'brochure_download',
+    placement: 'hash_book',
+  }));
 });
 
 test('mobile brochure form uses the shared lead endpoint and brochure_downloaded event', async () => {

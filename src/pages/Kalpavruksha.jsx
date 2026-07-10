@@ -202,6 +202,18 @@ const DEFAULT_LAYOUT_LEAD_FORM = {
   email: ''
 };
 const HASH_ACTION_DELAY_MS = 120;
+const SITE_VISIT_FORM_HASHES = new Set(['#site-visit', '#visit-site', '#book-visit', '#site-visit-form']);
+const DETAILS_FORM_HASHES = new Set([
+  '#book',
+  '#brochure',
+  '#download-brochure',
+  '#brochure-map',
+  '#details',
+  '#project-details',
+  '#location-details',
+  '#price-location',
+]);
+const LAYOUT_DOWNLOAD_FORM_HASHES = new Set(['#download-layout', '#layout-download', '#layout-form', '#master-layout-form']);
 
 const SITE_VISIT_ZOHO_NOTE = 'Site visit scheduled from website.';
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
@@ -1424,7 +1436,7 @@ const KalpavrukshaPage = () => {
     setShowVisitModal(false);
     setVisitFormStep(1);
   };
-  const openDownloadLeadModal = (assetKey, source = 'kalpavruksha_download_modal') => {
+  const openDownloadLeadModal = React.useCallback((assetKey, source = 'kalpavruksha_download_modal') => {
     const assetType = assetKey === 'layout' ? 'master_layout' : 'brochure';
     trackEvent('form_open', withLandingVariant({
       form_name: 'kalpavruksha_download_form',
@@ -1435,7 +1447,7 @@ const KalpavrukshaPage = () => {
     }));
     setLayoutLeadForm(DEFAULT_LAYOUT_LEAD_FORM);
     setDownloadAssetKey(assetKey);
-  };
+  }, []);
   const closeDownloadLeadModal = () => setDownloadAssetKey(null);
   const handleLayoutLeadInput = (event) => {
     const { name, value } = event.target;
@@ -1464,7 +1476,7 @@ const KalpavrukshaPage = () => {
     lastHandledHashRef.current = normalizedHash;
 
     const timeoutId = window.setTimeout(() => {
-      if (normalizedHash === '#site-visit' || normalizedHash === '#visit-site' || normalizedHash === '#book-visit') {
+      if (SITE_VISIT_FORM_HASHES.has(normalizedHash)) {
         trackEvent('form_open', withLandingVariant({
           form_name: 'kalpavruksha_site_visit_form',
           lead_type: 'site_visit',
@@ -1477,8 +1489,16 @@ const KalpavrukshaPage = () => {
         return;
       }
 
-      if (normalizedHash === '#brochure' || normalizedHash === '#download-brochure') {
-        scrollToBrochureMapForm('hash_brochure');
+      if (DETAILS_FORM_HASHES.has(normalizedHash)) {
+        if (!useMobileClientUx) {
+          scrollToBrochureMapForm(normalizedHash === '#book' ? 'hash_book' : 'hash_brochure');
+        }
+        return;
+      }
+
+      if (LAYOUT_DOWNLOAD_FORM_HASHES.has(normalizedHash)) {
+        setShowVisitModal(false);
+        openDownloadLeadModal('layout', 'hash_layout_download');
         return;
       }
 
@@ -1510,7 +1530,7 @@ const KalpavrukshaPage = () => {
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [location.hash, scrollToBrochureMapForm]);
+  }, [location.hash, openDownloadLeadModal, scrollToBrochureMapForm, useMobileClientUx]);
 
   const onLayoutLeadChange = (e) => {
     const { name, value } = e.target;
@@ -1977,7 +1997,7 @@ const KalpavrukshaPage = () => {
   const projectNavTrackColor = isProjectNavOnLightSurface ? 'rgba(139, 99, 40, 0.12)' : 'rgba(255, 255, 255, 0.08)';
   const selectedImageIndex = getSelectedImageIndex();
 
-  if (useMobileClientUx && !showVisitModal) {
+  if (useMobileClientUx && !showVisitModal && !activeDownloadAsset) {
     return (
       <KalpavrukshaMobileUx
         landingVariant={LANDING_VARIANT}
@@ -2306,7 +2326,7 @@ const KalpavrukshaPage = () => {
                 <button onClick={closeVisitModal} type="button" className="rounded-full border border-[#dfd2b5] bg-white p-2 text-[#6f6a5f] transition-colors duration-200 hover:bg-[#fbf7ef] hover:text-[#221c14]"><X className="w-5 h-5" /></button>
               </div>
             </div>
-            <form onSubmit={submitSiteVisit} className="flex flex-1 min-h-0 flex-col">
+            <form id="site-visit-form" onSubmit={submitSiteVisit} className="flex flex-1 min-h-0 flex-col">
               <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
                 {visitFormStep === 1 ? (
                   <>
@@ -2551,7 +2571,7 @@ const KalpavrukshaPage = () => {
                 </button>
               </div>
             </div>
-            <form onSubmit={submitLayoutLead} className="flex flex-1 min-h-0 flex-col">
+            <form id="layout-download" onSubmit={submitLayoutLead} className="flex flex-1 min-h-0 flex-col">
               <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
                 <div className={formSectionClass}>
                   <p className={formSectionEyebrowClass}>Quick Details</p>
@@ -3815,7 +3835,7 @@ const KalpavrukshaPage = () => {
         </section>
 
         {/* Section 9: Site Visit & Brochure */}
-        <section ref={brochureMapRef} className="relative overflow-hidden border-t border-[#e0cfa8] bg-[linear-gradient(180deg,#fff9ed_0%,#efe0c5_100%)] py-12 md:py-18" style={DEFERRED_SECTION_STYLE}>
+        <section id="book" ref={brochureMapRef} className="relative overflow-hidden border-t border-[#e0cfa8] bg-[linear-gradient(180deg,#fff9ed_0%,#efe0c5_100%)] py-12 md:py-18" style={DEFERRED_SECTION_STYLE}>
           <div className="pointer-events-none absolute -left-24 top-8 h-72 w-72 rounded-full bg-[#d7b16f]/18 blur-3xl" />
           <div className="mx-auto max-w-[36rem] px-4 sm:px-6">
             <div className="kalpa-v1-luxe-card kalpa-v1-reveal overflow-hidden rounded-[30px] border border-[#d6c296] bg-[#fffaf0] shadow-[0_24px_62px_rgba(83,64,31,0.14)]">
@@ -3842,7 +3862,7 @@ const KalpavrukshaPage = () => {
                 <p className="mt-2 text-sm leading-6 text-[#647067] md:text-base">
                   Receive the location pin, project details, master plan and the latest site-visit assistance details.
                 </p>
-                <form onSubmit={(event) => submitLayoutLead(event, 'brochure')} className="mt-6 space-y-4">
+                <form id="location-details-form" onSubmit={(event) => submitLayoutLead(event, 'brochure')} className="mt-6 space-y-4">
                   <label className="block">
                     <span className="text-sm font-semibold text-[#18231d]">Your name</span>
                     <input
