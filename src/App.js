@@ -105,6 +105,8 @@ function App() {
           <Route path="/compare" element={withSuspense(<Compare />)} />
           <Route path="/profile" element={withSuspense(<ProfilePage />)} />
           {/* Kalpavruksha page */}
+          <Route path="/brochure" element={<KalpavrukshaDirectDownload assetKey="brochure" />} />
+          <Route path="/masterplan" element={<KalpavrukshaDirectDownload assetKey="masterplan" />} />
           <Route path="/kalpavruksha/brochure" element={<KalpavrukshaDirectDownload assetKey="brochure" />} />
           <Route path="/kalpavruksha/masterplan" element={<KalpavrukshaDirectDownload assetKey="masterplan" />} />
           <Route path="/kalpavruksha" element={<KalpavrukshaExperimentPage />} />
