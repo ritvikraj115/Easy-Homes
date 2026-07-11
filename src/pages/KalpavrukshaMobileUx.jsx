@@ -119,11 +119,28 @@ const galleryImages = [
 ];
 
 const quickFacts = [
-  { label: 'Price From', value: 'Rs. 31 Lakhs', detail: 'onwards' },
-  { label: 'Location', value: 'Vemavaram' },
-  { label: 'Access', value: '5 KM', detail: 'from West Bypass & Rayanapadu', wide: true },
-  { label: 'Project Area', value: '11 Acres' },
-  { label: 'Plot Sizes', value: '174-525', detail: 'Sq.yd.' },
+  {
+    type: 'essentials',
+    label: 'Project Essentials',
+    stats: [
+      { label: 'Price From', value: 'Rs. 31 Lakhs', detail: 'onwards' },
+      { label: 'Project Area', value: '11 Acres' },
+      { label: 'Plot Sizes', value: '174-525', detail: 'Sq.yd.' },
+    ],
+    wide: true,
+  },
+  {
+    type: 'connectivity',
+    label: 'Location',
+    title: 'Vijayawada-Amaravati corridor',
+    detail: 'Site at Vemavaram',
+    links: [
+      { distance: '5', unit: 'km', place: 'West Bypass & Rayanapadu' },
+      { distance: '7.5', unit: 'km', place: 'Vijayawada' },
+      { distance: '13.5', unit: 'km', place: 'Amaravati Start-up Village' },
+    ],
+    wide: true,
+  },
   { label: 'Developer Maintenance', value: 'Till Dec 2030', wide: true },
 ];
 
@@ -1329,6 +1346,146 @@ export default function KalpavrukshaMobileUx({
             font-weight:700;
           }
 
+          .kmux-fact-essentials,
+          .kmux-fact-connectivity {
+            min-height:auto;
+            gap:14px;
+          }
+
+          .kmux-essential-grid {
+            position:relative;
+            z-index:1;
+            display:grid;
+            grid-template-columns:repeat(2, minmax(0, 1fr));
+            gap:10px;
+          }
+
+          .kmux-essential-item {
+            display:grid;
+            grid-template-columns:1fr;
+            align-content:start;
+            gap:8px;
+            min-width:0;
+            padding:12px;
+            border:1px solid rgba(202,163,91,.18);
+            border-radius:16px;
+            background:rgba(255,255,255,.58);
+          }
+
+          .kmux-essential-item:first-child {
+            grid-column:1 / -1;
+            grid-template-columns:minmax(0, 1fr) auto;
+            align-items:end;
+            gap:12px;
+            padding:14px 15px;
+          }
+
+          .kmux-essential-label {
+            color:var(--gold);
+            font-size:9px;
+            font-weight:900;
+            letter-spacing:.14em;
+            text-transform:uppercase;
+          }
+
+          .kmux-essential-value {
+            min-width:0;
+            color:var(--ink);
+            font-size:17px;
+            line-height:1.05;
+            font-weight:950;
+            letter-spacing:-.02em;
+            overflow-wrap:anywhere;
+          }
+
+          .kmux-essential-item:first-child .kmux-essential-value {
+            font-size:22px;
+            text-align:right;
+          }
+
+          .kmux-essential-value small {
+            display:block;
+            margin-top:3px;
+            color:var(--muted);
+            font-size:11px;
+            line-height:1.1;
+            font-weight:800;
+            letter-spacing:0;
+          }
+
+          .kmux-location-heading {
+            position:relative;
+            z-index:1;
+            display:flex;
+            flex-direction:column;
+            gap:6px;
+          }
+
+          .kmux-location-title {
+            margin:0;
+            color:var(--ink);
+            font-size:20px;
+            line-height:1.1;
+            font-weight:950;
+            letter-spacing:-.02em;
+          }
+
+          .kmux-location-detail {
+            color:var(--muted);
+            font-size:12px;
+            line-height:1.3;
+            font-weight:800;
+          }
+
+          .kmux-connectivity-list {
+            position:relative;
+            z-index:1;
+            display:grid;
+            gap:8px;
+          }
+
+          .kmux-connectivity-item {
+            display:grid;
+            grid-template-columns:74px minmax(0, 1fr);
+            align-items:center;
+            gap:10px;
+            padding:10px 12px;
+            border:1px solid rgba(81,96,65,.14);
+            border-radius:18px;
+            background:rgba(255,255,255,.62);
+          }
+
+          .kmux-distance {
+            display:flex;
+            align-items:baseline;
+            gap:4px;
+            color:var(--pine-dark);
+            white-space:nowrap;
+          }
+
+          .kmux-distance strong {
+            font-size:23px;
+            line-height:1;
+            font-weight:950;
+            letter-spacing:-.03em;
+          }
+
+          .kmux-distance small {
+            font-size:10px;
+            line-height:1;
+            font-weight:950;
+            letter-spacing:.08em;
+            text-transform:uppercase;
+          }
+
+          .kmux-place {
+            min-width:0;
+            color:#43513d;
+            font-size:12.5px;
+            line-height:1.25;
+            font-weight:850;
+          }
+
           .kmux-amenities {
             background:linear-gradient(180deg, var(--cream-2), var(--cream));
           }
@@ -2098,13 +2255,57 @@ export default function KalpavrukshaMobileUx({
         </section>
 
         <section id="kmux-facts" className="kmux-section kmux-facts" aria-label="Kalpavruksha quick facts">
-          {quickFacts.map((fact) => (
-            <div className={`kmux-fact kmux-reveal ${fact.wide ? 'is-wide' : ''}`} key={fact.label}>
-              <p className="kmux-label">{fact.label}</p>
-              <p className="kmux-value">{fact.value}</p>
-              {fact.detail && <p className="kmux-fact-detail">{fact.detail}</p>}
-            </div>
-          ))}
+          {quickFacts.map((fact) => {
+            if (fact.type === 'essentials') {
+              return (
+                <div className="kmux-fact kmux-fact-essentials kmux-reveal is-wide" key={fact.label}>
+                  <p className="kmux-label">{fact.label}</p>
+                  <div className="kmux-essential-grid">
+                    {fact.stats.map((stat) => (
+                      <div className="kmux-essential-item" key={stat.label}>
+                        <span className="kmux-essential-label">{stat.label}</span>
+                        <strong className="kmux-essential-value">
+                          {stat.value}
+                          {stat.detail && <small>{stat.detail}</small>}
+                        </strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+
+            if (fact.type === 'connectivity') {
+              return (
+                <div className="kmux-fact kmux-fact-connectivity kmux-reveal is-wide" key={fact.label}>
+                  <div className="kmux-location-heading">
+                    <p className="kmux-label">{fact.label}</p>
+                    <p className="kmux-location-title">{fact.title}</p>
+                    <span className="kmux-location-detail">{fact.detail}</span>
+                  </div>
+                  <div className="kmux-connectivity-list">
+                    {fact.links.map((link) => (
+                      <div className="kmux-connectivity-item" key={`${link.distance}-${link.place}`}>
+                        <span className="kmux-distance">
+                          <strong>{link.distance}</strong>
+                          <small>{link.unit}</small>
+                        </span>
+                        <span className="kmux-place">{link.place}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <div className={`kmux-fact kmux-reveal ${fact.wide ? 'is-wide' : ''}`} key={fact.label}>
+                <p className="kmux-label">{fact.label}</p>
+                <p className="kmux-value">{fact.value}</p>
+                {fact.detail && <p className="kmux-fact-detail">{fact.detail}</p>}
+              </div>
+            );
+          })}
         </section>
 
         <section id="kmux-layout" className="kmux-section kmux-amenities">
