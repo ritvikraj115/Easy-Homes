@@ -273,6 +273,36 @@ test('project nav links scroll to the matching section', () => {
   expect(HTMLElement.prototype.scrollIntoView).toHaveBeenCalled();
 });
 
+test('gallery hash link scrolls the V1 picture section directly', () => {
+  mockHash = '#gallery';
+  renderPage();
+  HTMLElement.prototype.scrollIntoView.mockClear();
+
+  act(() => {
+    jest.advanceTimersByTime(150);
+  });
+
+  expect(HTMLElement.prototype.scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({
+    behavior: 'smooth',
+    block: 'start',
+  }));
+});
+
+test('why-invest hash link scrolls the V1 layout section directly', () => {
+  mockHash = '#why-invest';
+  renderPage();
+  HTMLElement.prototype.scrollIntoView.mockClear();
+
+  act(() => {
+    jest.advanceTimersByTime(150);
+  });
+
+  expect(HTMLElement.prototype.scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({
+    behavior: 'smooth',
+    block: 'start',
+  }));
+});
+
 test('conversion-first sections show verified project essentials near the top', () => {
   renderPage();
 
@@ -776,6 +806,26 @@ test('download layout hash opens the V2 layout lead form before downloading', as
   expect(api.post).not.toHaveBeenCalled();
 });
 
+test('why-invest hash link scrolls the V2 layout section directly', () => {
+  mockPathname = '/kalpavruksha/';
+  mockHash = '#why-invest';
+
+  render(
+    <HelmetProvider>
+      <KalpavrukshaV2 />
+    </HelmetProvider>,
+  );
+  window.scrollTo.mockClear();
+
+  act(() => {
+    jest.advanceTimersByTime(150);
+  });
+
+  expect(window.scrollTo).toHaveBeenCalledWith(expect.objectContaining({
+    behavior: 'smooth',
+  }));
+});
+
 test('V2 layout download submits lead, fires the existing GTM event, then redirects', async () => {
   mockPathname = '/kalpavruksha/';
 
@@ -859,6 +909,60 @@ test('book hash link scrolls the shared mobile form directly', () => {
     lead_type: 'brochure_download',
     placement: 'hash_book',
   }));
+});
+
+test('gallery hash link scrolls the shared mobile gallery directly', () => {
+  mockHash = '#gallery';
+  const target = { scrollIntoView: jest.fn() };
+  const getElementByIdSpy = jest.spyOn(document, 'getElementById').mockImplementation((id) => (
+    id === 'kmux-gallery' ? target : null
+  ));
+
+  render(
+    <HelmetProvider>
+      <KalpavrukshaMobileUx landingVariant="A" landingVersion="v1" />
+    </HelmetProvider>,
+  );
+
+  act(() => {
+    jest.advanceTimersByTime(150);
+  });
+
+  expect(getElementByIdSpy).toHaveBeenCalledWith('kmux-gallery');
+  expect(target.scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({
+    behavior: 'smooth',
+    block: 'start',
+  }));
+  expect(trackEvent).not.toHaveBeenCalledWith('form_open', expect.anything());
+
+  getElementByIdSpy.mockRestore();
+});
+
+test('why-invest hash link scrolls the shared mobile layout directly', () => {
+  mockHash = '#why-invest';
+  const target = { scrollIntoView: jest.fn() };
+  const getElementByIdSpy = jest.spyOn(document, 'getElementById').mockImplementation((id) => (
+    id === 'kmux-layout' ? target : null
+  ));
+
+  render(
+    <HelmetProvider>
+      <KalpavrukshaMobileUx landingVariant="A" landingVersion="v1" />
+    </HelmetProvider>,
+  );
+
+  act(() => {
+    jest.advanceTimersByTime(150);
+  });
+
+  expect(getElementByIdSpy).toHaveBeenCalledWith('kmux-layout');
+  expect(target.scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({
+    behavior: 'smooth',
+    block: 'start',
+  }));
+  expect(trackEvent).not.toHaveBeenCalledWith('form_open', expect.anything());
+
+  getElementByIdSpy.mockRestore();
 });
 
 test('mobile brochure form uses the shared lead endpoint and brochure_downloaded event', async () => {

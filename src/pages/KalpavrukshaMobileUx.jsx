@@ -62,6 +62,13 @@ const DETAILS_FORM_HASHES = new Set([
   '#location-details',
   '#price-location',
 ]);
+const SECTION_HASH_TARGETS = {
+  '#gallery': 'kmux-gallery',
+  '#why-invest': 'kmux-layout',
+  '#layout': 'kmux-layout',
+  '#master-plan': 'kmux-layout',
+  '#master-layout': 'kmux-layout',
+};
 
 const DEFAULT_SITE_IMAGES = [
   {
@@ -423,13 +430,23 @@ export default function KalpavrukshaMobileUx({
       return undefined;
     }
 
-    if (lastHandledHashRef.current === normalizedHash || !DETAILS_FORM_HASHES.has(normalizedHash)) {
+    const sectionTargetId = SECTION_HASH_TARGETS[normalizedHash];
+
+    if (
+      lastHandledHashRef.current === normalizedHash ||
+      (!DETAILS_FORM_HASHES.has(normalizedHash) && !sectionTargetId)
+    ) {
       return undefined;
     }
 
     lastHandledHashRef.current = normalizedHash;
 
     const timeoutId = window.setTimeout(() => {
+      if (sectionTargetId) {
+        document.getElementById(sectionTargetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+
       document.getElementById('book')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       trackFormOpen(normalizedHash === '#book' ? 'hash_book' : 'hash_brochure');
     }, HASH_ACTION_DELAY_MS);

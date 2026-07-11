@@ -7,6 +7,7 @@ import PlainLayout from './layouts/PlainLayout';
 import { trackPageView } from './utils/analytics';
 import { captureGoogleAdsAttributionFromLocation } from './utils/googleAdsAttribution';
 import KalpavrukshaExperimentPage from './pages/KalpavrukshaExperiment';
+import KalpavrukshaDirectDownload from './pages/KalpavrukshaDirectDownload';
 
 const SearchResults = lazy(() => import('./pages/SearchProperties'));
 const Favourites = lazy(() => import('./pages/Favourites'));
@@ -31,6 +32,18 @@ function RouteFallback() {
 
 function withSuspense(element) {
   return <Suspense fallback={<RouteFallback />}>{element}</Suspense>;
+}
+
+function KalpavrukshaTypoRedirect() {
+  const location = useLocation();
+  const pathSuffix = location.pathname.replace(/^\/kalpavruskha/i, '') || '/';
+
+  return (
+    <Navigate
+      to={`/kalpavruksha${pathSuffix}${location.search || ''}${location.hash || ''}`}
+      replace
+    />
+  );
 }
 
 function App() {
@@ -92,8 +105,11 @@ function App() {
           <Route path="/compare" element={withSuspense(<Compare />)} />
           <Route path="/profile" element={withSuspense(<ProfilePage />)} />
           {/* Kalpavruksha page */}
+          <Route path="/kalpavruksha/brochure" element={<KalpavrukshaDirectDownload assetKey="brochure" />} />
+          <Route path="/kalpavruksha/masterplan" element={<KalpavrukshaDirectDownload assetKey="masterplan" />} />
           <Route path="/kalpavruksha" element={<KalpavrukshaExperimentPage />} />
           <Route path="/kalpavruksha2" element={withSuspense(<KalpavrukshaV2Page />)} />
+          <Route path="/kalpavruskha/*" element={<KalpavrukshaTypoRedirect />} />
           <Route path="/projects" element={<Navigate to="/kalpavruksha/" replace />} />
           {/* Thankyou page */}
           <Route path="/thank-you" element={withSuspense(<ThankYouPage />)} />

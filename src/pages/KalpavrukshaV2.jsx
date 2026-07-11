@@ -1151,8 +1151,15 @@ export default function KalpavrukshaV2() {
         return;
       }
 
-      if (normalizedHash === '#layout' || normalizedHash === '#master-plan' || normalizedHash === '#master-layout') {
-        scrollToRef(planRef);
+      if (
+        normalizedHash === '#layout' ||
+        normalizedHash === '#master-plan' ||
+        normalizedHash === '#master-layout' ||
+        normalizedHash === '#why-invest'
+      ) {
+        if (!useMobileClientUx) {
+          scrollToRef(planRef);
+        }
         return;
       }
 
@@ -1167,7 +1174,9 @@ export default function KalpavrukshaV2() {
       }
 
       if (normalizedHash === '#gallery') {
-        scrollToRef(galleryRef);
+        if (!useMobileClientUx) {
+          scrollToRef(galleryRef);
+        }
       }
     }, HASH_ACTION_DELAY_MS);
 

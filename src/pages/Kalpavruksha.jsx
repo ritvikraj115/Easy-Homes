@@ -1502,8 +1502,15 @@ const KalpavrukshaPage = () => {
         return;
       }
 
-      if (normalizedHash === '#layout' || normalizedHash === '#master-plan' || normalizedHash === '#master-layout') {
-        masterPlanRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (
+        normalizedHash === '#layout' ||
+        normalizedHash === '#master-plan' ||
+        normalizedHash === '#master-layout' ||
+        normalizedHash === '#why-invest'
+      ) {
+        if (!useMobileClientUx) {
+          masterPlanRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         return;
       }
 
@@ -1518,7 +1525,9 @@ const KalpavrukshaPage = () => {
       }
 
       if (normalizedHash === '#gallery') {
-        galleryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (!useMobileClientUx) {
+          galleryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         return;
       }
 
