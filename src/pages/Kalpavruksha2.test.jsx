@@ -288,16 +288,19 @@ test('gallery hash link scrolls the V1 picture section directly', () => {
   }));
 });
 
-test('why-invest hash link scrolls the V1 layout section directly', () => {
+test('why-invest hash link scrolls the V1 difference section directly', () => {
   mockHash = '#why-invest';
   renderPage();
-  HTMLElement.prototype.scrollIntoView.mockClear();
+  const differenceSection = screen
+    .getByRole('heading', { name: 'What makes Kalpavruksha different' })
+    .closest('section');
+  differenceSection.scrollIntoView = jest.fn();
 
   act(() => {
     jest.advanceTimersByTime(150);
   });
 
-  expect(HTMLElement.prototype.scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({
+  expect(differenceSection.scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({
     behavior: 'smooth',
     block: 'start',
   }));
@@ -806,15 +809,34 @@ test('download layout hash opens the V2 layout lead form before downloading', as
   expect(api.post).not.toHaveBeenCalled();
 });
 
-test('why-invest hash link scrolls the V2 layout section directly', () => {
+test('why-invest hash link scrolls the V2 difference section directly', () => {
   mockPathname = '/kalpavruksha/';
   mockHash = '#why-invest';
+  Object.defineProperty(window, 'innerWidth', {
+    configurable: true,
+    writable: true,
+    value: 1200,
+  });
 
   render(
     <HelmetProvider>
       <KalpavrukshaV2 />
     </HelmetProvider>,
   );
+  const differenceSection = screen
+    .getByRole('heading', { name: 'What makes Kalpavruksha different' })
+    .closest('section');
+  differenceSection.getBoundingClientRect = jest.fn(() => ({
+    top: 500,
+    bottom: 700,
+    left: 0,
+    right: 0,
+    width: 1200,
+    height: 200,
+    x: 0,
+    y: 500,
+    toJSON: () => ({}),
+  }));
   window.scrollTo.mockClear();
 
   act(() => {
@@ -822,6 +844,7 @@ test('why-invest hash link scrolls the V2 layout section directly', () => {
   });
 
   expect(window.scrollTo).toHaveBeenCalledWith(expect.objectContaining({
+    top: 408,
     behavior: 'smooth',
   }));
 });

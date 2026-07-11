@@ -1151,11 +1151,17 @@ export default function KalpavrukshaV2() {
         return;
       }
 
+      if (normalizedHash === '#why-invest') {
+        if (!useMobileClientUx) {
+          scrollToRef(snapshotRef);
+        }
+        return;
+      }
+
       if (
         normalizedHash === '#layout' ||
         normalizedHash === '#master-plan' ||
-        normalizedHash === '#master-layout' ||
-        normalizedHash === '#why-invest'
+        normalizedHash === '#master-layout'
       ) {
         if (!useMobileClientUx) {
           scrollToRef(planRef);

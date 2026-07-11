@@ -1502,11 +1502,17 @@ const KalpavrukshaPage = () => {
         return;
       }
 
+      if (normalizedHash === '#why-invest') {
+        if (!useMobileClientUx) {
+          aboutRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        return;
+      }
+
       if (
         normalizedHash === '#layout' ||
         normalizedHash === '#master-plan' ||
-        normalizedHash === '#master-layout' ||
-        normalizedHash === '#why-invest'
+        normalizedHash === '#master-layout'
       ) {
         if (!useMobileClientUx) {
           masterPlanRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
