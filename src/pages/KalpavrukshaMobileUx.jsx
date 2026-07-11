@@ -131,7 +131,7 @@ const amenities = [
   {
     icon: 'hill',
     title: 'Hill views',
-    text: 'Unobstructed views of the Kondapalli hills from most plots in the layout.',
+    text: 'Unobstructed sunrise views from the hills from most plots in the layout.',
   },
   {
     icon: 'creek',
