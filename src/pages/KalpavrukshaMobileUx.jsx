@@ -2181,7 +2181,7 @@ export default function KalpavrukshaMobileUx({
         <section className="kmux-section kmux-form-wrap" id="book">
           <div className="kmux-reveal">
             <h2 className="kmux-section-title">Location & Project Details</h2>
-            <p className="kmux-section-note">Sent straight to your WhatsApp - location pin, master plan and next available visit slots.</p>
+            <p className="kmux-section-note">Receive the project details, master plan & location pin</p>
           </div>
           <form className="kmux-form kmux-reveal" onSubmit={handleLeadSubmit}>
             <div className="field">
@@ -2209,9 +2209,6 @@ export default function KalpavrukshaMobileUx({
                 inputMode="numeric"
               />
             </div>
-            <p className="kmux-whatsapp-note">
-              We will send Kalpavruksha project details, price, location, and site visit updates on WhatsApp.
-            </p>
             <button type="submit" className="kmux-cta-primary kmux-form-submit" disabled={isSubmitting}>
               <span className="kmux-submit-icon" aria-hidden="true">
                 <FaWhatsapp focusable="false" />

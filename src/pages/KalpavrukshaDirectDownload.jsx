@@ -6,7 +6,8 @@ import {
   getGoogleAdsAttributionPayload,
 } from '../utils/googleAdsAttribution';
 
-const REDIRECT_DELAY_MS = 600;
+const PDF_OPEN_DELAY_MS = 350;
+const REDIRECT_DELAY_MS = 1200;
 
 const DOWNLOAD_ASSETS = {
   brochure: {
@@ -58,6 +59,14 @@ function downloadFile(asset) {
   link.remove();
 }
 
+function openFile(asset) {
+  if (typeof window === 'undefined' || !asset?.url) {
+    return;
+  }
+
+  window.open(asset.url, '_blank', 'noopener,noreferrer');
+}
+
 export default function KalpavrukshaDirectDownload({ assetKey }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -101,11 +110,16 @@ export default function KalpavrukshaDirectDownload({ assetKey }) {
 
     downloadFile(asset);
 
+    const openTimer = window.setTimeout(() => {
+      openFile(asset);
+    }, PDF_OPEN_DELAY_MS);
+
     const redirectTimer = window.setTimeout(() => {
       navigate('/kalpavruksha/', { replace: true });
     }, REDIRECT_DELAY_MS);
 
     return () => {
+      window.clearTimeout(openTimer);
       window.clearTimeout(redirectTimer);
     };
   }, [asset, location.pathname, navigate]);

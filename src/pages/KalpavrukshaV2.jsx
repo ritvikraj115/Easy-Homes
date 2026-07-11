@@ -300,8 +300,8 @@ const differenceItems = [
     detail: 'An engineered rivulet garden inside the layout boundary - daily lifestyle value, not just landscaping.',
   },
   {
-    title: 'Rooftop clubhouse',
-    detail: 'Infinity pool, private theatre, AC gym, BBQ zone, banquet hall and indoor sports.',
+    title: 'Clubhouse with rooftop swimming pool',
+    detail: 'Private theatre, AC gym, BBQ zone, banquet hall and indoor sports.',
   },
   {
     title: '40 & 30 ft CC roads',
@@ -2529,7 +2529,7 @@ export default function KalpavrukshaV2() {
                   Location & Project Details
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-[#5f684f] md:text-base">
-                  Receive the location pin, project details, master plan and the latest site-visit assistance details.
+                  Receive the project details, master plan & location pin
                 </p>
                 <form id="location-details-form" onSubmit={submitBrochure} className="mt-6 space-y-4">
                   <label className="block">
@@ -2557,9 +2557,6 @@ export default function KalpavrukshaV2() {
                       required
                     />
                   </label>
-                  <p className="rounded-2xl border border-[#b56f37]/18 bg-white/72 px-4 py-3 text-sm leading-6 text-[#5f684f]">
-                    We will send Kalpavruksha project details, price, location, and site visit updates on WhatsApp.
-                  </p>
                   <button
                     type="submit"
                     disabled={brochureSubmitting}
@@ -3045,6 +3042,9 @@ export default function KalpavrukshaV2() {
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#f1cf8f]">Document Access</p>
                   <h3 className="mt-2 text-2xl font-bold">Location & Project Details</h3>
+                  <p className="mt-2 text-sm leading-6 text-[#fff7e8]/76">
+                    Receive the project details, master plan & location pin
+                  </p>
                 </div>
                 <button type="button" onClick={closeBrochureModal} className="rounded-full border border-[#fff7e8]/20 bg-[#fff7e8]/14 p-2 text-[#fff7e8]">
                   <X className="h-5 w-5" />
@@ -3060,9 +3060,6 @@ export default function KalpavrukshaV2() {
                   <label className={formLabelClass}>Phone</label>
                   <input name="phone" value={brochureForm.phone} onChange={handleBrochureInput} className={formInputClass} inputMode="tel" maxLength={10} placeholder="10-digit mobile number" required />
                 </div>
-                <p className="rounded-2xl border border-[#d6bd8f] bg-[#fff7e8] px-4 py-3 text-sm leading-6 text-[#5f684f]">
-                  We will send Kalpavruksha project details, price, location, and site visit updates on WhatsApp.
-                </p>
                 <button type="submit" disabled={brochureSubmitting} className="inline-flex min-h-[3.25rem] w-full items-center justify-center rounded-2xl bg-[#b56f37] px-6 font-semibold text-[#fff7e8] shadow-[0_14px_30px_rgba(181,111,55,0.24)] disabled:opacity-70">
                   {brochureSubmitting ? 'Submitting...' : 'Send Location & Project Details on WhatsApp'}
                 </button>

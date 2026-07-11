@@ -4,6 +4,9 @@ import ThankYou from "../components/ThankYouPage/ThankYouPage";
 import Footer from "../components/Home/Footer";
 import Navbar from "../components/Navbar";
 
+const REDIRECT_DELAY_SECONDS = 15;
+const REDIRECT_DELAY_MS = REDIRECT_DELAY_SECONDS * 1000;
+
 const THANK_YOU_CONTENT = {
   "site-visit": {
     eyebrow: "Site Visit Request Confirmed",
@@ -77,7 +80,7 @@ const ThankYouPage = () => {
 
     const timerId = window.setTimeout(() => {
       navigate(returnTo, { replace: true });
-    }, 5000);
+    }, REDIRECT_DELAY_MS);
 
     return () => window.clearTimeout(timerId);
   }, [content, navigate, returnTo]);
@@ -126,7 +129,7 @@ const ThankYouPage = () => {
             </div>
 
             <div className="mx-auto mt-6 inline-flex rounded-full border border-[#d6bd8f] bg-[#fff7e8] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#8b5526]">
-              Redirecting back to Kalpavruksha in 5 seconds
+              Redirecting back to Kalpavruksha in {REDIRECT_DELAY_SECONDS} seconds
             </div>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">

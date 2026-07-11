@@ -100,7 +100,7 @@ const DOWNLOAD_ASSET_CONFIG = {
     url: '/mainBrouche.pdf',
     fileName: 'Kalpavruksha Project Brochure.pdf',
     title: 'Location & Project Details',
-    description: 'Share your details to receive Kalpavruksha location and project details.',
+    description: 'Receive the project details, master plan & location pin',
     source: 'Website',
     leadStatus: 'Brochure and Map Requested on WhatsApp'
   }
@@ -980,8 +980,8 @@ const KalpavrukshaPage = () => {
       detail: 'An engineered rivulet garden inside the layout boundary - daily lifestyle value, not just landscaping.',
     },
     {
-      title: 'Rooftop clubhouse',
-      detail: 'Infinity pool, private theatre, AC gym, BBQ zone, banquet hall and indoor sports.',
+      title: 'Clubhouse with rooftop swimming pool',
+      detail: 'Private theatre, AC gym, BBQ zone, banquet hall and indoor sports.',
     },
     {
       title: "40 & 30 ft CC roads",
@@ -2580,6 +2580,11 @@ const KalpavrukshaPage = () => {
                 <div className="max-w-md">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8b6328]">Document Access</p>
                   <h3 className="mt-2 text-[1.55rem] font-bold tracking-[-0.02em] text-[#221c14]">{activeDownloadAsset.title}</h3>
+                  {downloadAssetKey === 'brochure' && (
+                    <p className="mt-2 text-sm leading-6 text-[#6f6a5f]">
+                      {activeDownloadAsset.description}
+                    </p>
+                  )}
                 </div>
                 <button onClick={closeDownloadLeadModal} className="rounded-full border border-[#dfd2b5] bg-white p-2 text-[#6f6a5f] transition-colors duration-200 hover:bg-[#fbf7ef] hover:text-[#221c14]" type="button">
                   <X className="w-5 h-5" />
@@ -3875,7 +3880,7 @@ const KalpavrukshaPage = () => {
                   Location & Project Details
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-[#647067] md:text-base">
-                  Receive the location pin, project details, master plan and the latest site-visit assistance details.
+                  Receive the project details, master plan & location pin
                 </p>
                 <form id="location-details-form" onSubmit={(event) => submitLayoutLead(event, 'brochure')} className="mt-6 space-y-4">
                   <label className="block">
@@ -3903,9 +3908,6 @@ const KalpavrukshaPage = () => {
                       required
                     />
                   </label>
-                  <p className="rounded-2xl border border-[#d9c8a4] bg-white/72 px-4 py-3 text-sm leading-6 text-[#647067]">
-                    We will send Kalpavruksha project details, price, location, and site visit updates on WhatsApp.
-                  </p>
                   <button
                     type="submit"
                     disabled={downloadSubmitting}

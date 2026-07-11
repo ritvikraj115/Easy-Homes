@@ -344,6 +344,8 @@ test('brochure hash link opens the brochure form directly', async () => {
   renderPage();
 
   expect(await screen.findByRole('heading', { name: 'Location & Project Details' })).toBeInTheDocument();
+  expect(screen.getByText('Receive the project details, master plan & location pin')).toBeInTheDocument();
+  expect(screen.queryByText('We will send Kalpavruksha project details, price, location, and site visit updates on WhatsApp.')).not.toBeInTheDocument();
   act(() => {
     jest.advanceTimersByTime(150);
   });

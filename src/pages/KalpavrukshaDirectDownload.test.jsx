@@ -42,6 +42,10 @@ beforeEach(() => {
     campaignId: '123',
     gclid: 'test-gclid',
   });
+  Object.defineProperty(window, 'open', {
+    writable: true,
+    value: jest.fn(),
+  });
 });
 
 afterEach(() => {
@@ -71,7 +75,13 @@ test('brochure direct route downloads the brochure and fires the existing brochu
   }));
 
   act(() => {
-    jest.advanceTimersByTime(700);
+    jest.advanceTimersByTime(400);
+  });
+
+  expect(window.open).toHaveBeenCalledWith('/mainBrouche.pdf', '_blank', 'noopener,noreferrer');
+
+  act(() => {
+    jest.advanceTimersByTime(900);
   });
 
   expect(mockNavigate).toHaveBeenCalledWith('/kalpavruksha/', { replace: true });
@@ -94,4 +104,10 @@ test('masterplan direct route downloads the master layout and fires the existing
     link_url: '/Kalpavruksha Master Layout.pdf',
     delivery_channel: 'direct_download',
   }));
+
+  act(() => {
+    jest.advanceTimersByTime(400);
+  });
+
+  expect(window.open).toHaveBeenCalledWith('/Kalpavruksha Master Layout.pdf', '_blank', 'noopener,noreferrer');
 });
